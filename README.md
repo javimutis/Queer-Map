@@ -25,6 +25,7 @@ En Chile pesar de los avances legales y sociales, la discriminación y la violen
 
 ## Cluster con las principales problematicas.
 
+![cluster](Cluster.png)
 
 ## Referencias y Recursos
 
@@ -58,5 +59,5 @@ Recuerda que nuestra aplicación está en constante evolución y mejoramiento. V
 Contacto Si tienes alguna pregunta, sugerencia o simplemente quieres contactarnos, no dudes en hacerlo a través de nuestros medios de contacto
 
 Contacto
-Si tienes alguna pregunta, sugerencia o simplemente quieres contactarnos, no dudes en hacerlo a través de nuestros medios de contacto
+Si tienes alguna pregunta, sugerencia o simplemente quieres contactarnos, no dudes en hacerlo a través de nuestros medios de contacto.
 
