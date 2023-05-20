@@ -25,7 +25,7 @@ En Chile pesar de los avances legales y sociales, la discriminación y la violen
 
 ## Cluster con las principales problematicas.
 
-![cluster](Cluster.png)
+![cluster](clustermap.png)
 
 ## Referencias y Recursos
 
@@ -56,8 +56,9 @@ Recuerda que nuestra aplicación está en constante evolución y mejoramiento. V
 5. Abre un pull request en este repositorio.
 6. Agradecemos cualquier aporte que puedas realizar para mejorar Queermap y hacerlo aún más útil y relevante para la comunidad LGBTIQ+.
 
-Contacto Si tienes alguna pregunta, sugerencia o simplemente quieres contactarnos, no dudes en hacerlo a través de nuestros medios de contacto
-
-Contacto
+## Contacto
 Si tienes alguna pregunta, sugerencia o simplemente quieres contactarnos, no dudes en hacerlo a través de nuestros medios de contacto.
 
+
+## Primer acercamiento a la app
+![MVP](firstapproach.png)
