@@ -1,6 +1,6 @@
 ![Queermap Banner](Queermapbanner.png)
 
-##Storytelling
+## Storytelling
 
 En un mundo donde la diversidad y la inclusión son valores fundamentales, surge Queermap como una herramienta para la comunidad LGBTIQ+. Nuestra aplicación surge de la necesidad de proporcionar espacios seguros y acogedores para todas las personas que se identifican dentro de esta comunidad vibrante y diversa.
 
@@ -25,7 +25,6 @@ En Chile pesar de los avances legales y sociales, la discriminación y la violen
 
 ## Cluster con las principales problematicas.
 
-![Cluster](cluster queermap - Color.png)
 
 ## Referencias y Recursos
 
@@ -46,8 +45,7 @@ En Chile pesar de los avances legales y sociales, la discriminación y la violen
 Recuerda que nuestra aplicación está en constante evolución y mejoramiento. Valoramos tus comentarios y sugerencias para que podamos seguir construyendo un espacio inclusivo y seguro para la comunidad LGBTIQ+.
 
 
-## 
-Contribuciones
+## Contribuciones
 ¡Nos encantaría recibir tus contribuciones! Si deseas colaborar, por favor sigue los siguientes pasos:
 
 1. Haz un fork del repositorio
