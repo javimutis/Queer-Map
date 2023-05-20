@@ -22,6 +22,11 @@ En Chile pesar de los avances legales y sociales, la discriminación y la violen
 
 - **Homofobia y Lesbofobia**: A pesar de los avances legales, la homofobia y la lesbofobia aún persisten en la sociedad chilena. Es fundamental seguir trabajando para promover la inclusión y el respeto hacia todas las personas, independientemente de su orientación sexual o identidad de género.
 
+
+## Cluster con las principales problematicas.
+
+![Cluster](cluster queermap - Color.png)
+
 ## Referencias y Recursos
 
 - [Fundación Todo Mejora - www.todomejora.org]: Prevención del suicidio y discriminación hacia jóvenes LGBT+. 
@@ -39,6 +44,7 @@ En Chile pesar de los avances legales y sociales, la discriminación y la violen
 - [Movimiento de Integración y Liberación Homosexual (MOVILH) - www.movilh.cl]: Lucha por los derechos LGBTIQ+ en Chile. 
 
 Recuerda que nuestra aplicación está en constante evolución y mejoramiento. Valoramos tus comentarios y sugerencias para que podamos seguir construyendo un espacio inclusivo y seguro para la comunidad LGBTIQ+.
+
 
 ## 
 Contribuciones
