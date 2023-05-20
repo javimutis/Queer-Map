@@ -40,6 +40,19 @@ En Chile pesar de los avances legales y sociales, la discriminación y la violen
 
 Recuerda que nuestra aplicación está en constante evolución y mejoramiento. Valoramos tus comentarios y sugerencias para que podamos seguir construyendo un espacio inclusivo y seguro para la comunidad LGBTIQ+.
 
+## 
+Contribuciones
+¡Nos encantaría recibir tus contribuciones! Si deseas colaborar, por favor sigue los siguientes pasos:
+
+1. Haz un fork del repositorio
+2. Crea una rama con un nombre descriptivo: git checkout -b feature/nueva-funcionalidad.
+3. Realiza tus cambios y commits: git commit -m "Agrega nueva funcionalidad".
+4. Haz un push a tu repositorio: git push origin feature/nueva-funcionalidad.
+5. Abre un pull request en este repositorio.
+6. Agradecemos cualquier aporte que puedas realizar para mejorar Queermap y hacerlo aún más útil y relevante para la comunidad LGBTIQ+.
+
+Contacto Si tienes alguna pregunta, sugerencia o simplemente quieres contactarnos, no dudes en hacerlo a través de nuestros medios de contacto
+
 Contacto
 Si tienes alguna pregunta, sugerencia o simplemente quieres contactarnos, no dudes en hacerlo a través de nuestros medios de contacto
 
