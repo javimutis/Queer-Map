@@ -6,6 +6,18 @@ En un mundo donde la diversidad y la inclusión son valores fundamentales, surge
 
 El camino hacia la aceptación y el amor propio puede ser desafiante, especialmente cuando se enfrentan obstáculos y discriminación. En Queermap, nos inspira la idea de que todos merecen tener acceso a servicios, entretenimiento, cultura, goce y espacios de salud donde puedan ser elles mismos sin temor al juicio o la exclusión.
 
+### Esta es la historia de Camila
+
+En un rincón de Viña del mar, una joven lesbiana llamada Camila buscaba desesperadamente un espacio seguro donde poder ser ella misma, expresar su amor y conectar con otros individuos que compartieran su realidad. Pero se encontró con un muro de discriminación y desconocimiento. Fue entonces cuando descubrió Queermap, un mapa digital que prometía una experiencia transformadora.
+
+Con un solo toque en su pantalla, Camila se adentró en un mundo de colores vibrantes que reflejaban su identidad y respetaban la diversidad. Navegando por la aplicación, encontró una amplia gama de servicios, desde entretenimiento hasta salud y orientación, todo diseñado específicamente para satisfacer las necesidades de la comunidad LGBT+.
+
+En Queermap, Camila descubrió lugares mágicos y seguros donde podía disfrutar de eventos culturales y conectarse con otras personas. La aplicación le brindó la oportunidad de unirse a comunidades virtuales, donde se sintió acompañada y apoyada en su viaje personal.
+
+Pero Queermap no solo se trataba de encontrar lugares y servicios, sino también de enfrentar desafíos más profundos. La aplicación estaba comprometida con la prevención del suicidio en la comunidad LGBT+ y ofrecía recursos y enlaces a organizaciones que brindaban apoyo y ayuda en momentos difíciles. Camila se sintió reconfortada al saber que no estaba sola y que había una red de personas y organizaciones dispuestas a tenderle una mano cuando más lo necesitaba.
+
+A medida que Queermap crecía y se expandía, más personas como Camila se unieron a la comunidad. Juntos, desafiaron la discriminación, lucharon por la igualdad de derechos y encontraron una voz poderosa que resonó en todo Chile. La aplicación se convirtió en un faro de esperanza y en un catalizador para el cambio social, abriendo puertas y corazones en un camino hacia un futuro más inclusivo y respetuoso.
+
 ## Detalles de la Aplicación
 
 Queermap es una aplicación móvil diseñada específicamente para ayudar a las personas LGBTIQ+ a encontrar lugares seguros y amigables en su área local y en todo el país. Nuestra aplicación ofrece una amplia gama de servicios, incluyendo entretenimiento, cultura, salud, educación, orientación y seguridad.
@@ -80,4 +92,5 @@ Si tienes alguna pregunta, sugerencia o simplemente quieres contactarnos, no dud
 4. Notificaciones y alertas: La aplicación debe enviar notificaciones y alertas a los usuarios sobre eventos, promociones especiales o actualizaciones relevantes en los lugares que han guardado o en las comunidades a las que se han unido.
 
 5. Facilitar la búsqueda de los usuarios LGBT+ segúun servicios, entretenimiento, salud y espacios seguros en Chile. Los usuarios deben poder buscar y filtrar los lugares según sus necesidades e intereses.
- 
+
+6. Agregar boton de emergencia con un número seguro para contención en casos de violencia, crisis, o pensamientos suicidas.
