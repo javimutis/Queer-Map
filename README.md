@@ -1,3 +1,5 @@
+<div align="justify">
+
 ![Queermap Banner](Queermapbanner.png)
 
 ## Storytelling
@@ -6,7 +8,7 @@ En un mundo donde la diversidad y la inclusión son valores fundamentales, surge
 
 El camino hacia la aceptación y el amor propio puede ser desafiante, especialmente cuando se enfrentan obstáculos y discriminación. En Queermap, nos inspira la idea de que todos merecen tener acceso a servicios, entretenimiento, cultura, goce y espacios de salud donde puedan ser elles mismos sin temor al juicio o la exclusión.
 
-### Esta es la historia de Camila
+## Esta es la historia de Camila:
 
 En un rincón de Viña del mar, una joven lesbiana llamada Camila buscaba desesperadamente un espacio seguro donde poder ser ella misma, expresar su amor y conectar con otros individuos que compartieran su realidad. Pero se encontró con un muro de discriminación y desconocimiento. Fue entonces cuando descubrió Queermap, un mapa digital que prometía una experiencia transformadora.
 
@@ -94,3 +96,6 @@ Si tienes alguna pregunta, sugerencia o simplemente quieres contactarnos, no dud
 5. Facilitar la búsqueda de los usuarios LGBT+ segúun servicios, entretenimiento, salud y espacios seguros en Chile. Los usuarios deben poder buscar y filtrar los lugares según sus necesidades e intereses.
 
 6. Agregar boton de emergencia con un número seguro para contención en casos de violencia, crisis, o pensamientos suicidas.
+
+
+</div>
