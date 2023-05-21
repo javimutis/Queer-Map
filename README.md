@@ -2,7 +2,7 @@
 
 ![Queermap Banner](Queermapbanner.png)
 
-## Storytelling
+## Presentación
 
 En un mundo donde la diversidad y la inclusión son valores fundamentales, surge Queermap como una herramienta para la comunidad LGBTIQ+. Nuestra aplicación surge de la necesidad de proporcionar espacios seguros y acogedores para todas las personas que se identifican dentro de esta comunidad vibrante y diversa.
 
