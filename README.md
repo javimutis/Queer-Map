@@ -8,12 +8,14 @@ En un mundo donde la diversidad y la inclusión son valores fundamentales, surge
 
 El camino hacia la aceptación y el amor propio puede ser desafiante, especialmente cuando se enfrentan obstáculos y discriminación. En Queermap, nos inspira la idea de que todos merecen tener acceso a servicios, entretenimiento, cultura, goce y espacios de salud donde puedan ser elles mismos sin temor al juicio o la exclusión.
 
+  
 ## Detalles de la Aplicación
 
 Queermap es una aplicación móvil diseñada específicamente para ayudar a las personas LGBTIQ+ a encontrar lugares seguros y amigables en su área local y en todo el país. Nuestra aplicación ofrece una amplia gama de servicios, incluyendo entretenimiento, cultura, salud, educación, orientación y seguridad.
 
 Comprendemos la importancia de encontrar lugares donde la comunidad LGBTIQ+ pueda expresarse libremente, conectarse con otros miembros de la comunidad y acceder a recursos que promuevan el bienestar y la felicidad. Estamos comprometidos a proporcionar información actualizada y precisa para que cada usuario pueda explorar, experimentar y disfrutar de todo lo que la comunidad tiene para ofrecer.
 
+  
 ## Información sobre la realidad en Chile
 
 En Chile pesar de los avances legales y sociales, la discriminación y la violencia aún son una realidad para muchas personas de la comunidad. Es importante mencionar algunos aspectos relevantes de la realidad chilena:
@@ -29,6 +31,7 @@ En Chile pesar de los avances legales y sociales, la discriminación y la violen
 
 ![cluster](clustermap.png)
 
+  
 ## Referencias y Recursos
 
 - [Fundación Todo Mejora - www.todomejora.org]: Prevención del suicidio y discriminación hacia jóvenes LGBT+. 
@@ -47,7 +50,8 @@ En Chile pesar de los avances legales y sociales, la discriminación y la violen
 
 Recuerda que nuestra aplicación está en constante evolución y mejoramiento. Valoramos tus comentarios y sugerencias para que podamos seguir construyendo un espacio inclusivo y seguro para la comunidad LGBTIQ+.
   
-  ## Esta es la historia de Camila:
+  
+## Esta es la historia de Camila
 
 En un rincón de Viña del mar, una joven lesbiana llamada Camila buscaba desesperadamente un espacio seguro donde poder ser ella misma, expresar su amor y conectar con otros individuos que compartieran su realidad. Pero se encontró con un muro de discriminación y desconocimiento. Fue entonces cuando descubrió Queermap, un mapa digital que prometía una experiencia transformadora.
 
@@ -77,6 +81,7 @@ Si tienes alguna pregunta, sugerencia o simplemente quieres contactarnos, no dud
 ## Primer acercamiento a la app
 ![MVP](firstapproach.png)
 
+
 ### Primera entrega MVP
 
 1. Registro y perfil de usuario: Crear el login. Los usuarios deben poder registrarse en la aplicación y crear un perfil personalizado.
@@ -96,6 +101,8 @@ Si tienes alguna pregunta, sugerencia o simplemente quieres contactarnos, no dud
 5. Facilitar la búsqueda de los usuarios LGBT+ segúun servicios, entretenimiento, salud y espacios seguros en Chile. Los usuarios deben poder buscar y filtrar los lugares según sus necesidades e intereses.
 
 6. Agregar boton de emergencia con un número seguro para contención en casos de violencia, crisis, o pensamientos suicidas.
+  
+7. Demarcar zonas de peligro para la comunidad LGBT 
 
 
 </div>
