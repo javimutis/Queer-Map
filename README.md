@@ -62,3 +62,22 @@ Si tienes alguna pregunta, sugerencia o simplemente quieres contactarnos, no dud
 
 ## Primer acercamiento a la app
 ![MVP](firstapproach.png)
+
+### Primera entrega MVP
+
+1. Registro y perfil de usuario: Crear el login. Los usuarios deben poder registrarse en la aplicación y crear un perfil personalizado.
+
+2. Funcionalidad principal: Integrar el mapa interactivo a la aplicación
+
+### Entregas a futuro e ideas a integrar
+
+1. El perfil permite guardar los lugares favoritos, unirse a comunidades y recibir recomendaciones personalizadas.
+
+2. Información detallada de los lugares: Cada lugar en el mapa debe tener una página de información detallada que incluya descripción, fotos, horarios, comentarios y calificaciones de otros usuarios. Esto permitirá a los usuarios tomar decisiones informadas sobre los lugares que deseen visitar.
+
+3. Funcionalidades sociales: La aplicación debe incluir funciones sociales que fomenten la interacción entre los usuarios. Esto puede incluir la capacidad de seguir a otros usuarios, dejar comentarios y calificaciones, y compartir lugares en redes sociales.
+
+4. Notificaciones y alertas: La aplicación debe enviar notificaciones y alertas a los usuarios sobre eventos, promociones especiales o actualizaciones relevantes en los lugares que han guardado o en las comunidades a las que se han unido.
+
+5. Facilitar la búsqueda de los usuarios LGBT+ segúun servicios, entretenimiento, salud y espacios seguros en Chile. Los usuarios deben poder buscar y filtrar los lugares según sus necesidades e intereses.
+ 
