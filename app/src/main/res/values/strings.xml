@@ -1,3 +1,24 @@
 <resources>
     <string name="app_name">QueerMap</string>
+    <string name="back_button">back button</string>
+    <string name="login_title">Iniciar sesión</string>
+    <string name="email_hint">queermap@gmail.com</string>
+    <string name="password_hint">Contraseña</string>
+    <string name="password">Contraseña</string>
+    <string name="remember_me">Recuérdame</string>
+    <string name="forgot_password">Olvidaste la contraseña?</string>
+    <string name="login_button">Ingresar</string>
+    <string name="facebook">Facebook</string>
+    <string name="google">Google</string>
+    <string name="instagram">Instagram</string>
+    <string name="signup">Regístrate</string>
+    <string name="logmail">Ingresa tu correo</string>
+
+    <string name="no_account">No tienes cuenta?</string>
+
+    <string name="or_connect_with">O conéctate con</string>
+
+
+
+
 </resources>
