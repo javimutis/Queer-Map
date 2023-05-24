@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "266619159161",
+    "project_id": "queermap-79409",
+    "storage_bucket": "queermap-79409.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:266619159161:android:0262d9f483292f7cb90aa8",
+        "android_client_info": {
+          "package_name": "com.cursoandroid.queermap"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "266619159161-hps71dmm39aphf1l0vbrsl4n62qcatkq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCSRXPj9hz4SHhW3EBtqliYQ3S8pEdQ75Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "266619159161-hps71dmm39aphf1l0vbrsl4n62qcatkq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
