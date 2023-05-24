@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?><!-- El diseño XML para la actividad del Signin, que contendrá elementos como EditText para el registro de correo electrónico y contraseña, botón para registrar, opción para restablecer la contraseña y opciones para registrarse con Google, Facebook o Instagram.-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+</LinearLayout>

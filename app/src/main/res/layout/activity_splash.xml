@@ -1,0 +1,30 @@
+<!-- Splash -->
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/splash"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/backgroundapp"
+    android:clipToOutline="true">
+
+    <View
+        android:id="@+id/logo"
+        android:layout_width="354dp"
+        android:layout_height="354dp"
+        android:layout_centerInParent="true"
+        android:background="@drawable/queermap_logo" />
+
+    <!-- <View
+            android:id="@+id/ui_bars_hom"
+            android:layout_width="match_parent"
+            android:layout_height="34dp"
+            android:layout_marginBottom="10dp"
+            android:layout_alignParentBottom="true"
+            android:background="@drawable/baseline_minimize_24" />-->
+
+    </RelativeLayout>
+
+
+
+
+
+
