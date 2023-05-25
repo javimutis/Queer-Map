@@ -13,14 +13,6 @@
         android:layout_centerInParent="true"
         android:background="@drawable/queermap_logo" />
 
-    <!-- <View
-            android:id="@+id/ui_bars_hom"
-            android:layout_width="match_parent"
-            android:layout_height="34dp"
-            android:layout_marginBottom="10dp"
-            android:layout_alignParentBottom="true"
-            android:background="@drawable/baseline_minimize_24" />-->
-
     </RelativeLayout>
 
 
