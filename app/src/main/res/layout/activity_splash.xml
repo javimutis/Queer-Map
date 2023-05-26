@@ -3,13 +3,13 @@
     android:id="@+id/splash"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/backgroundapp"
+    android:background="@color/background_color"
     android:clipToOutline="true">
 
     <View
         android:id="@+id/logo"
-        android:layout_width="354dp"
-        android:layout_height="354dp"
+        android:layout_width="@dimen/layout_dp354"
+        android:layout_height="@dimen/layout_dp354"
         android:layout_centerInParent="true"
         android:background="@drawable/queermap_logo" />
 

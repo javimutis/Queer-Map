@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.cursoandroid.queermap.R
 
-/*Aquí implementarás la lógica del registro de nuevos usuarios, como validar los campos de entrada, crear una cuenta utilizando Firebase Authentication y manejar las opciones de registro con Google, Facebook o Instagram.*/
+/*Aquí implementarás la lógica del registro de nuevos usuarios, como validar los campos de entrada, crear una cuenta utilizando Firebase Authentication y manejar las opciones de registro con Google o Facebook*/
 /*Implementa la lógica del registro de nuevos usuarios.
 En el método onCreate, configura el Data Binding para el diseño XML de activity_signin.xml. Vincula los elementos de la interfaz de usuario, como los EditText para el correo electrónico y la contraseña, y el botón para registrar.
 Implementa los métodos para manejar eventos de botones, como el método onClickListener para el botón de registro.

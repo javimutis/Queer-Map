@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Splash layout dp-->
+    <dimen name="layout_dp354">354dp</dimen>
+    <!-- Login layout dp-->
+    <dimen name="layout_dp30">30dp</dimen>
+    <dimen name="layout_dp35">35dp</dimen>
+    <dimen name="layout_dp40">40dp</dimen>
+    <dimen name="layout_dp48">48dp</dimen>
+    <dimen name="layout_dp70">70dp</dimen>
+    <dimen name="layout_dp90">90dp</dimen>
+    <dimen name="layout_dp130">130dp</dimen>
+
+    <!-- Cover top dp-->
+    <dimen name="margin_top_dp16">16dp</dimen>
+    <dimen name="margin_top_dp20">20dp</dimen>
+    <dimen name="margin_top_dp25">25dp</dimen>
+    <dimen name="margin_top_dp55">55dp</dimen>
+    <dimen name="margin_top_dp140">140dp</dimen>
+    <!-- Login top dp-->
+    <dimen name="margin_top_dp5">5dp</dimen>
+    <dimen name="margin_top_dp10">10dp</dimen>
+    <dimen name="margin_top_dp30">30dp</dimen>
+    <dimen name="margin_top_dp40">40dp</dimen>
+    <dimen name="margin_top_dp45">45dp</dimen>
+    <dimen name="margin_top_dp70">70dp</dimen>
+    <dimen name="margin_top_dp105">105dp</dimen>
+    <dimen name="margin_top_dp250">250dp</dimen>
+
+    <!-- Cover start dp-->
+    <dimen name="margin_start_dp16">16dp</dimen>
+    <dimen name="margin_start_dp25">25dp</dimen>>
+    <dimen name="margin_start_dp32">32dp</dimen>
+    <!-- Login  start dp-->
+    <dimen name="margin_start_dp10">10dp</dimen>
+    <dimen name="margin_start_dp70">70dp</dimen>
+    <dimen name="margin_start_dp105">105dp</dimen>
+
+    <!-- Cover end dp-->
+    <dimen name="margin_end_dp25">25dp</dimen>>
+    <dimen name="margin_end_dp32">32dp</dimen>
+    <!-- Login  end dp-->
+    <dimen name="margin_end_dp70">70dp</dimen>
+
+    <!-- Cover text sp-->
+    <dimen name="text_sp22">22sp</dimen>
+    <dimen name="text_sp37">37sp</dimen>
+    <!-- Login text sp-->
+    <dimen name="text_sp35">35sp</dimen>
+    <dimen name="text_sp15">15sp</dimen>
+    <dimen name="text_sp16">16sp</dimen>
+    <dimen name="text_sp20">20sp</dimen>
+
+
+
+</resources>
+
+
+
+
+

@@ -5,8 +5,9 @@ package com.cursoandroid.queermap.ui.activities
 En el método onCreate, configura el Data Binding para el diseño XML de activity_login.xml. Vincula los elementos de la interfaz de usuario, como los EditText para el correo electrónico y la contraseña, y los botones para iniciar sesión y opciones de inicio de sesión social.
 Implementa los métodos para manejar eventos de botones, como el método onClickListener para el botón de inicio de sesión.
 En el método onClickListener del botón de inicio de sesión, obtén los valores de los campos de entrada, valida los datos utilizando la clase ValidationUtils, y luego utiliza los métodos de Firebase Authentication para autenticar al usuario.
-Para las opciones de inicio de sesión social (Google, Facebook, Instagram), utiliza las correspondientes API y SDK proporcionados por cada plataforma.*/
+Para las opciones de inicio de sesión social (Google, Facebook), utiliza las correspondientes API y SDK proporcionados por cada plataforma.*/
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
@@ -18,7 +19,16 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
+        //Imagen inicio sesión Picasso
         val loginImage: ImageView = findViewById(R.id.loginImage)
         Picasso.get().load(R.drawable.login_cover).into(loginImage)
+
+        // Flecha volver atrás
+        val backButton: ImageView = findViewById(R.id.backButton)
+        backButton.setOnClickListener {
+            val intent = Intent(this, CoverActivity::class.java)
+            startActivity(intent)
+            finish() // Termina la actividad
+        }
     }
 }
