@@ -21,10 +21,9 @@ class SplashActivity : AppCompatActivity() {
 
         // Iniciar la animación del splash
         Handler().postDelayed({
-            // Aquí puedes realizar acciones adicionales, como verificar si el usuario está autenticado o realizar otras operaciones de inicialización
 
             // Abrir la siguiente actividad
-            val intent = Intent(this, MainActivity::class.java)
+            val intent = Intent(this, CoverActivity::class.java)
             startActivity(intent)
 
             // Aplicar la animación de transición
@@ -35,4 +34,3 @@ class SplashActivity : AppCompatActivity() {
         }, SPLASH_DURATION.toLong())
     }
 }
-
