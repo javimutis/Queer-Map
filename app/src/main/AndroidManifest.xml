@@ -16,8 +16,8 @@
 
         <activity
             android:name=".ui.activities.SplashActivity"
-            android:screenOrientation="portrait"
-            android:exported="true">
+            android:exported="true"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -27,8 +27,16 @@
 
         <activity
             android:name=".ui.activities.CoverActivity"
-            android:screenOrientation="portrait">
-        </activity>
+            android:screenOrientation="portrait"></activity>
+
+        <activity
+            android:name=".ui.activities.LoginActivity"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".ui.activities.SigninActivity"
+            android:screenOrientation="portrait" />
+
     </application>
 
 </manifest>

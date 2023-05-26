@@ -1,6 +1,4 @@
 
-{
-Kapp/src/main/java/com/cursoandroid/queermap/ui/activities/SigninActivity.kt,1\a\1a2dce9de46beb3621c125f0b5e1604f3124f44d
 t
 Dapp/src/main/java/com/cursoandroid/queermap/utils/ValidationUtils.kt,f\2\f2407117efea5bfb559936ae4d7a9737dea11f9f
 x

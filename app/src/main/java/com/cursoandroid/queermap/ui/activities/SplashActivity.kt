@@ -13,7 +13,7 @@ En el método onCreate, utiliza un Handler para retrasar la transición a la act
 Asegúrate de agregar la actividad SplashActivity al archivo AndroidManifest.xml.*/
 class SplashActivity : AppCompatActivity() {
 
-    private val SPLASH_DURATION = 3000 // Duración de la animación del splash en milisegundos
+    private val SPLASH_DURATION = 4000 // Duración de la animación del splash en milisegundos
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
