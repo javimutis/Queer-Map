@@ -1,3 +1,36 @@
 <resources>
+    <!-- Texto -->
     <string name="app_name">QueerMap</string>
+    <!-- activity_cover -->
+    <string name="welcome">Bienvenid@ a QueerMap, conectando a la comunidad LGBTIQ+ en un solo lugar.</string>
+    <string name="login_title">Iniciar sesión</string>
+    <string name="signincover">Regístrate</string>
+    <!-- activity_login -->
+    <!-- login_title -->
+    <string name="insert_mail">Ingresa tu correo electrónico</string>
+    <string name="email_hint">queermap@gmail.com</string>
+    <string name="password">Contraseña</string>
+    <string name="password_hint">********</string>
+    <string name="remember_me"> Recuérdame</string>
+    <string name="forgot_password">Olvidaste la contraseña?</string>
+    <string name="login_button">Ingresar</string>
+    <string name="no_account">No tienes cuenta?</string>
+    <string name="signup">Regístrate</string>
+
+    <!-- Content Description -->
+    <string name="google">Google</string>
+    <string name="facebook">Facebook</string>
+
+
+
+
+
+
+
+
+
+
+    <string name="or_connect_with">O conéctate con</string>
+
+
 </resources>

@@ -6,5 +6,19 @@ En el método onCreate, configura el Data Binding para el diseño XML de activit
 Implementa los métodos para manejar eventos de botones, como el método onClickListener para el botón de inicio de sesión.
 En el método onClickListener del botón de inicio de sesión, obtén los valores de los campos de entrada, valida los datos utilizando la clase ValidationUtils, y luego utiliza los métodos de Firebase Authentication para autenticar al usuario.
 Para las opciones de inicio de sesión social (Google, Facebook, Instagram), utiliza las correspondientes API y SDK proporcionados por cada plataforma.*/
-class LoginActivity {
+
+import android.os.Bundle
+import android.widget.ImageView
+import androidx.appcompat.app.AppCompatActivity
+import com.cursoandroid.queermap.R
+import com.squareup.picasso.Picasso
+
+class LoginActivity : AppCompatActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_login)
+
+        val loginImage: ImageView = findViewById(R.id.loginImage)
+        Picasso.get().load(R.drawable.login_cover).into(loginImage)
+    }
 }
