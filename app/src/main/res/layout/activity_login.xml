@@ -113,7 +113,7 @@
             android:minHeight="@dimen/layout_dp48"
             android:textColor="@color/text_color"
             android:textColorHint="@color/text_color"
-            android:textSize="@dimen/text_sp20" />
+            android:textSize="@dimen/text_sp16" />
 
         <LinearLayout
             android:id="@+id/remember_box"
@@ -159,7 +159,7 @@
             android:layout_marginTop="@dimen/margin_top_dp30"
             android:layout_marginEnd="@dimen/margin_end_dp32"
             android:background="@drawable/neumorphism_button"
-            android:fontFamily="@font/raleway_semi_bold_italic"
+            android:fontFamily="@font/raleway_medium_italic"
             android:text="@string/login_button"
             android:textColor="@color/button_text"
             android:textSize="@dimen/text_sp20" />
