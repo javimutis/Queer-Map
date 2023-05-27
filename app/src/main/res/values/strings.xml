@@ -14,23 +14,14 @@
     <string name="remember_me"> Recuérdame</string>
     <string name="forgot_password">Olvidaste la contraseña?</string>
     <string name="login_button">Ingresar</string>
+    <string name="or_connect_with">O conéctate con</string>
     <string name="no_account">No tienes cuenta?</string>
     <string name="signup">Regístrate</string>
+    <string name="reset_password">Recuperar contraseña</string>
+    <string name="cancel">Cancelar</string>
 
     <!-- Content Description -->
     <string name="google">Google</string>
     <string name="facebook">Facebook</string>
-
-
-
-
-
-
-
-
-
-
-    <string name="or_connect_with">O conéctate con</string>
-
 
 </resources>

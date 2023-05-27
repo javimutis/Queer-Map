@@ -27,7 +27,7 @@ class CoverActivity : AppCompatActivity() {
             val revealAnimation = AnimationUtils.loadAnimation(this, android.R.anim.fade_in)
             titleTextView.visibility = View.VISIBLE
             titleTextView.startAnimation(revealAnimation)
-        }, 1000)
+        }, 1500)
 
         val loginButton: Button = findViewById(R.id.cover_login_button)
         val signinButton: Button = findViewById(R.id.cover_signin_button)
