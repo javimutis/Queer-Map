@@ -24,4 +24,9 @@
     <string name="google">Google</string>
     <string name="facebook">Facebook</string>
 
+    <string name="facebook_app_id">1685107905264186</string>
+    <string name="fb_login_protocol_scheme">1685107905264186</string>
+    <string name="default_web_client_id">TU_CLIENT_ID</string>
+
+
 </resources>
