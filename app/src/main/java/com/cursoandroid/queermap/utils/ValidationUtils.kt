@@ -1,20 +1,40 @@
 package com.cursoandroid.queermap.utils
 
-/* Una clase de utilidad donde puedes implementar funciones para validar los campos de entrada, como el formato del correo electrónico y la fortaleza de la contraseña. */
+import android.util.Patterns
+
 object ValidationUtils {
     private const val PASSWORD_MIN_LENGTH = 6
 
     fun isValidEmail(email: String): Boolean {
-        val emailRegex = "[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}"
-        return email.matches(emailRegex.toRegex())
+        return Patterns.EMAIL_ADDRESS.matcher(email).matches()
     }
 
     fun isValidPassword(password: String): Boolean {
-        return password.length >= PASSWORD_MIN_LENGTH && isStrongPassword(password)
+        return password.length >= PASSWORD_MIN_LENGTH
     }
 
-    fun isStrongPassword(password: String): Boolean {
+    fun isValidSignName(name: String): Boolean {
+        return name.isNotEmpty()
+    }
+
+    fun isValidSignUsername(username: String): Boolean {
+        return username.isNotEmpty()
+    }
+
+    fun isValidSignEmail(email: String): Boolean {
+        return Patterns.EMAIL_ADDRESS.matcher(email).matches()
+    }
+
+    fun isValidSignPassword(password: String): Boolean {
+        return password.length >= 8
+    }
+
+    fun isStrongSignPassword(password: String): Boolean {
         val passwordRegex = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\\S+$).{8,}$"
         return password.matches(passwordRegex.toRegex())
+    }
+
+    fun isValidSignBirthday(birthday: String): Boolean {
+        return birthday.isNotEmpty()
     }
 }

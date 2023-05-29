@@ -108,7 +108,7 @@
             android:layout_marginTop="@dimen/margin_top_dp5"
             android:layout_marginEnd="@dimen/margin_end_dp32"
             android:background="@drawable/neumorphism_edit_text"
-            android:fontFamily="@font/raleway_bold_italic"
+            android:fontFamily="@font/raleway_italic"
             android:hint="@string/password_hint"
             android:inputType="textPassword"
             android:minHeight="@dimen/layout_dp48"
@@ -172,7 +172,7 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/login_button"
             android:layout_marginTop="10dp"
-            android:text="@string/or_connect_with"
+            android:text="O conéctate usando:"
             android:textAlignment="center"
             android:textSize="@dimen/text_sp15"
             android:textColor="@color/title_color"
@@ -197,24 +197,26 @@
 
             <ImageButton
                 android:id="@+id/googleSignInButton"
-                android:layout_width="38dp"
-                android:layout_height="38dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
                 android:background="@drawable/google_icon"
                 android:contentDescription="Iniciar sesión con Google"
-                android:scaleType="fitCenter" />
+                android:scaleType="fitCenter"
+                tools:ignore="TouchTargetSizeCheck" />
 
             <Space
-                android:layout_width="30dp"
+                android:layout_width="35dp"
                 android:layout_height="match_parent" />
 
             <ImageButton
                 android:id="@+id/facebookLoginButton"
-                android:layout_width="32dp"
-                android:layout_height="27dp"
+                android:layout_width="34dp"
+                android:layout_height="29dp"
                 android:layout_marginTop="5dp"
                 android:background="@drawable/facebook_icon"
                 android:contentDescription="Iniciar sesión con Facebook"
-                android:scaleType="fitCenter" />
+                android:scaleType="fitCenter"
+                tools:ignore="TouchTargetSizeCheck" />
 
             <Space
                 android:layout_width="0dp"
@@ -250,10 +252,12 @@
                 android:layout_width="@dimen/layout_dp90"
                 android:layout_height="@dimen/layout_dp30"
                 android:layout_marginTop="10dp"
-                android:textSize="@dimen/text_sp16"
                 android:fontFamily="@font/raleway_bold_italic"
+                android:onClick="goToSignInActivity"
                 android:text="@string/signup"
-                android:textColor="@color/title_color" />
+                android:textColor="@color/title_color"
+                android:textSize="@dimen/text_sp16"
+                tools:ignore="TouchTargetSizeCheck" />
         </LinearLayout>
 
 

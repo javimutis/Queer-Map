@@ -37,36 +37,43 @@ class LoginActivity : AppCompatActivity(), FacebookCallback<LoginResult> {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
+        // Initialize Firebase Authentication
         auth = FirebaseAuth.getInstance()
 
+        // Configure Google Sign-In options
         val googleSignInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(getString(R.string.default_web_client_id))
             .requestEmail()
             .build()
 
+        // Initialize Facebook callback manager and Google sign-in client
         callbackManager = CallbackManager.Factory.create()
         googleSignInClient = GoogleSignIn.getClient(this, googleSignInOptions)
 
+        // Get references to UI elements
         emailEditText = findViewById(R.id.emailEditText)
         passwordEditText = findViewById(R.id.passwordEditText)
         rememberCheckBox = findViewById(R.id.rememberCheckBox)
 
+        // Set click listener for the login button
         val loginButton: Button = findViewById(R.id.login_button)
         loginButton.setOnClickListener {
-            val email = emailEditText.text.toString()
-            val password = passwordEditText.text.toString()
+            val email = emailEditText.text.toString().trim()
+            val password = passwordEditText.text.toString().trim()
 
+            // Validate email and password format
             if (ValidationUtils.isValidEmail(email) && ValidationUtils.isValidPassword(password)) {
                 signInWithEmailAndPassword(email, password)
             } else {
                 Toast.makeText(
                     this,
-                    "Por favor, ingresa un correo electrónico válido y una contraseña segura.",
+                    "Por favor, ingresa un correo electrónico válido y una contraseña.",
                     Toast.LENGTH_SHORT
                 ).show()
             }
         }
 
+        // Set click listener for Google sign-in button
         val googleSignInButton: ImageButton = findViewById(R.id.googleSignInButton)
         Picasso.get().load(R.drawable.google_icon).into(googleSignInButton)
         googleSignInButton.setOnClickListener {
@@ -74,15 +81,18 @@ class LoginActivity : AppCompatActivity(), FacebookCallback<LoginResult> {
             startActivityForResult(signInIntent, RC_GOOGLE_SIGN_IN)
         }
 
+        // Set click listener for Facebook login button
         val facebookLoginButton: ImageButton = findViewById(R.id.facebookLoginButton)
         Picasso.get().load(R.drawable.facebook_icon).into(facebookLoginButton)
         facebookLoginButton.setOnClickListener {
             LoginManager.getInstance().logInWithReadPermissions(this, listOf("public_profile", "email"))
         }
 
+        // Load and display the login cover image
         val loginImage: ImageView = findViewById(R.id.loginImage)
         Picasso.get().load(R.drawable.login_cover).into(loginImage)
 
+        // Set click listener for the back button
         val backButton: ImageView = findViewById(R.id.backButton)
         backButton.setOnClickListener {
             val intent = Intent(this, CoverActivity::class.java)
@@ -90,6 +100,7 @@ class LoginActivity : AppCompatActivity(), FacebookCallback<LoginResult> {
             finish()
         }
 
+        // Set click listener for the forgot password text view
         forgotPasswordDialog = Dialog(this)
         forgotPasswordDialog.setContentView(R.layout.forgot_password)
 
@@ -97,8 +108,10 @@ class LoginActivity : AppCompatActivity(), FacebookCallback<LoginResult> {
         forgotPasswordTextView.setOnClickListener {
             showForgotPasswordDialog()
         }
+
     }
 
+    // Sign in with email and password
     private fun signInWithEmailAndPassword(email: String, password: String) {
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
@@ -109,12 +122,13 @@ class LoginActivity : AppCompatActivity(), FacebookCallback<LoginResult> {
                     finish()
                 } else {
                     Toast.makeText(
-                        this, "Error al iniciar sesión. Verifica tus credenciales.",
+                        this, "Error al iniciar sesión. Verifica tus datos.",
                         Toast.LENGTH_SHORT
                     ).show()
                 }
             }
 
+        // Save user credentials if "Remember Me" checkbox is checked
         val rememberMe = rememberCheckBox.isChecked
 
         if (rememberMe) {
@@ -124,6 +138,7 @@ class LoginActivity : AppCompatActivity(), FacebookCallback<LoginResult> {
         Toast.makeText(this, "Iniciando sesión...", Toast.LENGTH_SHORT).show()
     }
 
+    // Save user credentials to SharedPreferences
     private fun saveCredentials(email: String, password: String) {
         val sharedPref = getSharedPreferences("login", Context.MODE_PRIVATE)
         val editor = sharedPref.edit()
@@ -132,6 +147,7 @@ class LoginActivity : AppCompatActivity(), FacebookCallback<LoginResult> {
         editor.apply()
     }
 
+    // Load saved user credentials from SharedPreferences
     private fun loadSavedCredentials() {
         val sharedPref = getSharedPreferences("login", Context.MODE_PRIVATE)
         val email = sharedPref.getString("email", "")
@@ -142,6 +158,7 @@ class LoginActivity : AppCompatActivity(), FacebookCallback<LoginResult> {
         rememberCheckBox.isChecked = true
     }
 
+    // Check if the user is already logged in
     private fun checkUserLoggedIn() {
         val currentUser = auth.currentUser
 
@@ -162,14 +179,17 @@ class LoginActivity : AppCompatActivity(), FacebookCallback<LoginResult> {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
+        // Handle Google Sign-In result
         if (requestCode == RC_GOOGLE_SIGN_IN) {
             val task = GoogleSignIn.getSignedInAccountFromIntent(data)
             handleGoogleSignInResult(task)
         } else {
+            // Pass the activity result to the Facebook callback manager
             callbackManager.onActivityResult(requestCode, resultCode, data)
         }
     }
 
+    // Handle the result of a Google Sign-In attempt
     private fun handleGoogleSignInResult(task: Task<GoogleSignInAccount>?) {
         try {
             val account = task?.getResult(ApiException::class.java)
@@ -179,12 +199,13 @@ class LoginActivity : AppCompatActivity(), FacebookCallback<LoginResult> {
             }
         } catch (e: ApiException) {
             Toast.makeText(
-                this, "Error al iniciar sesión con Google. Verifica tus credenciales.",
+                this, "Error al iniciar sesión con Google. Verifica tus datos.",
                 Toast.LENGTH_SHORT
             ).show()
         }
     }
 
+    // Sign in with Firebase using Google credentials
     private fun firebaseAuthWithGoogle(idToken: String) {
         val credential = GoogleAuthProvider.getCredential(idToken, null)
         auth.signInWithCredential(credential)
@@ -204,6 +225,7 @@ class LoginActivity : AppCompatActivity(), FacebookCallback<LoginResult> {
             }
     }
 
+    // Facebook login success callback
     override fun onSuccess(loginResult: LoginResult) {
         val accessToken = loginResult.accessToken
         val intent = Intent(this@LoginActivity, MapActivity::class.java)
@@ -211,6 +233,7 @@ class LoginActivity : AppCompatActivity(), FacebookCallback<LoginResult> {
         finish()
     }
 
+    // Facebook login cancellation callback
     override fun onCancel() {
         Toast.makeText(
             this@LoginActivity, "Inicio de sesión con Facebook cancelado.",
@@ -218,13 +241,15 @@ class LoginActivity : AppCompatActivity(), FacebookCallback<LoginResult> {
         ).show()
     }
 
+    // Facebook login error callback
     override fun onError(error: FacebookException) {
         Toast.makeText(
-            this@LoginActivity, "Error al iniciar sesión con Facebook. Verifica tus credenciales.",
+            this@LoginActivity, "Error al iniciar sesión con Facebook. Verifica tus datos.",
             Toast.LENGTH_SHORT
         ).show()
     }
 
+    // Show the forgot password dialog
     private fun showForgotPasswordDialog() {
         val resetButton: Button = forgotPasswordDialog.findViewById(R.id.resetPasswordButton)
         val cancelButton: Button = forgotPasswordDialog.findViewById(R.id.cancelButton)
@@ -247,6 +272,7 @@ class LoginActivity : AppCompatActivity(), FacebookCallback<LoginResult> {
         forgotPasswordDialog.show()
     }
 
+    // Send a password reset email to the user
     private fun sendPasswordResetEmail(email: String) {
         auth.sendPasswordResetEmail(email)
             .addOnCompleteListener { task ->
@@ -265,4 +291,11 @@ class LoginActivity : AppCompatActivity(), FacebookCallback<LoginResult> {
                 }
             }
     }
+
+    // Go to the SigninActivity
+    fun goToSignInActivity(view: android.view.View) {
+        val intent = Intent(this, SigninActivity::class.java)
+        startActivity(intent)
+    }
 }
+

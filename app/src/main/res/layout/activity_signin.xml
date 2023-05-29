@@ -1,8 +1,325 @@
-<?xml version="1.0" encoding="utf-8"?><!-- El diseño XML para la actividad del Signin, que contendrá elementos como EditText para el registro de correo electrónico y contraseña, botón para registrar, opción para restablecer la contraseña y opciones para registrarse con Google, Facebook o Instagram.-->
-
+<?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#EFE1EA">
+    android:background="@color/background_color">
+
+    <!-- Imagen de portada con flecha para ir atrás -->
+    <RelativeLayout
+        android:id="@+id/signinCover"
+        android:layout_width="match_parent"
+        android:layout_height="75dp">
+
+        <!-- Flecha para volver atrás -->
+        <ImageView
+            android:id="@+id/backButton"
+            android:layout_width="@dimen/layout_dp35"
+            android:layout_height="@dimen/layout_dp35"
+            android:layout_marginStart="@dimen/margin_start_dp16"
+            android:layout_marginTop="@dimen/margin_top_dp16"
+            android:src="@drawable/ic_arrow_back" />
+
+        <!-- Título: Registro -->
+        <TextView
+            android:id="@+id/titleTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="26dp"
+            android:fontFamily="@font/raleway_medium_italic"
+            android:letterSpacing="0.05"
+            android:shadowColor="@color/background_color"
+            android:text="Registro"
+            android:textColor="@color/title_color"
+            android:textSize="35dp" />
+    </RelativeLayout>
+
+    <!-- Resto del contenido del registro -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/signinCover">
+
+        <!-- Casillero de nombre de usuario -->
+        <TextView
+            android:id="@+id/user_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/margin_start_dp32"
+            android:layout_marginTop="12dp"
+            android:layout_marginEnd="@dimen/margin_end_dp32"
+            android:fontFamily="@font/raleway_medium"
+            android:text="Nombre de usuario"
+            android:textColor="@color/title_color"
+            android:textSize="@dimen/text_sp16" />
+
+        <EditText
+            android:id="@+id/userEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/user_name"
+            android:layout_marginStart="@dimen/margin_start_dp32"
+            android:layout_marginTop="@dimen/margin_top_dp5"
+            android:layout_marginEnd="@dimen/margin_end_dp32"
+            android:background="@drawable/neumorphism_edit_text"
+            android:fontFamily="@font/raleway_light_italic"
+            android:hint="Como quieres que te llamemos?"
+            android:inputType="textEmailAddress"
+            android:minHeight="40dp"
+            android:textColor="@color/text_color"
+            android:textColorHint="@color/text_color"
+            android:textSize="@dimen/text_sp16" />
+
+        <!-- Título: nombre completo -->
+        <TextView
+            android:id="@+id/full_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/userEditText"
+            android:layout_marginStart="@dimen/margin_start_dp32"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="@dimen/margin_end_dp32"
+            android:fontFamily="@font/raleway_medium"
+            android:text="Nombre Completo"
+            android:textColor="@color/title_color"
+            android:textSize="@dimen/text_sp16" />
+
+        <EditText
+            android:id="@+id/nameEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/full_name"
+            android:layout_marginStart="@dimen/margin_start_dp32"
+            android:layout_marginTop="@dimen/margin_top_dp5"
+            android:layout_marginEnd="@dimen/margin_end_dp32"
+            android:background="@drawable/neumorphism_edit_text"
+            android:fontFamily="@font/raleway_italic"
+            android:hint="Ingresa tu nombre completo"
+            android:inputType="textPassword"
+            android:minHeight="40dp"
+            android:textColor="@color/text_color"
+            android:textColorHint="@color/text_color"
+            android:textSize="@dimen/text_sp16" />
+
+        <!-- Casillero de Contraseña -->
+        <TextView
+            android:id="@+id/password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/nameEditText"
+            android:layout_marginStart="@dimen/margin_start_dp32"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="@dimen/margin_end_dp32"
+            android:fontFamily="@font/raleway_medium"
+            android:text="Contraseña"
+            android:textColor="@color/title_color"
+            android:textSize="@dimen/text_sp16" />
+
+        <EditText
+            android:id="@+id/passwordEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/password"
+            android:layout_marginStart="@dimen/margin_start_dp32"
+            android:layout_marginTop="@dimen/margin_top_dp5"
+            android:layout_marginEnd="@dimen/margin_end_dp32"
+            android:background="@drawable/neumorphism_edit_text"
+            android:fontFamily="@font/raleway_light_italic"
+            android:hint="********"
+            android:inputType="textEmailAddress"
+            android:minHeight="40dp"
+            android:textColor="@color/text_color"
+            android:textColorHint="@color/text_color"
+            android:textSize="@dimen/text_sp16" />
+
+        <!-- Título: Repetir contraseña -->
+        <TextView
+            android:id="@+id/repeat_password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/passwordEditText"
+            android:layout_marginStart="@dimen/margin_start_dp32"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="@dimen/margin_end_dp32"
+            android:fontFamily="@font/raleway_medium"
+            android:text="Repite tu contraseña"
+            android:textColor="@color/title_color"
+            android:textSize="@dimen/text_sp16" />
+
+        <EditText
+            android:id="@+id/repeatPasswordEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/repeat_password"
+            android:layout_marginStart="@dimen/margin_start_dp32"
+            android:layout_marginTop="@dimen/margin_top_dp5"
+            android:layout_marginEnd="@dimen/margin_end_dp32"
+            android:background="@drawable/neumorphism_edit_text"
+            android:fontFamily="@font/raleway_italic"
+            android:hint="@string/password_hint"
+            android:inputType="textPassword"
+            android:minHeight="40dp"
+            android:textColor="@color/text_color"
+            android:textColorHint="@color/text_color"
+            android:textSize="@dimen/text_sp16" />
+
+        <!-- Casillero de Correo Electrónico -->
+
+        <TextView
+            android:id="@+id/log_mail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/repeatPasswordEditText"
+            android:layout_marginStart="@dimen/margin_start_dp32"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="@dimen/margin_end_dp32"
+            android:fontFamily="@font/raleway_medium"
+            android:text="@string/insert_mail"
+            android:textColor="@color/title_color"
+            android:textSize="@dimen/text_sp16" />
+
+        <EditText
+            android:id="@+id/emailEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/log_mail"
+            android:layout_marginStart="@dimen/margin_start_dp32"
+            android:layout_marginTop="@dimen/margin_top_dp5"
+            android:layout_marginEnd="@dimen/margin_end_dp32"
+            android:background="@drawable/neumorphism_edit_text"
+            android:fontFamily="@font/raleway_light_italic"
+            android:hint="@string/email_hint"
+            android:inputType="textEmailAddress"
+            android:minHeight="40dp"
+            android:textColor="@color/text_color"
+            android:textColorHint="@color/text_color"
+            android:textSize="@dimen/text_sp16" />
+
+        <!-- Título: Fecha de nacimiento -->
+        <TextView
+            android:id="@+id/birthday_date"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/emailEditText"
+            android:layout_marginStart="@dimen/margin_start_dp32"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="@dimen/margin_end_dp32"
+            android:fontFamily="@font/raleway_medium"
+            android:text="Fecha de nacimiento"
+            android:textColor="@color/title_color"
+            android:textSize="@dimen/text_sp16" />
+
+        <LinearLayout
+            android:id="@+id/birthday_layout"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_below="@id/birthday_date"
+            android:layout_marginStart="@dimen/margin_start_dp32"
+            android:layout_marginTop="@dimen/margin_top_dp10"
+            android:layout_marginEnd="@dimen/margin_end_dp32"
+            android:background="@drawable/neumorphism_edit_text"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/birthdayEditText"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_marginTop="-5dp"
+                android:layout_weight="9"
+                android:backgroundTint="#02FFFFFF"
+                android:fontFamily="@font/raleway_italic"
+                android:hint="Seleccciona tu fecha de nacimiento"
+                android:textColor="@color/text_color"
+                android:textColorHint="@color/text_color"
+                android:textSize="@dimen/text_sp16" />
+
+            <ImageView
+                android:id="@+id/calendar_icon"
+                android:layout_width="30dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/margin_top_dp10"
+                android:layout_marginTop="2dp"
+                android:layout_weight="1"
+                android:src="@drawable/calendar" />
+
+        </LinearLayout>
+
+        <!-- Botón de Registro -->
+        <Button
+            android:id="@+id/registerButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/birthday_layout"
+            android:layout_marginStart="@dimen/margin_start_dp32"
+            android:layout_marginTop="25dp"
+            android:layout_marginEnd="@dimen/margin_end_dp32"
+            android:background="@drawable/neumorphism_button"
+            android:fontFamily="@font/raleway_medium_italic"
+            android:text="Regístrate"
+            android:textColor="@color/button_text"
+            android:textSize="@dimen/text_sp20" />
+
+        <TextView
+            android:id="@+id/or_connect_with"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/login_button"
+            android:layout_marginTop="10dp"
+            android:fontFamily="@font/raleway_medium_italic"
+            android:text="O regístrate usando:"
+            android:textAlignment="center"
+            android:textColor="@color/title_color"
+            android:textSize="18dp">
+
+        </TextView>
+
+        <!-- Botones de conexión con redes sociales -->
+        <LinearLayout
+            android:id="@+id/socialButtonsLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/or_connect_with"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="@dimen/margin_top_dp10"
+            android:orientation="horizontal">
+
+            <Space
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1" />
+
+            <ImageButton
+                android:id="@+id/googleSignInButton"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/google_icon"
+                android:contentDescription="Iniciar sesión con Google"
+                android:scaleType="fitCenter"
+                tools:ignore="TouchTargetSizeCheck" />
+
+            <Space
+                android:layout_width="35dp"
+                android:layout_height="match_parent" />
+
+            <ImageButton
+                android:id="@+id/facebookLoginButton"
+                android:layout_width="34dp"
+                android:layout_height="29dp"
+                android:layout_marginTop="5dp"
+                android:background="@drawable/facebook_icon"
+                android:contentDescription="Iniciar sesión con Facebook"
+                android:scaleType="fitCenter"
+                tools:ignore="TouchTargetSizeCheck" />
+
+            <Space
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1" />
+
+        </LinearLayout>
+
+
+    </RelativeLayout>
 
 </RelativeLayout>
