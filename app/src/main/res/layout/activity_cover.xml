@@ -10,7 +10,8 @@
         android:layout_height="match_parent"
         android:foreground="@drawable/dark_overlay"
         android:scaleType="centerCrop"
-        android:src="@drawable/cover_background" />
+        android:src="@drawable/cover_background"
+        android:contentDescription="TODO" />
 
     <!-- Contenido de la portada -->
     <RelativeLayout

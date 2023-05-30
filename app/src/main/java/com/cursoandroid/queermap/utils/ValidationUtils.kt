@@ -2,6 +2,8 @@ package com.cursoandroid.queermap.utils
 
 import android.util.Patterns
 
+
+
 object ValidationUtils {
     private const val PASSWORD_MIN_LENGTH = 6
 

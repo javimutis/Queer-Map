@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -18,7 +19,8 @@
             android:layout_height="@dimen/layout_dp35"
             android:layout_marginStart="@dimen/margin_start_dp16"
             android:layout_marginTop="@dimen/margin_top_dp16"
-            android:src="@drawable/ic_arrow_back" />
+            android:src="@drawable/ic_arrow_back"
+            android:contentDescription="TODO" />
 
         <!-- Título: Registro -->
         <TextView
@@ -54,7 +56,7 @@
             android:textColor="@color/title_color"
             android:textSize="@dimen/text_sp16" />
 
-        <EditText
+        <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/userEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -85,7 +87,7 @@
             android:textColor="@color/title_color"
             android:textSize="@dimen/text_sp16" />
 
-        <EditText
+        <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/nameEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -96,7 +98,6 @@
             android:background="@drawable/neumorphism_edit_text"
             android:fontFamily="@font/raleway_italic"
             android:hint="Ingresa tu nombre completo"
-            android:inputType="textPassword"
             android:minHeight="40dp"
             android:textColor="@color/text_color"
             android:textColorHint="@color/text_color"
@@ -114,9 +115,10 @@
             android:fontFamily="@font/raleway_medium"
             android:text="Contraseña"
             android:textColor="@color/title_color"
-            android:textSize="@dimen/text_sp16" />
+            android:textSize="@dimen/text_sp16"
+            app:drawableEndCompat="@drawable/popup_icon" />
 
-        <EditText
+        <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/passwordEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -127,7 +129,7 @@
             android:background="@drawable/neumorphism_edit_text"
             android:fontFamily="@font/raleway_light_italic"
             android:hint="********"
-            android:inputType="textEmailAddress"
+            android:inputType="textPassword"
             android:minHeight="40dp"
             android:textColor="@color/text_color"
             android:textColorHint="@color/text_color"
@@ -145,9 +147,10 @@
             android:fontFamily="@font/raleway_medium"
             android:text="Repite tu contraseña"
             android:textColor="@color/title_color"
-            android:textSize="@dimen/text_sp16" />
+            android:textSize="@dimen/text_sp16"
+            app:drawableEndCompat="@drawable/popup_icon" />
 
-        <EditText
+        <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/repeatPasswordEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -179,7 +182,7 @@
             android:textColor="@color/title_color"
             android:textSize="@dimen/text_sp16" />
 
-        <EditText
+        <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/emailEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -221,7 +224,7 @@
             android:background="@drawable/neumorphism_edit_text"
             android:orientation="horizontal">
 
-            <EditText
+            <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/birthdayEditText"
                 android:layout_width="0dp"
                 android:layout_height="40dp"
@@ -241,7 +244,8 @@
                 android:layout_marginStart="@dimen/margin_top_dp10"
                 android:layout_marginTop="2dp"
                 android:layout_weight="1"
-                android:src="@drawable/calendar" />
+                android:src="@drawable/calendar"
+                android:contentDescription="TODO" />
 
         </LinearLayout>
 
@@ -264,7 +268,7 @@
             android:id="@+id/or_connect_with"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/login_button"
+            android:layout_below="@id/registerButton"
             android:layout_marginTop="10dp"
             android:fontFamily="@font/raleway_medium_italic"
             android:text="O regístrate usando:"

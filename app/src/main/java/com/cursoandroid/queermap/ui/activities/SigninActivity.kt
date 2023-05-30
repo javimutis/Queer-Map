@@ -1,10 +1,16 @@
 package com.cursoandroid.queermap.ui.activities
 
 import android.app.DatePickerDialog
+import android.content.Intent
 import android.os.Bundle
+import android.view.Gravity
 import android.view.View
+import android.view.WindowManager
 import android.widget.Button
 import android.widget.DatePicker
+import android.widget.ImageView
+import android.widget.PopupWindow
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.cursoandroid.queermap.R
 import com.cursoandroid.queermap.utils.ValidationUtils
@@ -23,13 +29,84 @@ class SigninActivity : AppCompatActivity() {
     private lateinit var repeatPasswordEditText: TextInputEditText
     private lateinit var emailEditText: TextInputEditText
     private lateinit var birthdayEditText: TextInputEditText
-    private lateinit var datePickerButton: Button
+    private lateinit var datePickerButton: ImageView
+    private lateinit var passwordPopup: PopupWindow
+    private lateinit var repeatPasswordPopup: PopupWindow
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_signin)
 
         mAuth = FirebaseAuth.getInstance()
+        initializeViews()
+        setupDatePicker()
+
+        val registerButton: Button = findViewById(R.id.registerButton)
+        registerButton.setOnClickListener {
+            registerUser()
+        }
+        passwordEditText.setOnFocusChangeListener { view, hasFocus ->
+            if (hasFocus) {
+                showPasswordPopup(view)
+            } else {
+                dismissPasswordPopup()
+            }
+        }
+
+        repeatPasswordEditText.setOnFocusChangeListener { view, hasFocus ->
+            if (hasFocus) {
+                showRepeatPasswordPopup(view)
+            } else {
+                dismissRepeatPasswordPopup()
+            }
+        }
+    }
+
+    private fun showPasswordPopup(anchorView: View) {
+        val popupView = layoutInflater.inflate(R.layout.popup_layout, null)
+        val popupTextView = popupView.findViewById<TextView>(R.id.popupTextView)
+        popupTextView.text = "La contraseña debe tener al menos 8 caracteres, incluyendo al menos una letra mayúscula, una letra minúscula, un número y un carácter especial."
+
+        passwordPopup = PopupWindow(
+            popupView,
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            WindowManager.LayoutParams.WRAP_CONTENT
+        )
+
+        val location = IntArray(2)
+        anchorView.getLocationOnScreen(location)
+        passwordPopup.showAtLocation(anchorView, Gravity.TOP or Gravity.START, location[0], location[1])
+    }
+
+    private fun dismissPasswordPopup() {
+        if (::passwordPopup.isInitialized && passwordPopup.isShowing) {
+            passwordPopup.dismiss()
+        }
+    }
+
+    private fun showRepeatPasswordPopup(anchorView: View) {
+        val popupView = layoutInflater.inflate(R.layout.popup_layout, null)
+        val popupTextView = popupView.findViewById<TextView>(R.id.popupTextView)
+        popupTextView.text = "La contraseña debe coincidir con la contraseña anterior."
+
+        repeatPasswordPopup = PopupWindow(
+            popupView,
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            WindowManager.LayoutParams.WRAP_CONTENT
+        )
+
+        val location = IntArray(2)
+        anchorView.getLocationOnScreen(location)
+        repeatPasswordPopup.showAtLocation(anchorView, Gravity.TOP or Gravity.START, location[0], location[1])
+    }
+
+    private fun dismissRepeatPasswordPopup() {
+        if (::repeatPasswordPopup.isInitialized && repeatPasswordPopup.isShowing) {
+            repeatPasswordPopup.dismiss()
+        }
+    }
+
+    private fun initializeViews() {
         nameEditText = findViewById(R.id.nameEditText)
         userEditText = findViewById(R.id.userEditText)
         passwordEditText = findViewById(R.id.passwordEditText)
@@ -38,13 +115,11 @@ class SigninActivity : AppCompatActivity() {
         birthdayEditText = findViewById(R.id.birthdayEditText)
         datePickerButton = findViewById(R.id.calendar_icon)
 
+    }
+
+    private fun setupDatePicker() {
         datePickerButton.setOnClickListener {
             showDatePickerDialog()
-        }
-
-        val registerButton: Button = findViewById(R.id.registerButton)
-        registerButton.setOnClickListener {
-            registerUser()
         }
     }
 
@@ -86,6 +161,7 @@ class SigninActivity : AppCompatActivity() {
             return
         }
 
+
         if (!ValidationUtils.isStrongSignPassword(password)) {
             repeatPasswordEditText.error = "Ingresa una contraseña válida"
             return
@@ -109,6 +185,7 @@ class SigninActivity : AppCompatActivity() {
                             .addOnSuccessListener {
                                 // Registro y guardado de datos exitoso
                                 // Realizar las acciones necesarias (por ejemplo, mostrar un mensaje de éxito)
+                                navigateToMapActivity()
                             }
                             .addOnFailureListener { e ->
                                 // Error al guardar los datos adicionales
@@ -117,6 +194,12 @@ class SigninActivity : AppCompatActivity() {
                     }
                 }
             }
+    }
+
+    private fun navigateToMapActivity() {
+        val intent = Intent(this, MapActivity::class.java)
+        startActivity(intent)
+        finish()
     }
 
     private fun showDatePickerDialog() {

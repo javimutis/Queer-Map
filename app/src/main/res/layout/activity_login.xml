@@ -20,7 +20,8 @@
             android:src="@drawable/login_cover"
             android:alpha="0.9"
             android:visibility="visible"
-            tools:visibility="visible" />
+            tools:visibility="visible"
+            android:contentDescription="TODO" />
 
         <!-- Flecha para volver atrás -->
         <ImageView
@@ -29,7 +30,8 @@
             android:layout_height="@dimen/layout_dp35"
             android:layout_marginStart="@dimen/margin_start_dp16"
             android:layout_marginTop="@dimen/margin_top_dp16"
-            android:src="@drawable/ic_arrow_back" />
+            android:src="@drawable/ic_arrow_back"
+            android:contentDescription="TODO" />
 
         <!-- Título: Iniciar sesión -->
         <TextView
@@ -248,7 +250,7 @@
 
             <!-- Texto para "Olvidaste la contraseña?" -->
             <TextView
-                android:id="@+id/login_signin"
+                android:id="@+id/loginSignin"
                 android:layout_width="@dimen/layout_dp90"
                 android:layout_height="@dimen/layout_dp30"
                 android:layout_marginTop="10dp"
