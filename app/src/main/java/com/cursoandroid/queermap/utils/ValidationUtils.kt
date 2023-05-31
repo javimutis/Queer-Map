@@ -33,7 +33,7 @@ object ValidationUtils {
 
     fun isStrongSignPassword(password: String): Boolean {
         val passwordRegex = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\\S+$).{8,}$"
-        return password.matches(passwordRegex.toRegex())
+        return password.length >= PASSWORD_MIN_LENGTH && password.matches(passwordRegex.toRegex())
     }
 
     fun isValidSignBirthday(birthday: String): Boolean {

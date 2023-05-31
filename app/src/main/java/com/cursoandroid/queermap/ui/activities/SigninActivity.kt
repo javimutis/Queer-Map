@@ -9,17 +9,33 @@ import android.view.View
 import android.view.WindowManager
 import android.widget.Button
 import android.widget.DatePicker
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.PopupWindow
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.cursoandroid.queermap.R
 import com.cursoandroid.queermap.utils.ValidationUtils
+import com.facebook.AccessToken
+import com.facebook.CallbackManager
+import com.facebook.FacebookCallback
+import com.facebook.FacebookException
+import com.facebook.login.LoginManager
+import com.facebook.login.LoginResult
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FacebookAuthProvider
+import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.auth.OAuthProvider
 import com.google.firebase.database.FirebaseDatabase
+import com.squareup.picasso.Picasso
 import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.HashMap
 import java.util.Locale
 
 class SigninActivity : AppCompatActivity() {
@@ -33,6 +49,7 @@ class SigninActivity : AppCompatActivity() {
     private lateinit var birthdayEditText: TextInputEditText
     private lateinit var datePickerButton: ImageView
     private lateinit var popupPassword: ImageView
+    private lateinit var callbackManager: CallbackManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,6 +58,7 @@ class SigninActivity : AppCompatActivity() {
         mAuth = FirebaseAuth.getInstance()
         initializeViews()
         setupDatePicker()
+        callbackManager = CallbackManager.Factory.create()
 
         val registerButton: Button = findViewById(R.id.registerButton)
         registerButton.setOnClickListener {
@@ -51,6 +69,17 @@ class SigninActivity : AppCompatActivity() {
             onBackPressed()
         }
 
+        val googleSignInButton: ImageButton = findViewById(R.id.googleSignInButton)
+        Picasso.get().load(R.drawable.google_icon).into(googleSignInButton)
+        googleSignInButton.setOnClickListener {
+            signInWithGoogle()
+        }
+
+        val facebookSignInButton: ImageButton = findViewById(R.id.facebookLSignInButton)
+        Picasso.get().load(R.drawable.facebook_icon).into(facebookSignInButton)
+        facebookSignInButton.setOnClickListener {
+            signInWithFacebook()
+        }
 
         popupPassword.setOnClickListener {
             showErrorPopup(
@@ -59,8 +88,6 @@ class SigninActivity : AppCompatActivity() {
             )
         }
     }
-
-
 
     private fun initializeViews() {
         nameEditText = findViewById(R.id.nameEditText)
@@ -95,16 +122,19 @@ class SigninActivity : AppCompatActivity() {
         val yOffset = location[1] - anchorView.height
         popupWindow.showAtLocation(anchorView, Gravity.NO_GRAVITY, xOffset, yOffset)
     }
+
     override fun onBackPressed() {
         val intent = Intent(this, CoverActivity::class.java)
         startActivity(intent)
         finish()
     }
+
     private fun setupDatePicker() {
         datePickerButton.setOnClickListener {
             showDatePickerDialog()
         }
     }
+
     private fun registerUser() {
         val name: String = nameEditText.text.toString()
         val username: String = userEditText.text.toString()
@@ -128,6 +158,11 @@ class SigninActivity : AppCompatActivity() {
             return
         }
 
+        if (repeatPassword != password) {
+            setError(repeatPasswordEditText, "Las contraseñas no coinciden")
+            return
+        }
+
         if (!ValidationUtils.isValidSignEmail(email)) {
             setError(emailEditText, "Correo electrónico inválido")
             return
@@ -135,16 +170,6 @@ class SigninActivity : AppCompatActivity() {
 
         if (!ValidationUtils.isValidSignBirthday(birthday)) {
             setError(birthdayEditText, "Fecha de nacimiento inválida")
-            return
-        }
-
-        if (repeatPassword != password) {
-            setError(repeatPasswordEditText, "Las contraseñas no coinciden")
-            return
-        }
-
-        if (!ValidationUtils.isStrongSignPassword(password)) {
-            setError(repeatPasswordEditText, "Ingresa una contraseña válida")
             return
         }
 
@@ -194,19 +219,65 @@ class SigninActivity : AppCompatActivity() {
                 val selectedDate = Calendar.getInstance()
                 selectedDate.set(selectedYear, monthOfYear, dayOfMonth)
                 val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                val selectedDateString = dateFormat.format(selectedDate.time)
-                birthdayEditText.setText(selectedDateString)
+                val date = dateFormat.format(selectedDate.time)
+                birthdayEditText.setText(date)
             },
             year,
             month,
             day
         )
-        datePickerDialog.datePicker.calendarViewShown = false
+
         datePickerDialog.show()
     }
 
-        private fun setError(textInputEditText: TextInputEditText, errorMessage: String) {
-        textInputEditText.error = errorMessage
-        textInputEditText.requestFocus()
+    private fun setError(input: TextInputEditText, message: String) {
+        input.error = message
+        input.requestFocus()
+    }
+
+    private fun signInWithGoogle() {
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(getString(R.string.default_web_client_id))
+            .requestEmail()
+            .build()
+
+        val googleSignInClient = GoogleSignIn.getClient(this, gso)
+        val signInIntent = googleSignInClient.signInIntent
+        startActivityForResult(signInIntent, RC_GOOGLE_SIGN_IN)
+    }
+
+    private fun signInWithFacebook() {
+        LoginManager.getInstance().registerCallback(callbackManager, object : FacebookCallback<LoginResult> {
+            override fun onSuccess(loginResult: LoginResult) {
+                handleFacebookAccessToken(loginResult.accessToken)
+            }
+
+            override fun onCancel() {
+                // Cancelado por el usuario
+            }
+
+            override fun onError(error: FacebookException) {
+                // Error en el inicio de sesión con Facebook
+            }
+        })
+
+        LoginManager.getInstance().logInWithReadPermissions(this, listOf("email"))
+    }
+
+    private fun handleFacebookAccessToken(token: AccessToken) {
+        val credential = FacebookAuthProvider.getCredential(token.token)
+        mAuth.signInWithCredential(credential)
+            .addOnCompleteListener(this) { task ->
+                if (task.isSuccessful) {
+                    // Inicio de sesión con éxito
+                    navigateToMapActivity()
+                } else {
+                    // Error en el inicio de sesión
+                }
+            }
+    }
+
+    companion object {
+        private const val RC_GOOGLE_SIGN_IN = 1001
     }
 }

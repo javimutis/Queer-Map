@@ -8,6 +8,7 @@ android {
     namespace 'com.cursoandroid.queermap'
     compileSdk 33
 
+
     defaultConfig {
         applicationId "com.cursoandroid.queermap"
         minSdk 25

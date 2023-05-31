@@ -281,6 +281,7 @@
             android:background="@drawable/neumorphism_button"
             android:fontFamily="@font/raleway_medium_italic"
             android:text="Regístrate"
+            android:onClick="goToMapActivity"
             android:textColor="@color/button_text"
             android:textSize="@dimen/text_sp20" />
 
@@ -327,7 +328,7 @@
                 android:layout_height="match_parent" />
 
             <ImageButton
-                android:id="@+id/facebookLoginButton"
+                android:id="@+id/facebookLSignInButton"
                 android:layout_width="34dp"
                 android:layout_height="29dp"
                 android:layout_marginTop="5dp"

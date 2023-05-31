@@ -35,6 +35,11 @@ class CoverActivity : AppCompatActivity() {
         val loginButton: Button = findViewById(R.id.cover_login_button)
         val signinButton: Button = findViewById(R.id.cover_signin_button)
 
+        val fadeAnimation = AnimationUtils.loadAnimation(this, R.anim.fade_in)
+
+        loginButton.startAnimation(fadeAnimation)
+        signinButton.startAnimation(fadeAnimation)
+
         loginButton.setOnClickListener {
             val intent = Intent(this, LoginActivity::class.java)
             startActivity(intent)

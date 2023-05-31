@@ -94,35 +94,56 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/emailEditText"
             android:layout_marginStart="@dimen/margin_start_dp32"
-            android:layout_marginTop="@dimen/margin_top_dp20"
+            android:layout_marginTop="10dp"
             android:layout_marginEnd="@dimen/margin_end_dp32"
             android:fontFamily="@font/raleway_medium"
             android:text="@string/password"
             android:textColor="@color/title_color"
             android:textSize="@dimen/text_sp16" />
 
-        <EditText
-            android:id="@+id/passwordEditText"
+        <LinearLayout
+            android:id="@+id/password_layout"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="40dp"
             android:layout_below="@id/password"
             android:layout_marginStart="@dimen/margin_start_dp32"
-            android:layout_marginTop="@dimen/margin_top_dp5"
+            android:layout_marginTop="@dimen/margin_top_dp10"
             android:layout_marginEnd="@dimen/margin_end_dp32"
             android:background="@drawable/neumorphism_edit_text"
-            android:fontFamily="@font/raleway_italic"
-            android:hint="@string/password_hint"
-            android:inputType="textPassword"
-            android:minHeight="@dimen/layout_dp48"
-            android:textColor="@color/text_color"
-            android:textColorHint="@color/text_color"
-            android:textSize="@dimen/text_sp16" />
+            android:orientation="horizontal">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/passwordEditText"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_marginTop="-5dp"
+                android:layout_weight="9"
+                android:backgroundTint="#02FFFFFF"
+                android:fontFamily="@font/raleway_italic"
+                android:hint="@string/password_hint"
+                android:inputType="textPassword"
+                android:textColor="@color/text_color"
+                android:textColorHint="@color/text_color"
+                android:textSize="@dimen/text_sp16"
+                tools:ignore="TouchTargetSizeCheck" />
+
+            <ImageView
+                android:id="@+id/eyeIcon"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_marginStart="@dimen/margin_top_dp10"
+                android:layout_marginTop="4dp"
+                android:layout_weight="1"
+                android:src="@drawable/open_eye"
+                android:contentDescription="TODO" />
+
+        </LinearLayout>
 
         <LinearLayout
             android:id="@+id/remember_box"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/passwordEditText"
+            android:layout_below="@id/password_layout"
             android:orientation="horizontal">
             <!-- Cuadro para marcar "Recuérdame" -->
             <CheckBox
@@ -248,7 +269,7 @@
                 android:textColor="@color/title_color"
                 android:fontFamily="@font/raleway_medium" />
 
-            <!-- Texto para "Olvidaste la contraseña?" -->
+            <!-- Texto para "Registrate" -->
             <TextView
                 android:id="@+id/loginSignin"
                 android:layout_width="@dimen/layout_dp90"
@@ -258,6 +279,7 @@
                 android:text="@string/signup"
                 android:textColor="@color/title_color"
                 android:textSize="@dimen/text_sp16"
+                android:onClick="goToSignInActivity"
                 tools:ignore="TouchTargetSizeCheck" />
         </LinearLayout>
 

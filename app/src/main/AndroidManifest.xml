@@ -29,11 +29,13 @@
 
         <activity
             android:name=".ui.activities.LoginActivity"
-            android:screenOrientation="portrait" />
+            android:windowSoftInputMode="adjustResize"
+            android:screenOrientation="fullSensor" />
 
         <activity
             android:name=".ui.activities.SigninActivity"
-            android:screenOrientation="portrait" />
+            android:windowSoftInputMode="adjustResize"
+            android:screenOrientation="fullSensor" />
 
         <!-- Agrega las actividades necesarias para Google Sign-In -->
         <meta-data
