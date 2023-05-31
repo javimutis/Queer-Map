@@ -4,6 +4,7 @@ import android.app.DatePickerDialog
 import android.content.Intent
 import android.os.Bundle
 import android.view.Gravity
+import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
 import android.widget.Button
@@ -18,7 +19,8 @@ import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Locale
 
 class SigninActivity : AppCompatActivity() {
 
@@ -30,8 +32,7 @@ class SigninActivity : AppCompatActivity() {
     private lateinit var emailEditText: TextInputEditText
     private lateinit var birthdayEditText: TextInputEditText
     private lateinit var datePickerButton: ImageView
-    private lateinit var passwordPopup: PopupWindow
-    private lateinit var repeatPasswordPopup: PopupWindow
+    private lateinit var popupPassword: ImageView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,66 +46,21 @@ class SigninActivity : AppCompatActivity() {
         registerButton.setOnClickListener {
             registerUser()
         }
-        passwordEditText.setOnFocusChangeListener { view, hasFocus ->
-            if (hasFocus) {
-                showPasswordPopup(view)
-            } else {
-                dismissPasswordPopup()
-            }
+        val backButton: ImageView = findViewById(R.id.backButton)
+        backButton.setOnClickListener {
+            onBackPressed()
         }
 
-        repeatPasswordEditText.setOnFocusChangeListener { view, hasFocus ->
-            if (hasFocus) {
-                showRepeatPasswordPopup(view)
-            } else {
-                dismissRepeatPasswordPopup()
-            }
+
+        popupPassword.setOnClickListener {
+            showErrorPopup(
+                popupPassword,
+                "La contraseña debe tener al menos 8 caracteres, incluir una mayúscula, una minúscula, un número y un carácter especial."
+            )
         }
     }
 
-    private fun showPasswordPopup(anchorView: View) {
-        val popupView = layoutInflater.inflate(R.layout.popup_layout, null)
-        val popupTextView = popupView.findViewById<TextView>(R.id.popupTextView)
-        popupTextView.text = "La contraseña debe tener al menos 8 caracteres, incluyendo al menos una letra mayúscula, una letra minúscula, un número y un carácter especial."
 
-        passwordPopup = PopupWindow(
-            popupView,
-            WindowManager.LayoutParams.WRAP_CONTENT,
-            WindowManager.LayoutParams.WRAP_CONTENT
-        )
-
-        val location = IntArray(2)
-        anchorView.getLocationOnScreen(location)
-        passwordPopup.showAtLocation(anchorView, Gravity.TOP or Gravity.START, location[0], location[1])
-    }
-
-    private fun dismissPasswordPopup() {
-        if (::passwordPopup.isInitialized && passwordPopup.isShowing) {
-            passwordPopup.dismiss()
-        }
-    }
-
-    private fun showRepeatPasswordPopup(anchorView: View) {
-        val popupView = layoutInflater.inflate(R.layout.popup_layout, null)
-        val popupTextView = popupView.findViewById<TextView>(R.id.popupTextView)
-        popupTextView.text = "La contraseña debe coincidir con la contraseña anterior."
-
-        repeatPasswordPopup = PopupWindow(
-            popupView,
-            WindowManager.LayoutParams.WRAP_CONTENT,
-            WindowManager.LayoutParams.WRAP_CONTENT
-        )
-
-        val location = IntArray(2)
-        anchorView.getLocationOnScreen(location)
-        repeatPasswordPopup.showAtLocation(anchorView, Gravity.TOP or Gravity.START, location[0], location[1])
-    }
-
-    private fun dismissRepeatPasswordPopup() {
-        if (::repeatPasswordPopup.isInitialized && repeatPasswordPopup.isShowing) {
-            repeatPasswordPopup.dismiss()
-        }
-    }
 
     private fun initializeViews() {
         nameEditText = findViewById(R.id.nameEditText)
@@ -114,15 +70,41 @@ class SigninActivity : AppCompatActivity() {
         emailEditText = findViewById(R.id.emailEditText)
         birthdayEditText = findViewById(R.id.birthdayEditText)
         datePickerButton = findViewById(R.id.calendar_icon)
-
+        popupPassword = findViewById(R.id.popupPassword)
     }
 
+    private fun showErrorPopup(anchorView: View, errorMessage: String) {
+        val inflater = getSystemService(LAYOUT_INFLATER_SERVICE) as LayoutInflater
+        val popupView = inflater.inflate(R.layout.popup_layout, null)
+        val popupWindow = PopupWindow(
+            popupView,
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            WindowManager.LayoutParams.WRAP_CONTENT
+        )
+        popupWindow.elevation = 10f
+        popupWindow.animationStyle = R.style.PopupAnimation
+        popupWindow.isFocusable = true
+        popupWindow.update()
+
+        val errorTextView = popupView.findViewById<TextView>(R.id.errorTextView)
+        errorTextView.text = errorMessage
+
+        val location = IntArray(2)
+        anchorView.getLocationOnScreen(location)
+        val xOffset = location[0] - anchorView.width / 2
+        val yOffset = location[1] - anchorView.height
+        popupWindow.showAtLocation(anchorView, Gravity.NO_GRAVITY, xOffset, yOffset)
+    }
+    override fun onBackPressed() {
+        val intent = Intent(this, CoverActivity::class.java)
+        startActivity(intent)
+        finish()
+    }
     private fun setupDatePicker() {
         datePickerButton.setOnClickListener {
             showDatePickerDialog()
         }
     }
-
     private fun registerUser() {
         val name: String = nameEditText.text.toString()
         val username: String = userEditText.text.toString()
@@ -132,38 +114,37 @@ class SigninActivity : AppCompatActivity() {
         val birthday: String = birthdayEditText.text.toString()
 
         if (!ValidationUtils.isValidSignName(name)) {
-            nameEditText.error = "Nombre inválido"
+            setError(nameEditText, "Nombre inválido")
             return
         }
 
         if (!ValidationUtils.isValidSignUsername(username)) {
-            userEditText.error = "Nombre de usuario inválido"
+            setError(userEditText, "Nombre de usuario inválido")
             return
         }
 
         if (!ValidationUtils.isValidSignPassword(password)) {
-            passwordEditText.error = "Contraseña inválida"
+            setError(passwordEditText, "Contraseña inválida")
             return
         }
 
         if (!ValidationUtils.isValidSignEmail(email)) {
-            emailEditText.error = "Correo electrónico inválido"
+            setError(emailEditText, "Correo electrónico inválido")
             return
         }
 
         if (!ValidationUtils.isValidSignBirthday(birthday)) {
-            birthdayEditText.error = "Fecha de nacimiento inválida"
+            setError(birthdayEditText, "Fecha de nacimiento inválida")
             return
         }
 
-        if (password != repeatPassword) {
-            repeatPasswordEditText.error = "Las contraseñas no coinciden"
+        if (repeatPassword != password) {
+            setError(repeatPasswordEditText, "Las contraseñas no coinciden")
             return
         }
-
 
         if (!ValidationUtils.isStrongSignPassword(password)) {
-            repeatPasswordEditText.error = "Ingresa una contraseña válida"
+            setError(repeatPasswordEditText, "Ingresa una contraseña válida")
             return
         }
 
@@ -174,7 +155,8 @@ class SigninActivity : AppCompatActivity() {
                     val currentUser = mAuth.currentUser
 
                     if (currentUser != null) {
-                        val userRef = FirebaseDatabase.getInstance().getReference("users").child(currentUser.uid)
+                        val userRef =
+                            FirebaseDatabase.getInstance().getReference("users").child(currentUser.uid)
                         val userData = HashMap<String, Any>()
                         userData["name"] = name
                         userData["username"] = username
@@ -183,13 +165,10 @@ class SigninActivity : AppCompatActivity() {
 
                         userRef.setValue(userData)
                             .addOnSuccessListener {
-                                // Registro y guardado de datos exitoso
-                                // Realizar las acciones necesarias (por ejemplo, mostrar un mensaje de éxito)
                                 navigateToMapActivity()
                             }
                             .addOnFailureListener { e ->
                                 // Error al guardar los datos adicionales
-                                // Mostrar un mensaje de error o realizar las acciones correspondientes
                             }
                     }
                 }
@@ -210,6 +189,7 @@ class SigninActivity : AppCompatActivity() {
 
         val datePickerDialog = DatePickerDialog(
             this,
+            R.style.DatePickerDialogStyle,
             DatePickerDialog.OnDateSetListener { _: DatePicker, selectedYear: Int, monthOfYear: Int, dayOfMonth: Int ->
                 val selectedDate = Calendar.getInstance()
                 selectedDate.set(selectedYear, monthOfYear, dayOfMonth)
@@ -223,5 +203,10 @@ class SigninActivity : AppCompatActivity() {
         )
         datePickerDialog.datePicker.calendarViewShown = false
         datePickerDialog.show()
+    }
+
+        private fun setError(textInputEditText: TextInputEditText, errorMessage: String) {
+        textInputEditText.error = errorMessage
+        textInputEditText.requestFocus()
     }
 }

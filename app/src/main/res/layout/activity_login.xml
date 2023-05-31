@@ -255,7 +255,6 @@
                 android:layout_height="@dimen/layout_dp30"
                 android:layout_marginTop="10dp"
                 android:fontFamily="@font/raleway_bold_italic"
-                android:onClick="goToSignInActivity"
                 android:text="@string/signup"
                 android:textColor="@color/title_color"
                 android:textSize="@dimen/text_sp16"

@@ -5,6 +5,8 @@
     <color name="background_color">#EFE1EA</color>
     <color name="title_color">#630573</color>
     <color name="text_color">#94630573</color>
-
+    <color name="popup_background">#FFFFFF</color>
+    <color name="error_text_color">#6420A8</color>
+    <color name="colorAccent">#FFC0CB</color>
 
 </resources>
