@@ -215,33 +215,34 @@ class SigninActivity : AppCompatActivity() {
 
         toggleRepeatPasswordVisibility()
 
-        if (!ValidationUtils.isValidSignName(name)) {
-            showErrorPopup(nameEditText, "Invalid name")
+        if (!ValidationUtils.isValidSignUsername(username)) {
+            showErrorPopup(userEditText, "Nombre de usuari@ inválido")
             return
         }
 
-        if (!ValidationUtils.isValidSignUsername(username)) {
-            showErrorPopup(userEditText, "Invalid username")
+        if (!ValidationUtils.isValidSignName(name)) {
+            showErrorPopup(nameEditText, "Nombre inválido")
             return
         }
+
 
         if (!ValidationUtils.isValidSignPassword(password)) {
-            showErrorPopup(passwordEditText, "Invalid password")
+            showErrorPopup(passwordEditText, "Contraseña inválida")
             return
         }
 
         if (repeatPassword != password) {
-            showErrorPopup(repeatPasswordEditText, "Passwords do not match")
+            showErrorPopup(repeatPasswordEditText, "Las contraseñas no coinciden")
             return
         }
 
         if (!ValidationUtils.isValidSignEmail(email)) {
-            showErrorPopup(emailEditText, "Invalid email")
+            showErrorPopup(emailEditText, "Email inválido")
             return
         }
 
         if (!ValidationUtils.isValidSignBirthday(birthday)) {
-            showErrorPopup(birthdayEditText, "Invalid birthday")
+            showErrorPopup(birthdayEditText, "Fecha de nacimiento inválida")
             return
         }
 
