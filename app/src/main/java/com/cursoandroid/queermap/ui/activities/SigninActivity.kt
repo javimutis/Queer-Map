@@ -1,5 +1,43 @@
 package com.cursoandroid.queermap.ui.activities
 
+import android.app.DatePickerDialog
+import android.content.Context.LAYOUT_INFLATER_SERVICE
+import android.content.Intent
+import android.os.Bundle
+import android.text.InputType
+import android.view.Gravity
+import android.view.LayoutInflater
+import android.view.View
+import android.view.WindowManager
+import android.widget.Button
+import android.widget.DatePicker
+import android.widget.ImageButton
+import android.widget.ImageView
+import android.widget.PopupWindow
+import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat.startActivityForResult
+import androidx.core.content.ContextCompat.getSystemService
+import androidx.core.content.ContextCompat.startActivity
+import com.cursoandroid.queermap.R
+import com.cursoandroid.queermap.utils.ValidationUtils
+import com.facebook.AccessToken
+import com.facebook.CallbackManager
+import com.facebook.FacebookCallback
+import com.facebook.FacebookException
+import com.facebook.login.LoginManager
+import com.facebook.login.LoginResult
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.material.textfield.TextInputEditText
+import com.google.firebase.auth.FacebookAuthProvider
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
+import com.squareup.picasso.Picasso
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
+
 // Import statements
 // ...
 
@@ -241,6 +279,10 @@ class SigninActivity : AppCompatActivity() {
         finish()
     }
 
+    override fun finish() {
+        TODO("Not yet implemented")
+    }
+
     // Show the date picker dialog
     private fun showDatePickerDialog() {
         val calendar = Calendar.getInstance()
@@ -286,7 +328,8 @@ class SigninActivity : AppCompatActivity() {
 
     // Sign in with Facebook
     private fun signInWithFacebook() {
-        LoginManager.getInstance().registerCallback(callbackManager, object : FacebookCallback<LoginResult> {
+        LoginManager.getInstance().registerCallback(callbackManager, object :
+            FacebookCallback<LoginResult> {
             override fun onSuccess(loginResult: LoginResult) {
                 handleFacebookAccessToken(loginResult.accessToken)
             }
