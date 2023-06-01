@@ -6,6 +6,7 @@ import android.os.Handler
 import androidx.appcompat.app.AppCompatActivity
 import com.cursoandroid.queermap.MainActivity
 import com.cursoandroid.queermap.R
+
 class SplashActivity : AppCompatActivity() {
 
     private val SPLASH_DURATION = 3500 // Duration of the splash animation
@@ -16,16 +17,17 @@ class SplashActivity : AppCompatActivity() {
 
         // Start the splash animation
         Handler().postDelayed({
-
-            // Open the next activity
-            val intent = Intent(this, CoverActivity::class.java)
-            startActivity(intent)
-
-            // Apply transition animation
-            overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
-
-            // Finish the current activity
-            finish()
+            navigateToNextActivity() // Open the next activity after the splash duration
         }, SPLASH_DURATION.toLong())
+    }
+
+    // Open the next activity and apply transition animation
+    private fun navigateToNextActivity() {
+        val intent = Intent(this, CoverActivity::class.java)
+        startActivity(intent)
+
+        overridePendingTransition(R.anim.fade_in, R.anim.fade_out) // Apply fade-in and fade-out animation
+
+        finish() // Finish the current activity to prevent going back to the splash screen
     }
 }

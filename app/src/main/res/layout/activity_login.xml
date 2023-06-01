@@ -6,7 +6,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@color/background_color">
 
-    <!-- Imagen de portada con flecha para ir atrás -->
+    <!-- Cover image with back arrow -->
     <RelativeLayout
         android:id="@+id/loginCover"
         android:layout_width="match_parent"
@@ -23,7 +23,7 @@
             tools:visibility="visible"
             android:contentDescription="TODO" />
 
-        <!-- Flecha para volver atrás -->
+        <!-- Back button -->
         <ImageView
             android:id="@+id/backButton"
             android:layout_width="@dimen/layout_dp35"
@@ -33,7 +33,7 @@
             android:src="@drawable/ic_arrow_back"
             android:contentDescription="TODO" />
 
-        <!-- Título: Iniciar sesión -->
+        <!-- Title: Login -->
         <TextView
             android:id="@+id/titleTextView"
             android:layout_width="wrap_content"
@@ -51,13 +51,13 @@
             android:shadowRadius="2" />
     </RelativeLayout>
 
-    <!-- Resto del contenido del inicio de sesión -->
+    <!-- Login content -->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/loginCover">
 
-        <!-- Casillero de Correo Electrónico -->
+        <!-- Email field -->
         <TextView
             android:id="@+id/log_mail"
             android:layout_width="match_parent"
@@ -87,7 +87,7 @@
             android:textColorHint="@color/text_color"
             android:textSize="@dimen/text_sp16" />
 
-        <!-- Título: Contraseña -->
+        <!-- Password field -->
         <TextView
             android:id="@+id/password"
             android:layout_width="match_parent"
@@ -160,7 +160,7 @@
                 android:fontFamily="@font/raleway_medium"
                 android:button="@drawable/neumorphism_checkbox" />
 
-            <!-- Texto para "Olvidaste la contraseña?" -->
+            <!-- Forgot password link -->
             <TextView
                 android:id="@+id/forgotPasswordTextView"
                 android:layout_width="wrap_content"
@@ -174,7 +174,7 @@
                 android:textColor="@color/title_color" />
         </LinearLayout>
 
-        <!-- Botón de inicio de sesión -->
+        <!-- Login button -->
         <Button
             android:id="@+id/login_button"
             android:layout_width="match_parent"

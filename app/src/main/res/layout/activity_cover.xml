@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Imagen de portada con fondo y superposición oscura -->
+    <!-- Cover image with dark overlay -->
     <ImageView
         android:id="@+id/cover"
         android:layout_width="match_parent"
@@ -13,14 +13,14 @@
         android:src="@drawable/cover_background"
         android:contentDescription="TODO" />
 
-    <!-- Contenido de la portada -->
+    <!-- Cover content -->
     <RelativeLayout
         android:id="@+id/loginCover"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/margin_top_dp20">
 
-        <!-- Título: Iniciar sesión -->
+        <!-- Title: "Welcome" -->
         <TextView
             android:id="@+id/titleTextView"
             android:layout_width="wrap_content"
@@ -37,7 +37,7 @@
 
     </RelativeLayout>
 
-    <!-- Botón de inicio de sesión -->
+    <!-- Login button -->
     <Button
         android:id="@+id/cover_login_button"
         android:layout_width="match_parent"
@@ -53,7 +53,7 @@
         android:textColor="@color/button_text"
         android:textSize="@dimen/text_sp22" />
 
-    <!-- Botón de registro -->
+    <!-- Sign up button -->
     <Button
         android:id="@+id/cover_signin_button"
         android:layout_width="match_parent"

@@ -104,9 +104,8 @@
             android:textSize="@dimen/text_sp16"
             tools:ignore="TouchTargetSizeCheck" />
 
-
         <LinearLayout
-            android:id="@+id/password_layout"
+            android:id="@+id/passwordLayout"
             android:layout_width="match_parent"
             android:layout_height="32dp"
             android:layout_below="@id/nameEditText"
@@ -133,27 +132,49 @@
                 android:layout_width="30dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/margin_top_dp10"
+                android:layout_marginEnd="9dp"
                 android:layout_weight="1"
                 android:src="@drawable/question_mark_icon"
                 android:contentDescription="Ícono de pregunta"/>
 
         </LinearLayout>
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/passwordEditText"
+        <LinearLayout
+            android:id="@+id/passwordLayoutEdit"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/password_layout"
+            android:layout_height="40dp"
+            android:layout_below="@id/passwordLayout"
             android:layout_marginStart="@dimen/margin_start_dp32"
             android:layout_marginEnd="@dimen/margin_end_dp32"
             android:background="@drawable/neumorphism_edit_text"
-            android:fontFamily="@font/raleway_light_italic"
-            android:hint="********"
-            android:inputType="textPassword"
-            android:minHeight="40dp"
-            android:textColor="@color/text_color"
-            android:textColorHint="@color/text_color"
-            android:textSize="@dimen/text_sp16" />
+            android:orientation="horizontal">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/passwordEditText"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_marginTop="-5dp"
+                android:layout_weight="9"
+                android:backgroundTint="#02FFFFFF"
+                android:fontFamily="@font/raleway_italic"
+                android:hint="@string/password_hint"
+                android:inputType="textPassword"
+                android:textColor="@color/text_color"
+                android:textColorHint="@color/text_color"
+                android:textSize="@dimen/text_sp16"
+                tools:ignore="TouchTargetSizeCheck" />
+
+            <ImageView
+                android:id="@+id/eyeIcon"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_marginStart="@dimen/margin_top_dp10"
+                android:layout_marginTop="4dp"
+                android:layout_weight="1"
+                android:src="@drawable/open_eye"
+                android:contentDescription="TODO" />
+
+        </LinearLayout>
 
         <!-- Título: Repetir contraseña -->
 
@@ -161,7 +182,7 @@
                 android:id="@+id/repeatPasswordText"
                 android:layout_width="match_parent"
                 android:layout_height="32dp"
-                android:layout_below="@id/passwordEditText"
+                android:layout_below="@id/passwordLayoutEdit"
                 android:layout_marginStart="@dimen/margin_start_dp32"
                 android:layout_marginTop="4dp"
                 android:layout_marginEnd="@dimen/margin_end_dp32"
@@ -170,21 +191,42 @@
                 android:textColor="@color/title_color"
                 android:textSize="@dimen/text_sp16" />
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/repeatPasswordEditText"
+        <LinearLayout
+            android:id="@+id/repeatPasswordLayoutEdit"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="40dp"
             android:layout_below="@id/repeatPasswordText"
             android:layout_marginStart="@dimen/margin_start_dp32"
             android:layout_marginEnd="@dimen/margin_end_dp32"
             android:background="@drawable/neumorphism_edit_text"
-            android:fontFamily="@font/raleway_italic"
-            android:hint="@string/password_hint"
-            android:inputType="textPassword"
-            android:minHeight="40dp"
-            android:textColor="@color/text_color"
-            android:textColorHint="@color/text_color"
-            android:textSize="@dimen/text_sp16" />
+            android:orientation="horizontal">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/repeatPasswordEditText"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_marginTop="-5dp"
+                android:layout_weight="9"
+                android:backgroundTint="#02FFFFFF"
+                android:fontFamily="@font/raleway_italic"
+                android:hint="@string/password_hint"
+                android:inputType="textPassword"
+                android:textColor="@color/text_color"
+                android:textColorHint="@color/text_color"
+                android:textSize="@dimen/text_sp16"
+                tools:ignore="TouchTargetSizeCheck" />
+
+            <ImageView
+                android:id="@+id/repeatEyeIcon"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_marginStart="@dimen/margin_top_dp10"
+                android:layout_marginTop="4dp"
+                android:layout_weight="1"
+                android:src="@drawable/open_eye"
+                android:contentDescription="TODO" />
+
+        </LinearLayout>
 
         <!-- Casillero de Correo Electrónico -->
 
@@ -192,7 +234,7 @@
             android:id="@+id/log_mail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/repeatPasswordEditText"
+            android:layout_below="@id/repeatPasswordLayoutEdit"
             android:layout_marginStart="@dimen/margin_start_dp32"
             android:layout_marginTop="10dp"
             android:layout_marginEnd="@dimen/margin_end_dp32"
@@ -218,25 +260,47 @@
             android:textColorHint="@color/text_color"
             android:textSize="@dimen/text_sp16" />
 
-        <!-- Título: Fecha de nacimiento -->
-        <TextView
-            android:id="@+id/birthday_date"
+
+        <LinearLayout
+            android:id="@+id/birthdayLayout"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="32dp"
             android:layout_below="@id/emailEditText"
             android:layout_marginStart="@dimen/margin_start_dp32"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="8dp"
             android:layout_marginEnd="@dimen/margin_end_dp32"
-            android:fontFamily="@font/raleway_medium"
-            android:text="Fecha de nacimiento"
-            android:textColor="@color/title_color"
-            android:textSize="@dimen/text_sp16" />
+            android:orientation="horizontal">
+            <!-- Título: Fecha de nacimiento -->
 
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/birthday_date"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_marginTop="-5dp"
+                android:layout_weight="9"
+                android:visibility="visible"
+                android:backgroundTint="#02FFFFFF"
+                android:fontFamily="@font/raleway_medium"
+                android:text="Fecha de nacimiento"
+                android:textColor="@color/title_color"
+                android:textSize="@dimen/text_sp16"  />
+
+            <ImageView
+                android:id="@+id/popupBirthday"
+                android:layout_width="30dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/margin_top_dp10"
+                android:layout_marginEnd="9dp"
+                android:layout_weight="1"
+                android:src="@drawable/question_mark_icon"
+                android:contentDescription="Ícono de pregunta"/>
+
+        </LinearLayout>
         <LinearLayout
             android:id="@+id/birthday_layout"
             android:layout_width="match_parent"
             android:layout_height="40dp"
-            android:layout_below="@id/birthday_date"
+            android:layout_below="@id/birthdayLayout"
             android:layout_marginStart="@dimen/margin_start_dp32"
             android:layout_marginTop="@dimen/margin_top_dp10"
             android:layout_marginEnd="@dimen/margin_end_dp32"
@@ -261,7 +325,7 @@
                 android:id="@+id/calendar_icon"
                 android:layout_width="30dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/margin_top_dp10"
+                android:layout_marginEnd="3dp"
                 android:layout_marginTop="2dp"
                 android:layout_weight="1"
                 android:src="@drawable/calendar"

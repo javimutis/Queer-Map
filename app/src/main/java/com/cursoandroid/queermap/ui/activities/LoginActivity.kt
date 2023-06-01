@@ -52,7 +52,7 @@ class LoginActivity : AppCompatActivity(), FacebookCallback<LoginResult> {
         callbackManager = CallbackManager.Factory.create()
         googleSignInClient = GoogleSignIn.getClient(this, googleSignInOptions)
 
-// Get references to UI elements
+        // Get references to UI elements
         emailEditText = findViewById(R.id.emailEditText)
         passwordEditText = findViewById(R.id.passwordEditText)
         eyeIcon = findViewById(R.id.eyeIcon)
@@ -61,7 +61,8 @@ class LoginActivity : AppCompatActivity(), FacebookCallback<LoginResult> {
         eyeIcon.setOnClickListener {
             togglePasswordVisibility()
         }
-// Set click listener for the login button
+
+        // Set click listener for the login button
         val loginButton: Button = findViewById(R.id.login_button)
         loginButton.setOnClickListener {
             val email = emailEditText.text.toString().trim()
@@ -73,12 +74,13 @@ class LoginActivity : AppCompatActivity(), FacebookCallback<LoginResult> {
             } else {
                 Toast.makeText(
                     this,
-                    "Por favor, ingresa un correo electrónico válido y una contraseña.",
+                    "Please enter a valid email and password.",
                     Toast.LENGTH_SHORT
                 ).show()
             }
         }
-// Set click listener for Google sign-in button
+
+        // Set click listener for Google sign-in button
         val googleSignInButton: ImageButton = findViewById(R.id.googleSignInButton)
         Picasso.get().load(R.drawable.google_icon).into(googleSignInButton)
         googleSignInButton.setOnClickListener {
@@ -104,6 +106,7 @@ class LoginActivity : AppCompatActivity(), FacebookCallback<LoginResult> {
             startActivity(intent)
             finish()
         }
+
         // Set click listener for the forgot password text view
         forgotPasswordDialog = Dialog(this)
         forgotPasswordDialog.setContentView(R.layout.forgot_password)
@@ -142,7 +145,7 @@ class LoginActivity : AppCompatActivity(), FacebookCallback<LoginResult> {
                     finish()
                 } else {
                     Toast.makeText(
-                        this, "Error al iniciar sesión. Verifica tus datos.",
+                        this, "Failed to sign in. Please check your credentials.",
                         Toast.LENGTH_SHORT
                     ).show()
                 }
@@ -155,7 +158,7 @@ class LoginActivity : AppCompatActivity(), FacebookCallback<LoginResult> {
             saveCredentials(email, password)
         }
 
-        Toast.makeText(this, "Iniciando sesión...", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, "Signing in...", Toast.LENGTH_SHORT).show()
     }
 
     // Save user credentials to SharedPreferences
@@ -219,7 +222,7 @@ class LoginActivity : AppCompatActivity(), FacebookCallback<LoginResult> {
             }
         } catch (e: ApiException) {
             Toast.makeText(
-                this, "Error al iniciar sesión con Google. Verifica tus datos.",
+                this, "Error signing in with Google. Please check your credentials.",
                 Toast.LENGTH_SHORT
             ).show()
         }
@@ -238,7 +241,7 @@ class LoginActivity : AppCompatActivity(), FacebookCallback<LoginResult> {
                 } else {
                     Toast.makeText(
                         this,
-                        "Error al iniciar sesión con Google. Por favor, inténtalo de nuevo.",
+                        "Error signing in with Google. Please try again.",
                         Toast.LENGTH_SHORT
                     ).show()
                 }
@@ -256,7 +259,7 @@ class LoginActivity : AppCompatActivity(), FacebookCallback<LoginResult> {
     // Facebook login cancellation callback
     override fun onCancel() {
         Toast.makeText(
-            this@LoginActivity, "Inicio de sesión con Facebook cancelado.",
+            this@LoginActivity, "Facebook login canceled.",
             Toast.LENGTH_SHORT
         ).show()
     }
@@ -264,7 +267,7 @@ class LoginActivity : AppCompatActivity(), FacebookCallback<LoginResult> {
     // Facebook login error callback
     override fun onError(error: FacebookException) {
         Toast.makeText(
-            this@LoginActivity, "Error al iniciar sesión con Facebook. Verifica tus datos.",
+            this@LoginActivity, "Error signing in with Facebook. Please check your credentials.",
             Toast.LENGTH_SHORT
         ).show()
     }
@@ -281,7 +284,7 @@ class LoginActivity : AppCompatActivity(), FacebookCallback<LoginResult> {
                 sendPasswordResetEmail(email)
                 forgotPasswordDialog.dismiss()
             } else {
-                Toast.makeText(this, "Ingrese un correo electrónico válido", Toast.LENGTH_SHORT)
+                Toast.makeText(this, "Please enter a valid email", Toast.LENGTH_SHORT)
                     .show()
             }
         }
@@ -299,13 +302,13 @@ class LoginActivity : AppCompatActivity(), FacebookCallback<LoginResult> {
                 if (task.isSuccessful) {
                     Toast.makeText(
                         this,
-                        "Se ha enviado un correo de restablecimiento de contraseña a $email",
+                        "A password reset email has been sent to $email",
                         Toast.LENGTH_SHORT
                     ).show()
                 } else {
                     Toast.makeText(
                         this,
-                        "Error al enviar el correo de restablecimiento de contraseña",
+                        "Failed to send password reset email",
                         Toast.LENGTH_SHORT
                     ).show()
                 }
