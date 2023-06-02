@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/TermsAndConditionsPopup"
+    android:orientation="vertical"
+    android:background="@color/background_color">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="@drawable/neumorphism_terms_background"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/popupTitleTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="18dp"
+            android:text="¡Bienvenide a Queermap!"
+            android:textSize="23sp"
+            android:textColor="@color/title_color"
+            android:fontFamily="@font/raleway_semi_bold_italic" />
+
+        <TextView
+            android:id="@+id/popupContentTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/popupTitleTextView"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="20dp"
+            android:text="@string/terms_text"
+            android:textSize="18sp"
+            android:textColor="@color/title_color"
+            android:fontFamily="@font/raleway_medium" />
+
+        <LinearLayout
+            android:id="@+id/termsAndConditionsLinearLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/popupContentTextView">
+
+        <CheckBox
+            android:id="@+id/termsAndConditionsCheckBox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:textSize="16sp"
+            android:textColor="@color/title_color"
+            android:fontFamily="@font/raleway_medium"
+            android:buttonTint="@color/title_color"/>
+
+        <TextView
+            android:id="@+id/termsAndConditionsTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:textSize="16sp"
+            android:text="Acepto los términos y condiciones"
+            android:textColor="@color/title_color"
+            android:fontFamily="@font/raleway_bold" />
+
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/acceptButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/termsAndConditionsLinearLayout"
+            android:layout_marginTop="20dp"
+            android:text="Aceptar"
+            android:textColor="@color/button_text"
+            android:background="@drawable/neumorphism_button"
+            android:textSize="16sp"
+            android:fontFamily="@font/raleway_medium_italic" />
+
+        <Button
+            android:id="@+id/cancelButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/acceptButton"
+            android:layout_marginTop="8dp"
+            android:text="@string/cancel"
+            android:textColor="@color/button_text"
+            android:background="@drawable/neumorphism_button"
+            android:textSize="16sp"
+            android:fontFamily="@font/raleway_medium_italic" />
+
+    </RelativeLayout>
+
+</LinearLayout>
+
+
+
+
+
+
