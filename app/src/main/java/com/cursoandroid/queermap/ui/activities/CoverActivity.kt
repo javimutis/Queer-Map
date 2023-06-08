@@ -5,49 +5,54 @@ import android.os.Bundle
 import android.view.View
 import android.view.animation.AnimationUtils
 import android.widget.Button
-import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat.startActivity
 import com.cursoandroid.queermap.R
-import com.squareup.picasso.Picasso
+import com.cursoandroid.queermap.interfaces.CoverContract
+import com.cursoandroid.queermap.presenter.CoverPresenter
 
-class CoverActivity : AppCompatActivity() {
+class CoverActivity : AppCompatActivity(), CoverContract.View {
+
+    private lateinit var presenter: CoverContract.Presenter
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_cover)
 
-        // Set background image using Picasso library
-        val coverImage: ImageView = findViewById(R.id.cover)
-        Picasso.get().load(R.drawable.cover_background).into(coverImage)
+        presenter = CoverPresenter(this)
+        presenter.start()
 
-        // Hide the title text view initially
+        val loginButton: Button = findViewById(R.id.cover_login_button)
+        val signinButton: Button = findViewById(R.id.cover_signin_button)
+
+        loginButton.setOnClickListener {
+            presenter.onLoginButtonClicked()
+        }
+
+        signinButton.setOnClickListener {
+            presenter.onSigninButtonClicked()
+        }
+    }
+
+    override fun showTitle() {
         val titleTextView: TextView = findViewById(R.id.titleTextView)
         titleTextView.visibility = View.INVISIBLE
 
-        // Delayed animation to reveal the title text view
         titleTextView.postDelayed({
             val revealAnimation = AnimationUtils.loadAnimation(this, android.R.anim.fade_in)
             titleTextView.visibility = View.VISIBLE
             titleTextView.startAnimation(revealAnimation)
         }, 1300)
+    }
 
-        // Set click listeners for login and sign-in buttons
-        val loginButton: Button = findViewById(R.id.cover_login_button)
-        val signinButton: Button = findViewById(R.id.cover_signin_button)
+    override fun navigateToLogin() {
+        val intent = Intent(this, LoginActivity::class.java)
+        startActivity(intent)
+    }
 
-        val fadeAnimation = AnimationUtils.loadAnimation(this, R.anim.fade_in)
-
-        loginButton.startAnimation(fadeAnimation)
-        signinButton.startAnimation(fadeAnimation)
-
-        loginButton.setOnClickListener {
-            val intent = Intent(this, LoginActivity::class.java)
-            startActivity(intent)
-        }
-
-        signinButton.setOnClickListener {
-            val intent = Intent(this, SigninActivity::class.java)
-            startActivity(intent)
-        }
+    override fun navigateToSignin() {
+        val intent = Intent(this, SigninActivity::class.java)
+        startActivity(intent)
     }
 }

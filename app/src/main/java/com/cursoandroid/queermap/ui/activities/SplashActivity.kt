@@ -6,28 +6,27 @@ import android.os.Handler
 import androidx.appcompat.app.AppCompatActivity
 import com.cursoandroid.queermap.MainActivity
 import com.cursoandroid.queermap.R
+import com.cursoandroid.queermap.interfaces.SplashContract
+import com.cursoandroid.queermap.presenter.SplashPresenter
 
-class SplashActivity : AppCompatActivity() {
+class SplashActivity : AppCompatActivity(), SplashContract.View {
 
-    private val SPLASH_DURATION = 3500 // Duration of the splash animation
+    private lateinit var presenter: SplashContract.Presenter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
 
-        // Start the splash animation
-        Handler().postDelayed({
-            navigateToNextActivity() // Open the next activity after the splash duration
-        }, SPLASH_DURATION.toLong())
+        presenter = SplashPresenter(this)
+        presenter.start()
     }
 
-    // Open the next activity and apply transition animation
-    private fun navigateToNextActivity() {
+    override fun navigateToNextActivity() {
         val intent = Intent(this, CoverActivity::class.java)
         startActivity(intent)
 
-        overridePendingTransition(R.anim.fade_in, R.anim.fade_out) // Apply fade-in and fade-out animation
+        overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
 
-        finish() // Finish the current activity to prevent going back to the splash screen
+        finish()
     }
 }

@@ -1,6 +1,4 @@
 
-x
-Happ/src/main/java/com/cursoandroid/queermap/viewmodels/LoginViewModel.kt,2\9\29786d407718fbc99483325ebbbba0ff25f91c97
 k
 ;app/src/main/java/com/cursoandroid/queermap/MainActivity.kt,c\8\c860780096079334cfb064812d737d4f3978b8e2
 :

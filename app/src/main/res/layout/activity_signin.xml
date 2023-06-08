@@ -345,7 +345,7 @@
             android:background="@drawable/neumorphism_button"
             android:fontFamily="@font/raleway_medium_italic"
             android:text="Regístrate"
-            android:onClick="goToMapActivity"
+            android:onClick="goToReadTermsActivity"
             android:textColor="@color/button_text"
             android:textSize="@dimen/text_sp20" />
 

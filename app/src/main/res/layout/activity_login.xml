@@ -57,6 +57,15 @@
         android:layout_height="match_parent"
         android:layout_below="@id/loginCover">
 
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="match_parent"
+            android:layout_height="10dp"
+            android:indeterminate="true"
+            android:visibility="gone"
+            style="@style/GradientProgressBar" />
+
+
         <!-- Email field -->
         <TextView
             android:id="@+id/log_mail"
@@ -275,11 +284,11 @@
                 android:layout_width="@dimen/layout_dp90"
                 android:layout_height="@dimen/layout_dp30"
                 android:layout_marginTop="10dp"
+                android:onClick="goToSignInActivity"
                 android:fontFamily="@font/raleway_bold_italic"
                 android:text="@string/signup"
                 android:textColor="@color/title_color"
                 android:textSize="@dimen/text_sp16"
-                android:onClick="goToSignInActivity"
                 tools:ignore="TouchTargetSizeCheck" />
         </LinearLayout>
 
