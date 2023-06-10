@@ -43,24 +43,15 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/popupContentTextView">
 
-        <CheckBox
-            android:id="@+id/termsAndConditionsCheckBox"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:textSize="16sp"
-            android:textColor="@color/title_color"
-            android:fontFamily="@font/raleway_medium"
-            android:buttonTint="@color/title_color"/>
-
         <TextView
             android:id="@+id/termsAndConditionsTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="16sp"
-            android:text="Acepto los términos y condiciones"
+            android:layout_marginTop="15dp"
+            android:textSize="18sp"
+            android:text="Leer términos y condiciones"
             android:textColor="@color/title_color"
-            android:fontFamily="@font/raleway_bold" />
+            android:fontFamily="@font/raleway_bold_italic" />
 
         </LinearLayout>
 
@@ -69,7 +60,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/termsAndConditionsLinearLayout"
-
+            android:layout_marginTop="15dp"
             android:text="Aceptar"
             android:textColor="@color/button_text"
             android:background="@drawable/neumorphism_button"

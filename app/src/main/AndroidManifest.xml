@@ -25,17 +25,26 @@
 
         <activity
             android:name=".ui.activities.CoverActivity"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:exported="true"/>
 
         <activity
             android:name=".ui.activities.LoginActivity"
             android:windowSoftInputMode="adjustResize"
-            android:screenOrientation="fullSensor" />
+            android:screenOrientation="fullSensor"
+            android:exported="true"/>
 
         <activity
             android:name=".ui.activities.SigninActivity"
             android:windowSoftInputMode="adjustResize"
-            android:screenOrientation="fullSensor" />
+            android:screenOrientation="fullSensor"
+            android:exported="true"/>
+        <activity
+            android:name=".ui.activities.ReadTermsActivity"
+            android:windowSoftInputMode="adjustResize"
+            android:screenOrientation="fullSensor"
+            android:exported="true"/>
+
 
         <!-- Agrega las actividades necesarias para Google Sign-In -->
         <meta-data

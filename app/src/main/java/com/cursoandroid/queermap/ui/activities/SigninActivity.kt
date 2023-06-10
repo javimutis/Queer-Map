@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.text.InputType
 import android.view.Gravity
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.Button
@@ -19,6 +18,8 @@ import android.widget.PopupWindow
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.cursoandroid.queermap.R
+import com.cursoandroid.queermap.interfaces.SigninContract
+import com.cursoandroid.queermap.presenter.SigninPresenter
 import com.cursoandroid.queermap.utils.ValidationUtils
 import com.facebook.AccessToken
 import com.facebook.CallbackManager
@@ -27,6 +28,7 @@ import com.facebook.FacebookException
 import com.facebook.login.LoginManager
 import com.facebook.login.LoginResult
 import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.android.material.textfield.TextInputEditText
@@ -38,9 +40,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
-
-class SigninActivity : AppCompatActivity() {
-
+class SigninActivity : AppCompatActivity(), SigninContract.View {
     private lateinit var mAuth: FirebaseAuth
     private lateinit var nameEditText: TextInputEditText
     private lateinit var userEditText: TextInputEditText
@@ -54,16 +54,19 @@ class SigninActivity : AppCompatActivity() {
     private lateinit var eyeIcon: ImageView
     private lateinit var repeatEyeIcon: ImageView
     private lateinit var popupBirthday: ImageView
+    private lateinit var presenter: SigninContract.Presenter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_signin)
 
         mAuth = FirebaseAuth.getInstance()
-
         initializeViews()
         setupDatePicker()
+
         callbackManager = CallbackManager.Factory.create()
+        presenter = SigninPresenter(this)
+        presenter.onCreate()
 
         eyeIcon.setOnClickListener {
             togglePasswordVisibility()
@@ -74,26 +77,30 @@ class SigninActivity : AppCompatActivity() {
 
         val registerButton: Button = findViewById(R.id.registerButton)
         registerButton.setOnClickListener {
-            validateAndShowTermsPopup()
+            presenter.onRegisterButtonClick()
         }
+
 
         val backButton: ImageView = findViewById(R.id.backButton)
         backButton.setOnClickListener {
-            onBackPressed()
+            presenter.onBackButtonClick()
         }
+
 
         val googleSignInButton: ImageButton = findViewById(R.id.googleSignInButton)
         Picasso.get().load(R.drawable.google_icon).into(googleSignInButton)
         googleSignInButton.setOnClickListener {
-            signInWithGoogle()
+            presenter.onGoogleSignInButtonClick()
         }
 
         val facebookSignInButton: ImageButton = findViewById(R.id.facebookLSignInButton)
         Picasso.get().load(R.drawable.facebook_icon).into(facebookSignInButton)
         facebookSignInButton.setOnClickListener {
-            signInWithFacebook()
+            presenter.onFacebookSignInButtonClick()
         }
 
+
+        popupPassword = findViewById(R.id.popupPassword)
         popupPassword.setOnClickListener {
             showErrorPopup(
                 popupPassword,
@@ -101,12 +108,15 @@ class SigninActivity : AppCompatActivity() {
             )
         }
 
+        popupBirthday = findViewById(R.id.popupBirthday)
         popupBirthday.setOnClickListener {
             showErrorPopup(
                 popupBirthday,
                 "Pedimos tu fecha de nacimiento para ajustar los eventos a tu rango de edad."
             )
         }
+
+        initializeViews()
     }
 
     private fun initializeViews() {
@@ -117,13 +127,14 @@ class SigninActivity : AppCompatActivity() {
         emailEditText = findViewById(R.id.emailEditText)
         birthdayEditText = findViewById(R.id.birthdayEditText)
         datePickerButton = findViewById(R.id.calendar_icon)
-        popupPassword = findViewById(R.id.popupPassword)
         eyeIcon = findViewById(R.id.eyeIcon)
         repeatEyeIcon = findViewById(R.id.repeatEyeIcon)
-        popupBirthday = findViewById(R.id.popupBirthday)
-    }
 
-    private fun showErrorPopup(anchorView: View, errorMessage: String) {
+        setupDatePicker()
+        setupPasswordVisibilityToggle()
+        setupRepeatPasswordVisibilityToggle()
+    }
+    override fun showErrorPopup(input: ImageView, errorMessage: String) {
         val inflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
         val popupView = inflater.inflate(R.layout.popup_layout, null)
         val popupWindow = PopupWindow(
@@ -139,22 +150,30 @@ class SigninActivity : AppCompatActivity() {
         val errorTextView = popupView.findViewById<TextView>(R.id.errorTextView)
         errorTextView.text = errorMessage
 
+        val anchorView = input
         val location = IntArray(2)
-        anchorView.getLocationOnScreen(location)
+        anchorView.getLocationInWindow(location)
         val xOffset = location[0] - anchorView.width / 2
         val yOffset = location[1] - anchorView.height
         popupWindow.showAtLocation(anchorView, Gravity.NO_GRAVITY, xOffset, yOffset)
     }
 
-    override fun onBackPressed() {
-        val intent = Intent(this, CoverActivity::class.java)
-        startActivity(intent)
-        finish()
-    }
 
     private fun setupDatePicker() {
         datePickerButton.setOnClickListener {
             showDatePickerDialog()
+        }
+    }
+
+    private fun setupPasswordVisibilityToggle() {
+        eyeIcon.setOnClickListener {
+            togglePasswordVisibility()
+        }
+    }
+
+    private fun setupRepeatPasswordVisibilityToggle() {
+        repeatEyeIcon.setOnClickListener {
+            toggleRepeatPasswordVisibility()
         }
     }
 
@@ -190,15 +209,15 @@ class SigninActivity : AppCompatActivity() {
         repeatPasswordEditText.setSelection(repeatPasswordEditText.text?.length ?: 0)
     }
 
-    private fun validateAndShowTermsPopup() {
-        val name: String = nameEditText.text.toString()
-        val username: String = userEditText.text.toString()
+    override fun validateAndShowTermsPopup() {
+        val name: String = nameEditText.text.toString().trim()
+        val username: String = userEditText.text.toString().trim()
         val password: String = passwordEditText.text.toString()
         val repeatPassword: String = repeatPasswordEditText.text.toString()
-        val email: String = emailEditText.text.toString()
-        val birthday: String = birthdayEditText.text.toString()
+        val email: String = emailEditText.text.toString().trim()
+        val birthday: String = birthdayEditText.text.toString().trim()
 
-
+        // Validar campos y mostrar mensajes de error según corresponda
         if (username.isEmpty()) {
             setError(userEditText, "Ingrese un nombre de usuario")
             return
@@ -207,7 +226,6 @@ class SigninActivity : AppCompatActivity() {
             setError(nameEditText, "Ingrese un nombre")
             return
         }
-
         if (password.isEmpty()) {
             setError(passwordEditText, "Ingrese una contraseña")
             return
@@ -229,37 +247,39 @@ class SigninActivity : AppCompatActivity() {
         }
 
         if (!ValidationUtils.isValidSignUsername(username)) {
-            showErrorPopup(userEditText, "Nombre de usuario inválido")
+            setError(userEditText, "Nombre de usuario inválido")
             return
         }
 
         if (!ValidationUtils.isValidSignName(name)) {
-            showErrorPopup(nameEditText, "Nombre inválido")
+            setError(nameEditText, "Nombre inválido")
             return
         }
 
         if (!ValidationUtils.isValidSignPassword(password)) {
-            showErrorPopup(passwordEditText, "Contraseña inválida")
+            setError(passwordEditText, "Contraseña inválida")
             return
         }
 
         if (repeatPassword != password) {
-            showErrorPopup(repeatPasswordEditText, "Las contraseñas no coinciden")
+            setError(repeatPasswordEditText, "Las contraseñas no coinciden")
             return
         }
 
         if (!ValidationUtils.isValidSignEmail(email)) {
-            showErrorPopup(emailEditText, "Email inválido")
+            setError(emailEditText, "Email inválido")
             return
         }
 
         if (!ValidationUtils.isValidSignBirthday(birthday)) {
-            showErrorPopup(birthdayEditText, "Fecha de nacimiento inválida")
+            setError(birthdayEditText, "Fecha de nacimiento inválida")
             return
         }
 
+
         showTermsPopup()
     }
+
 
 
     private fun setError(input: TextInputEditText, message: String) {
@@ -281,13 +301,19 @@ class SigninActivity : AppCompatActivity() {
 
     }
 
-
     override fun finish() {
         super.finish()
         // Implement finish logic if needed
     }
 
-    private fun showDatePickerDialog() {
+
+    override fun onBackPressed() {
+        val intent = Intent(this, CoverActivity::class.java)
+        startActivity(intent)
+        finish()
+    }
+
+    override fun showDatePickerDialog() {
         val calendar = Calendar.getInstance()
         val year = calendar.get(Calendar.YEAR)
         val month = calendar.get(Calendar.MONTH)
@@ -311,7 +337,75 @@ class SigninActivity : AppCompatActivity() {
         datePickerDialog.show()
     }
 
-    private fun signInWithGoogle() {
+    override fun handleFacebookAccessToken(token: AccessToken) {
+        val credential = FacebookAuthProvider.getCredential(token.token)
+        mAuth.signInWithCredential(credential).addOnCompleteListener(this) { task ->
+            if (task.isSuccessful) {
+                // Successful login
+                showTermsPopup()
+            } else {
+                // Error in login
+            }
+        }
+    }
+
+    override fun navigateToMapActivity() {
+        val intent = Intent(this, MapActivity::class.java)
+        startActivity(intent)
+        finish()
+    }
+
+    override fun showTermsPopup() {
+        val inflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+        val popupView = inflater.inflate(R.layout.activity_read_terms, null)
+        val popupWindow = PopupWindow(
+            popupView,
+            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.MATCH_PARENT,
+            true
+        )
+        popupWindow.animationStyle = R.style.PopupAnimation
+        popupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0)
+
+        // Asignar listeners y realizar acciones según corresponda en el popup de términos
+        val termsTextView = popupView.findViewById<TextView>(R.id.termsAndConditionsTextView)
+        val acceptButton = popupView.findViewById<Button>(R.id.acceptButton)
+        val cancelButton = popupView.findViewById<Button>(R.id.cancelButton)
+
+        termsTextView.setOnClickListener {
+            showReadTermsPopup()
+        }
+
+
+        acceptButton.setOnClickListener {
+            navigateToMapActivity()
+        }
+
+        cancelButton.setOnClickListener {
+            popupWindow.dismiss()
+        }
+    }
+
+    override fun showReadTermsPopup() {
+        val inflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+        val popupView = inflater.inflate(R.layout.popup_read_terms_layout, null)
+        val popupWindow = PopupWindow(
+            popupView,
+            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.MATCH_PARENT,
+            true
+        )
+        popupWindow.animationStyle = R.style.PopupAnimation
+        popupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0)
+
+        // Asignar listeners y realizar acciones según corresponda en el popup de lectura de términos
+        val closeButton = popupView.findViewById<Button>(R.id.closePopup)
+        closeButton.setOnClickListener {
+            popupWindow.dismiss()
+        }
+    }
+
+    override fun signInWithGoogle() {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(getString(R.string.default_web_client_id)).requestEmail().build()
 
@@ -320,7 +414,8 @@ class SigninActivity : AppCompatActivity() {
         startActivityForResult(signInIntent, RC_GOOGLE_SIGN_IN)
     }
 
-    private fun signInWithFacebook() {
+
+    override fun signInWithFacebook() {
         LoginManager.getInstance()
             .registerCallback(callbackManager, object : FacebookCallback<LoginResult> {
                 override fun onSuccess(loginResult: LoginResult) {
@@ -339,74 +434,6 @@ class SigninActivity : AppCompatActivity() {
         LoginManager.getInstance().logInWithReadPermissions(this, listOf("email"))
     }
 
-    private fun handleFacebookAccessToken(token: AccessToken) {
-        val credential = FacebookAuthProvider.getCredential(token.token)
-        mAuth.signInWithCredential(credential).addOnCompleteListener(this) { task ->
-            if (task.isSuccessful) {
-                // Successful login
-                showTermsPopup()
-            } else {
-                // Error in login
-            }
-        }
-    }
-    private fun navigateToMapActivity() {
-        val intent = Intent(this, MapActivity::class.java)
-        startActivity(intent)
-        finish()
-    }
-
-    private fun showTermsPopup() {
-        val inflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-        val popupView = inflater.inflate(R.layout.popup_terminos_layout, null)
-        val popupWindow = PopupWindow(
-            popupView,
-            WindowManager.LayoutParams.MATCH_PARENT,
-            WindowManager.LayoutParams.MATCH_PARENT,
-            true
-        )
-        popupWindow.animationStyle = R.style.PopupAnimation
-        popupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0)
-
-        val termsTextView = popupView.findViewById<TextView>(R.id.termsAndConditionsTextView)
-        val checkBox = popupView.findViewById<CheckBox>(R.id.termsAndConditionsCheckBox)
-        val acceptButton = popupView.findViewById<Button>(R.id.acceptButton)
-        val cancelButton = popupView.findViewById<Button>(R.id.cancelButton)
-
-        termsTextView.setOnClickListener {
-            showReadTermsPopup()
-        }
-
-        checkBox.setOnCheckedChangeListener { _, isChecked ->
-            acceptButton.isEnabled = isChecked
-        }
-
-        acceptButton.setOnClickListener {
-            navigateToMapActivity()
-        }
-
-        cancelButton.setOnClickListener {
-            popupWindow.dismiss()
-        }
-    }
-
-    private fun showReadTermsPopup() {
-        val inflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-        val popupView = inflater.inflate(R.layout.read_terms_layout, null)
-        val popupWindow = PopupWindow(
-            popupView,
-            WindowManager.LayoutParams.MATCH_PARENT,
-            WindowManager.LayoutParams.MATCH_PARENT,
-            true
-        )
-        popupWindow.animationStyle = R.style.PopupAnimation
-        popupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0)
-
-        val closeButton = popupView.findViewById<Button>(R.id.closePopup)
-        closeButton.setOnClickListener {
-            popupWindow.dismiss()
-        }
-    }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -416,24 +443,23 @@ class SigninActivity : AppCompatActivity() {
             val task = GoogleSignIn.getSignedInAccountFromIntent(data)
             try {
                 val account = task.getResult(ApiException::class.java)
-                firebaseAuthWithGoogle(account?.idToken)
+                firebaseAuthWithGoogle(account)
             } catch (e: ApiException) {
                 // Error in Google login
             }
         }
     }
 
-    private fun firebaseAuthWithGoogle(idToken: String?) {
-        val credential = GoogleAuthProvider.getCredential(idToken, null)
-        mAuth.signInWithCredential(credential)
-            .addOnCompleteListener(this) { task ->
-                if (task.isSuccessful) {
-                    // Successful login
-                    showTermsPopup()
-                } else {
-                    // Error in login
-                }
+    private fun firebaseAuthWithGoogle(account: GoogleSignInAccount?) {
+        val credential = GoogleAuthProvider.getCredential(account?.idToken, null)
+        mAuth.signInWithCredential(credential).addOnCompleteListener(this) { task ->
+            if (task.isSuccessful) {
+                // Successful login
+                showTermsPopup()
+            } else {
+                // Error in login
             }
+        }
     }
 
     companion object {
