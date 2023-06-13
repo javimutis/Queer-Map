@@ -59,6 +59,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
         }
     }
 
+
     private fun hasLocationPermission(): Boolean {
         return (ContextCompat.checkSelfPermission(
             this,
@@ -69,6 +70,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
                     Manifest.permission.ACCESS_COARSE_LOCATION
                 ) == PackageManager.PERMISSION_GRANTED)
     }
+
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
