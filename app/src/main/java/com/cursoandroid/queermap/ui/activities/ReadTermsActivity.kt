@@ -2,11 +2,11 @@ package com.cursoandroid.queermap.ui.activities
 
 import android.content.Intent
 import android.os.Bundle
-import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import com.cursoandroid.queermap.MapsActivity
 import com.cursoandroid.queermap.R
 import com.cursoandroid.queermap.interfaces.ReadTermsContract
 import com.cursoandroid.queermap.presenter.ReadTermsPresenter
@@ -48,7 +48,7 @@ class ReadTermsActivity : AppCompatActivity(), ReadTermsContract.View {
     }
 
     override fun navigateToMapActivity() {
-        val intent = Intent(this, MapActivity::class.java)
+        val intent = Intent(this, MapsActivity::class.java)
         startActivity(intent)
     }
 

@@ -10,13 +10,13 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.Button
-import android.widget.CheckBox
 import android.widget.DatePicker
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.PopupWindow
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import com.cursoandroid.queermap.MapsActivity
 import com.cursoandroid.queermap.R
 import com.cursoandroid.queermap.interfaces.SigninContract
 import com.cursoandroid.queermap.presenter.SigninPresenter
@@ -350,7 +350,7 @@ class SigninActivity : AppCompatActivity(), SigninContract.View {
     }
 
     override fun navigateToMapActivity() {
-        val intent = Intent(this, MapActivity::class.java)
+        val intent = Intent(this, MapsActivity::class.java)
         startActivity(intent)
         finish()
     }

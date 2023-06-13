@@ -2,9 +2,7 @@ package com.cursoandroid.queermap.ui.activities
 
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
 import androidx.appcompat.app.AppCompatActivity
-import com.cursoandroid.queermap.MainActivity
 import com.cursoandroid.queermap.R
 import com.cursoandroid.queermap.interfaces.SplashContract
 import com.cursoandroid.queermap.presenter.SplashPresenter
