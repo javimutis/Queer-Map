@@ -51,6 +51,7 @@
     <dimen name="text_sp16">16sp</dimen>
     <dimen name="text_sp20">20sp</dimen>
 
+    <dimen name="icon_size">40dp</dimen>
 
 
 </resources>
