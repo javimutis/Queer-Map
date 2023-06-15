@@ -71,7 +71,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
         val health = MarkerCategory("Salud", BitmapDescriptorFactory.HUE_YELLOW)
         val entertainment = MarkerCategory("Entretenimiento", BitmapDescriptorFactory.HUE_GREEN)
         val shops = MarkerCategory("Tiendas", BitmapDescriptorFactory.HUE_BLUE)
-        val exploration = MarkerCategory("Exploración", 300f)
+        val exploration = MarkerCategory("Exploración", BitmapDescriptorFactory.HUE_VIOLET)
 
         googleMap.addMarker(
             MarkerOptions()
