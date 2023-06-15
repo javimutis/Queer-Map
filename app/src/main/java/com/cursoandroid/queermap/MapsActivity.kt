@@ -46,12 +46,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
 
         val mapFragment = SupportMapFragment.newInstance(options)
         supportFragmentManager.beginTransaction()
-            .add(R.id.map, mapFragment)
+            .add(R.id.mapFragment, mapFragment)
             .commit()
 
         mapFragment.getMapAsync(this)
     }
-    data class MarkerCategory(val name: String, val icon: Int)
+    data class MarkerCategory(val name: String, val icon: Bitmap)
+
     override fun onMapReady(map: GoogleMap) {
         googleMap = map
         googleMap.setOnMyLocationButtonClickListener(this)
@@ -67,30 +68,25 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
         // Habilitar los controles de zoom
         uiSettings.isZoomControlsEnabled = true
 
-        val organization = MarkerCategory("Organizaciones", R.drawable.organizationicon)
-        val culture = MarkerCategory("Cultura", R.drawable.cultureicon)
-        val health = MarkerCategory("Salud", R.drawable.healthicon)
-        val entertainment = MarkerCategory("Entretenimiento", R.drawable.entertainmenticon)
-        val shops = MarkerCategory("Tiendas", R.drawable.shopsicon)
-        val exploration = MarkerCategory("Exploración", R.drawable.explorationicon)
+        // Función para escalar el icono al tamaño deseado
+        fun scaleIcon(iconRes: Int, width: Int, height: Int): Bitmap {
+            val iconBitmap = BitmapFactory.decodeResource(resources, iconRes)
+            return Bitmap.createScaledBitmap(iconBitmap, width, height, false)
+        }
 
-        // Ajustar el tamaño de los íconos
-        val iconSize = resources.getDimensionPixelSize(R.dimen.icon_size) // Dimension en resources.xml
+        // Definir los íconos con los tamaños personalizados
+        val communityIcon = scaleIcon(R.drawable.community_icon, resources.getDimensionPixelSize(R.dimen.icon_width), resources.getDimensionPixelSize(R.dimen.icon_height))
+        val cultureIcon = scaleIcon(R.drawable.culture_icon, resources.getDimensionPixelSize(R.dimen.icon_width), resources.getDimensionPixelSize(R.dimen.icon_height))
+        val healthIcon = scaleIcon(R.drawable.health_icon, resources.getDimensionPixelSize(R.dimen.icon_width), resources.getDimensionPixelSize(R.dimen.icon_height))
+        val entertainmentIcon = scaleIcon(R.drawable.entertainment_icon, resources.getDimensionPixelSize(R.dimen.icon_width), resources.getDimensionPixelSize(R.dimen.icon_height))
+        val shopsIcon = scaleIcon(R.drawable.shops_icon, resources.getDimensionPixelSize(R.dimen.icon_width), resources.getDimensionPixelSize(R.dimen.icon_height))
+        val explorationIcon = scaleIcon(R.drawable.exploration_icon, resources.getDimensionPixelSize(R.dimen.icon_width), resources.getDimensionPixelSize(R.dimen.icon_height))
 
-        val organizationIcon = scaleIcon(organization.icon, iconSize)
-        val cultureIcon = scaleIcon(culture.icon, iconSize)
-        val healthIcon = scaleIcon(health.icon, iconSize)
-        val entertainmentIcon = scaleIcon(entertainment.icon, iconSize)
-        val shopsIcon = scaleIcon(shops.icon, iconSize)
-        val explorationIcon = scaleIcon(exploration.icon, iconSize)
-
-
-        // Agregar marcadores con íconos personalizados
         googleMap.addMarker(
             MarkerOptions()
                 .position(LatLng(-33.01133938329604, -71.54251642642323))
                 .title("Prevención Viña")
-                .icon(BitmapDescriptorFactory.fromBitmap(organizationIcon))
+                .icon(BitmapDescriptorFactory.fromBitmap(communityIcon))
         )
 
         googleMap.addMarker(
@@ -134,14 +130,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
                 .title("Zona de cruising en 'Jardín Botánico de Viña del Mar'")
                 .icon(BitmapDescriptorFactory.fromBitmap(explorationIcon))
         )
+
+        googleMap.addMarker(
+            MarkerOptions()
+                .position(LatLng(-33.038436316953494, -71.62810017643785))
+                .title("Atención psicologíca, 'Patricia Casanova'")
+                .icon(BitmapDescriptorFactory.fromBitmap(healthIcon))
+        )
     }
-
-    private fun scaleIcon(iconRes: Int, size: Int): Bitmap {
-        val iconBitmap = BitmapFactory.decodeResource(resources, iconRes)
-        return Bitmap.createScaledBitmap(iconBitmap, size, size, false)
-    }
-
-
     private fun enableMyLocation() {
         if (hasLocationPermission()) {
             if (ActivityCompat.checkSelfPermission(
