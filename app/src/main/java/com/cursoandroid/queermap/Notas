@@ -1,0 +1,169 @@
+        NOTAS: MAPSACTIVITY
+
+        // Función para escalar el icono al tamaño deseado
+
+        fun scaleIcon(iconRes: Int, width: Int, height: Int): Bitmap {
+            val iconBitmap = BitmapFactory.decodeResource(resources, iconRes)
+            return Bitmap.createScaledBitmap(iconBitmap, width, height, false)
+        }
+
+
+        // Definir los íconos con los tamaños personalizados
+        val communityIcon = scaleIcon(R.drawable.community_icon, resources.getDimensionPixelSize(R.dimen.icon_width), resources.getDimensionPixelSize(R.dimen.icon_height))
+        val cultureIcon = scaleIcon(R.drawable.culture_icon, resources.getDimensionPixelSize(R.dimen.icon_width), resources.getDimensionPixelSize(R.dimen.icon_height))
+        val healthIcon = scaleIcon(R.drawable.health_icon, resources.getDimensionPixelSize(R.dimen.icon_width), resources.getDimensionPixelSize(R.dimen.icon_height))
+        val entertainmentIcon = scaleIcon(R.drawable.entertainment_icon, resources.getDimensionPixelSize(R.dimen.icon_width), resources.getDimensionPixelSize(R.dimen.icon_height))
+        val shopsIcon = scaleIcon(R.drawable.shops_icon, resources.getDimensionPixelSize(R.dimen.icon_width), resources.getDimensionPixelSize(R.dimen.icon_height))
+        val explorationIcon = scaleIcon(R.drawable.exploration_icon, resources.getDimensionPixelSize(R.dimen.icon_width), resources.getDimensionPixelSize(R.dimen.icon_height))
+
+        // Añadir marcadores al mapa con sus respectivas opciones
+        googleMap.addMarker(
+            MarkerOptions()
+                .position(LatLng(-33.01133938329604, -71.54251642642323))
+                .title("Prevención Viña")
+                .snippet("Organización funcional que promueve la prevención del VIH/sida en la comunidad LGBTI y los grupos")
+                .icon(BitmapDescriptorFactory.fromBitmap(communityIcon))
+        )
+
+        googleMap.addMarker(
+            MarkerOptions()
+                .position(LatLng(-33.04744191035794, -71.60834929999501))
+                .title("Teatro Municipal de Valparaíso")
+                .icon(BitmapDescriptorFactory.fromBitmap(cultureIcon))
+        )
+
+        googleMap.addMarker(
+            MarkerOptions()
+                .position(LatLng(-33.01074603885636, -71.54784261280741))
+                .title("Médico Ginecológico Obstetra -  María Cindy Díaz Díaz")
+                .icon(BitmapDescriptorFactory.fromBitmap(healthIcon))
+        )
+
+        googleMap.addMarker(
+            MarkerOptions()
+                .position(LatLng(-33.043516724940865, -71.61742898440514))
+                .title("Pagano")
+                .icon(BitmapDescriptorFactory.fromBitmap(entertainmentIcon))
+        )
+
+        googleMap.addMarker(
+            MarkerOptions()
+                .position(LatLng(-33.02039838048769, -71.55795668873755))
+                .title("Mo Gastrobar")
+                .icon(BitmapDescriptorFactory.fromBitmap(entertainmentIcon))
+        )
+
+        googleMap.addMarker(
+            MarkerOptions()
+                .position(LatLng(-33.0216340714256, -71.55631179242113))
+                .title("SexShop 'Tentación y deseo'")
+                .icon(BitmapDescriptorFactory.fromBitmap(shopsIcon))
+        )
+
+        googleMap.addMarker(
+            MarkerOptions()
+                .position(LatLng(-33.04500143204479, -71.50136662854236))
+                .title("Zona de cruising en 'Jardín Botánico de Viña del Mar'")
+                .icon(BitmapDescriptorFactory.fromBitmap(explorationIcon))
+        )
+
+        googleMap.addMarker(
+            MarkerOptions()
+                .position(LatLng(-33.038436316953494, -71.62810017643785))
+                .title("Atención psicologíca, 'Patricia Casanova'")
+                .icon(BitmapDescriptorFactory.fromBitmap(healthIcon))
+        )
+
+             Manejar el evento de clic en un Point of Interest (POI)
+            override fun onPoiClick(poi: PointOfInterest) {
+                Toast.makeText(
+                    this,
+                    "Clicked: ${poi.name}\nPlace ID: ${poi.placeId}\nLatitude: ${poi.latLng.latitude} Longitude: ${poi.latLng.longitude}",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+
+        PLACESACTIVITY
+
+        // Configurar el listener del Spinner para seleccionar el icono correspondiente a la categoría seleccionada
+        spinnerCategory.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                val selectedCategory = categories[position]
+                selectedIcon = getIconForCategory(selectedCategory)
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>) {
+                selectedIcon = getDefaultIcon()
+            }
+        }
+
+
+
+    // Obtener el icono predeterminado
+    private fun getDefaultIcon(): Bitmap {
+        return scaleIcon(
+            R.drawable.default_marker,
+            resources.getDimensionPixelSize(R.dimen.icon_width),
+            resources.getDimensionPixelSize(R.dimen.icon_height)
+        )
+    }
+
+    // Obtener el icono correspondiente a una categoría
+    private fun getIconForCategory(category: String): Bitmap {
+        return when (category) {
+            "Comunidad" -> scaleIcon(
+                R.drawable.community_icon,
+                resources.getDimensionPixelSize(R.dimen.icon_width),
+                resources.getDimensionPixelSize(R.dimen.icon_height)
+            )
+
+            "Cultura" -> scaleIcon(
+                R.drawable.culture_icon,
+                resources.getDimensionPixelSize(R.dimen.icon_width),
+                resources.getDimensionPixelSize(R.dimen.icon_height)
+            )
+
+            "Salud" -> scaleIcon(
+                R.drawable.health_icon,
+                resources.getDimensionPixelSize(R.dimen.icon_width),
+                resources.getDimensionPixelSize(R.dimen.icon_height)
+            )
+
+            "Entretenimiento" -> scaleIcon(
+                R.drawable.entertainment_icon,
+                resources.getDimensionPixelSize(R.dimen.icon_width),
+                resources.getDimensionPixelSize(R.dimen.icon_height)
+            )
+
+            "Tiendas" -> scaleIcon(
+                R.drawable.shops_icon,
+                resources.getDimensionPixelSize(R.dimen.icon_width),
+                resources.getDimensionPixelSize(R.dimen.icon_height)
+            )
+
+            "Exploración" -> scaleIcon(
+                R.drawable.exploration_icon,
+                resources.getDimensionPixelSize(R.dimen.icon_width),
+                resources.getDimensionPixelSize(R.dimen.icon_height)
+            )
+
+            else -> getDefaultIcon()
+        }
+    }
+
+    // Escalar un ícono a un tamaño específico
+    private fun scaleIcon(@DrawableRes drawableRes: Int, width: Int, height: Int): Bitmap {
+        val drawable = ContextCompat.getDrawable(this, drawableRes)
+        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        drawable?.setBounds(0, 0, canvas.width, canvas.height)
+        drawable?.draw(canvas)
+        return bitmap
+    }
+}
+

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="spinnerCategory">
+        <item>Elige una categoría</item>
+        <item>Comunidad</item>
+        <item>Cultura</item>
+        <item>Entretenimiento</item>
+        <item>Exploración</item>
+        <item>Salud</item>
+        <item>Tiendas</item>
+    </string-array>
+</resources>

@@ -54,6 +54,7 @@
     <dimen name="icon_width">27dp</dimen>
     <dimen name="icon_height">32dp</dimen>
 
+    <dimen name="map_padding">16dp</dimen>
 
 </resources>
 

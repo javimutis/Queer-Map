@@ -8,5 +8,6 @@
     <color name="popup_background">#FFFFFF</color>
     <color name="error_text_color">#6420A8</color>
     <color name="colorAccent">#FFC0CB</color>
+    <color name="radius">#ff91dc</color>
 
 </resources>

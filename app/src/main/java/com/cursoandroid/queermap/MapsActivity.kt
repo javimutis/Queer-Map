@@ -1,9 +1,8 @@
 package com.cursoandroid.queermap
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.location.Location
 import android.os.Bundle
 import android.util.Log
@@ -11,24 +10,22 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.GoogleMap.OnMapClickListener
 import com.google.android.gms.maps.GoogleMap.OnMyLocationButtonClickListener
 import com.google.android.gms.maps.GoogleMap.OnMyLocationClickListener
-import com.google.android.gms.maps.GoogleMap.OnPoiClickListener
 import com.google.android.gms.maps.GoogleMapOptions
-import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.MapsInitializer
 import com.google.android.gms.maps.MapsInitializer.Renderer
+import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.OnMapsSdkInitializedCallback
-import com.google.android.gms.maps.model.PointOfInterest
-
+import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.LatLng
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
-    OnMyLocationButtonClickListener, OnMyLocationClickListener, OnPoiClickListener,
-    OnMapsSdkInitializedCallback {
+    OnMyLocationButtonClickListener, OnMyLocationClickListener,
+    OnMapsSdkInitializedCallback, OnMapClickListener {
 
     private lateinit var googleMap: GoogleMap
 
@@ -36,108 +33,71 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
 
+        // Inicializar los mapas y el renderizador
         MapsInitializer.initialize(applicationContext, Renderer.LATEST, this)
 
+        // Configurar las opciones del mapa
         val options = GoogleMapOptions()
             .mapType(GoogleMap.MAP_TYPE_NORMAL)
             .compassEnabled(false)
             .rotateGesturesEnabled(false)
             .tiltGesturesEnabled(false)
 
+        // Crear el fragmento del mapa con las opciones configuradas
         val mapFragment = SupportMapFragment.newInstance(options)
         supportFragmentManager.beginTransaction()
             .add(R.id.mapFragment, mapFragment)
             .commit()
 
+        // Obtener el mapa de forma asíncrona cuando esté listo
         mapFragment.getMapAsync(this)
     }
-    data class MarkerCategory(val name: String, val icon: Bitmap)
 
     override fun onMapReady(map: GoogleMap) {
         googleMap = map
+
+        // Establecer listeners de eventos en el mapa
         googleMap.setOnMyLocationButtonClickListener(this)
         googleMap.setOnMyLocationClickListener(this)
-        googleMap.setOnPoiClickListener(this)
+        googleMap.setOnMapClickListener (this)
 
-        // Habilitar la capa Mi ubicación
+        // Habilitar la capa "Mi ubicación" en el mapa
         enableMyLocation()
 
-        // Obtener los ajustes de interfaz de usuario del mapa
+        // Obtener la última ubicación conocida del usuario
+        val fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        if (hasLocationPermission()) {
+            try {
+                fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
+                    if (location != null) {
+                        val currentPosition = LatLng(location.latitude, location.longitude)
+                        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentPosition, 15f))
+
+                    }
+                }
+            } catch (e: SecurityException) {
+                e.printStackTrace()
+            }
+        } else {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ),
+                LOCATION_PERMISSION_REQUEST_CODE
+            )
+        }
+        // Obtener la configuración de la interfaz de usuario del mapa
         val uiSettings = googleMap.uiSettings
 
         // Habilitar los controles de zoom
         uiSettings.isZoomControlsEnabled = true
 
-        // Función para escalar el icono al tamaño deseado
-        fun scaleIcon(iconRes: Int, width: Int, height: Int): Bitmap {
-            val iconBitmap = BitmapFactory.decodeResource(resources, iconRes)
-            return Bitmap.createScaledBitmap(iconBitmap, width, height, false)
-        }
 
-        // Definir los íconos con los tamaños personalizados
-        val communityIcon = scaleIcon(R.drawable.community_icon, resources.getDimensionPixelSize(R.dimen.icon_width), resources.getDimensionPixelSize(R.dimen.icon_height))
-        val cultureIcon = scaleIcon(R.drawable.culture_icon, resources.getDimensionPixelSize(R.dimen.icon_width), resources.getDimensionPixelSize(R.dimen.icon_height))
-        val healthIcon = scaleIcon(R.drawable.health_icon, resources.getDimensionPixelSize(R.dimen.icon_width), resources.getDimensionPixelSize(R.dimen.icon_height))
-        val entertainmentIcon = scaleIcon(R.drawable.entertainment_icon, resources.getDimensionPixelSize(R.dimen.icon_width), resources.getDimensionPixelSize(R.dimen.icon_height))
-        val shopsIcon = scaleIcon(R.drawable.shops_icon, resources.getDimensionPixelSize(R.dimen.icon_width), resources.getDimensionPixelSize(R.dimen.icon_height))
-        val explorationIcon = scaleIcon(R.drawable.exploration_icon, resources.getDimensionPixelSize(R.dimen.icon_width), resources.getDimensionPixelSize(R.dimen.icon_height))
+}
 
-        googleMap.addMarker(
-            MarkerOptions()
-                .position(LatLng(-33.01133938329604, -71.54251642642323))
-                .title("Prevención Viña")
-                .icon(BitmapDescriptorFactory.fromBitmap(communityIcon))
-        )
-
-        googleMap.addMarker(
-            MarkerOptions()
-                .position(LatLng(-33.04744191035794, -71.60834929999501))
-                .title("Teatro Municipal de Valparaíso")
-                .icon(BitmapDescriptorFactory.fromBitmap(cultureIcon))
-        )
-
-        googleMap.addMarker(
-            MarkerOptions()
-                .position(LatLng(-33.01074603885636, -71.54784261280741))
-                .title("Médico Ginecológico Obstetra -  María Cindy Díaz Díaz")
-                .icon(BitmapDescriptorFactory.fromBitmap(healthIcon))
-        )
-
-        googleMap.addMarker(
-            MarkerOptions()
-                .position(LatLng(-33.043516724940865, -71.61742898440514))
-                .title("Pagano")
-                .icon(BitmapDescriptorFactory.fromBitmap(entertainmentIcon))
-        )
-
-        googleMap.addMarker(
-            MarkerOptions()
-                .position(LatLng(-33.02039838048769, -71.55795668873755))
-                .title("Mo Gastrobar")
-                .icon(BitmapDescriptorFactory.fromBitmap(entertainmentIcon))
-        )
-
-        googleMap.addMarker(
-            MarkerOptions()
-                .position(LatLng(-33.0216340714256, -71.55631179242113))
-                .title("SexShop 'Tentación y deseo'")
-                .icon(BitmapDescriptorFactory.fromBitmap(shopsIcon))
-        )
-
-        googleMap.addMarker(
-            MarkerOptions()
-                .position(LatLng(-33.04500143204479, -71.50136662854236))
-                .title("Zona de cruising en 'Jardín Botánico de Viña del Mar'")
-                .icon(BitmapDescriptorFactory.fromBitmap(explorationIcon))
-        )
-
-        googleMap.addMarker(
-            MarkerOptions()
-                .position(LatLng(-33.038436316953494, -71.62810017643785))
-                .title("Atención psicologíca, 'Patricia Casanova'")
-                .icon(BitmapDescriptorFactory.fromBitmap(healthIcon))
-        )
-    }
+    // Habilitar la capa "Mi ubicación" en el mapa
     private fun enableMyLocation() {
         if (hasLocationPermission()) {
             if (ActivityCompat.checkSelfPermission(
@@ -159,6 +119,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
         }
     }
 
+
+    // Verificar si se tiene permiso de ubicación
     private fun hasLocationPermission(): Boolean {
         return (ContextCompat.checkSelfPermission(
             this,
@@ -170,6 +132,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
                 ) == PackageManager.PERMISSION_GRANTED)
     }
 
+    // Manejar el resultado de la solicitud de permisos
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<String>,
@@ -195,30 +158,30 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
         }
     }
 
+    override fun onMapClick(latLng: LatLng) {
+        val latitud = latLng.latitude
+        val longitud = latLng.longitude
+        val intent = Intent(this, PlaceActivity::class.java)
+        intent.putExtra("latitud", latitud)
+        intent.putExtra("longitud", longitud)
+        startActivity(intent)
+    }
+
+    // Manejar el evento del botón "Mi ubicación"
     override fun onMyLocationButtonClick(): Boolean {
         Toast.makeText(this, "Botón de Mi ubicación clickeado", Toast.LENGTH_SHORT).show()
         return false
     }
 
+    // Manejar el evento de clic en "Mi ubicación"
     override fun onMyLocationClick(location: Location) {
         val currentPosition = LatLng(location.latitude, location.longitude)
-        googleMap.addMarker(
-            MarkerOptions()
-                .position(currentPosition)
-                .title("Mi ubicación actual")
-        )
-    }
-
-    override fun onPoiClick(poi: PointOfInterest) {
-        Toast.makeText(
-            this,
-            "Clicked: ${poi.name}\nPlace ID: ${poi.placeId}\nLatitude: ${poi.latLng.latitude} Longitude: ${poi.latLng.longitude}",
-            Toast.LENGTH_SHORT
-        ).show()
-
 
     }
 
+
+
+    // Verificar si se otorgó un permiso específico
     private fun isPermissionGranted(
         permissions: Array<String>,
         grantResults: IntArray,
@@ -232,6 +195,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
         return false
     }
 
+    // Manejar la inicialización del SDK de mapas
     override fun onMapsSdkInitialized(renderer: Renderer) {
         when (renderer) {
             Renderer.LATEST -> Log.d("MapsDemo", "The latest version of the renderer is used.")
@@ -242,4 +206,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
     companion object {
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1
     }
+
+
 }
