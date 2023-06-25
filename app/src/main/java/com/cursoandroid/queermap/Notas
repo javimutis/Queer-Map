@@ -85,6 +85,8 @@
 
         PLACESACTIVITY
 
+
+
         // Configurar el listener del Spinner para seleccionar el icono correspondiente a la categoría seleccionada
         spinnerCategory.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(

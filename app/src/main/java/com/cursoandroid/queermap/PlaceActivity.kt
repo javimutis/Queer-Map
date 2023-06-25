@@ -1,6 +1,7 @@
 package com.cursoandroid.queermap
 
 import android.content.ContentValues.TAG
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.ArrayAdapter
@@ -43,6 +44,7 @@ class PlaceActivity : AppCompatActivity() {
         // Obtener las categorías desde los recursos
         val categories = resources.getStringArray(R.array.spinnerCategory)
 
+
         // Configurar el adaptador del Spinner
         val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, categories)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
@@ -59,25 +61,26 @@ class PlaceActivity : AppCompatActivity() {
                 latitude,
                 longitude
             )
-            Log.d(TAG, "BBDD enviada")
 
             placeService.createPlace(place)
+
+            val intent = Intent(this, MapsActivity::class.java)
+            Log.d(TAG, "BBDD enviada")
+            startActivity(intent)
+            finish()
         }
         // Despues actualizar a botón atrás
         backButton.setOnClickListener {
             placeService.getPlaces { places ->
-                val placesList = places
+                val intent = Intent(this, MapsActivity::class.java)
                 Log.d(TAG, "La lista de riesgos ${places}")
+                startActivity(intent)
+                finish()
             }
 
         }
     }
 }
-
-//                // Volver a la actividad MapActivity
-//            val intent = Intent(this, MapsActivity::class.java)
-//
-//            startActivity(intent)
 
 
 

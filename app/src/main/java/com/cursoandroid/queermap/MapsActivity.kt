@@ -3,6 +3,8 @@ package com.cursoandroid.queermap
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.location.Location
 import android.os.Bundle
 import android.util.Log
@@ -10,6 +12,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.cursoandroid.queermap.services.PlaceService
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -22,12 +25,18 @@ import com.google.android.gms.maps.MapsInitializer.Renderer
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.OnMapsSdkInitializedCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
+
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
     OnMyLocationButtonClickListener, OnMyLocationClickListener,
     OnMapsSdkInitializedCallback, OnMapClickListener {
 
     private lateinit var googleMap: GoogleMap
+    private val iconWidth: Int = 60
+    private val iconHeight: Int = 70
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,7 +68,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
         // Establecer listeners de eventos en el mapa
         googleMap.setOnMyLocationButtonClickListener(this)
         googleMap.setOnMyLocationClickListener(this)
-        googleMap.setOnMapClickListener (this)
+        googleMap.setOnMapClickListener(this)
 
         // Habilitar la capa "Mi ubicación" en el mapa
         enableMyLocation()
@@ -71,7 +80,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
                 fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
                     if (location != null) {
                         val currentPosition = LatLng(location.latitude, location.longitude)
-                        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentPosition, 15f))
+                        googleMap.moveCamera(
+                            CameraUpdateFactory.newLatLngZoom(
+                                currentPosition,
+                                15f
+                            )
+                        )
 
                     }
                 }
@@ -94,10 +108,36 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
         // Habilitar los controles de zoom
         uiSettings.isZoomControlsEnabled = true
 
+        val placeService = PlaceService()
+        placeService.getPlaces { places ->
+            for (place in places) {
+                val latLng = LatLng(place.latitude, place.longitude)
+                val markerOptions = MarkerOptions()
+                    .position(latLng)
+                    .title(place.name)
+                    .snippet(place.description)
 
-}
+                // Asociar un icono diferente dependiendo de la categoría
+                val iconBitmap = when (place.category) {
+                    "Comunidad" -> BitmapFactory.decodeResource(resources, R.drawable.community_icon)
+                    "Cultura" -> BitmapFactory.decodeResource(resources, R.drawable.culture_icon)
+                    "Salud" -> BitmapFactory.decodeResource(resources, R.drawable.health_icon)
+                    "Entretenimiento" -> BitmapFactory.decodeResource(resources,R.drawable.entertainment_icon)
+                    "Tiendas" -> BitmapFactory.decodeResource(resources, R.drawable.shops_icon)
+                    "Exploración" -> BitmapFactory.decodeResource(resources, R.drawable.exploration_icon                    )
+                    else -> BitmapFactory.decodeResource(resources, R.drawable.default_marker)
+                }
 
-    // Habilitar la capa "Mi ubicación" en el mapa
+                // Cambiar el tamaño del icono
+                val scaledIcon = Bitmap.createScaledBitmap(iconBitmap, iconWidth, iconHeight, false)
+                markerOptions.icon(BitmapDescriptorFactory.fromBitmap(scaledIcon))
+
+                googleMap.addMarker(markerOptions)
+            }
+        }
+    }
+
+        // Habilitar la capa "Mi ubicación" en el mapa
     private fun enableMyLocation() {
         if (hasLocationPermission()) {
             if (ActivityCompat.checkSelfPermission(

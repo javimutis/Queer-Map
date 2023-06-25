@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/add_place"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:background="@color/background_color"
     android:padding="16dp"
     tools:context=".PlaceActivity">
@@ -170,19 +170,42 @@
             android:textColorHint="@color/text_color"
             android:textSize="16sp" />
 
-        <Button
+    <Button
             android:id="@+id/addPlaceButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/longitudeEditText"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="15dp"
             android:background="@drawable/neumorphism_button"
             android:fontFamily="@font/raleway_medium_italic"
             android:text="Agregar lugar"
             android:textColor="@color/button_text"
             android:textSize="16sp" />
+    <TextView
+        android:id="@+id/pdPlacesTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/addPlaceButton"
+        android:layout_marginTop="10dp"
+        android:fontFamily="@font/raleway_medium"
+        android:textColor="@color/title_color"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:text="¡Importante!" />
 
-    </RelativeLayout>
+    <TextView
+        android:id="@+id/pdPlacesSubtitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/pdPlacesTitle"
+        android:fontFamily="@font/raleway_medium"
+        android:textColor="@color/title_color"
+        android:textSize="16sp"
+        android:text="Verificación en proceso.\nTu lugar será evaluado antes de ser agregado.\nAgradecemos tu comprensión." />
+
+
+
+</RelativeLayout>
 
 
 
