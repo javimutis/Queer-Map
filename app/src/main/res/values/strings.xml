@@ -31,6 +31,8 @@
     <string name="terms_text">Tu espacio seguro en una app:\n\n ‣ Sé auténtic@: Utiliza tu identidad real en la aplicación. No uses identidades falsas.\n\n ‣ Celebramos la diversidad y el respeto hacia todos los miembros de la comunidad LGBTIQ+.\n\n ‣ Reporta cualquier actividad inapropiada para mantener nuestro entorno seguro y acogedor.\n\n ‣ Privacidad y confianza: No compartas ni solicites información personal sensible sin el consentimiento explícito de la otra persona.\n\nJuntes, creamos una comunidad inclusiva y segura.\n\nEquipo Queermap</string>
     <string name="google_maps_key">AIzaSyAxYFKAt5D18MCNEBf2RUXfrMmYGha_lkM</string>
     <string name="pexels_key">lncMUMsOuA3gsNfWRSxMG9nDBUQ8GD4987XLf0MD4XjATMdS8w1K6lps</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 
 
 </resources>

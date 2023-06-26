@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:background="@color/background_color"
     android:padding="16dp"
-    tools:context=".PlaceActivity">
+    tools:context=".activities.PlaceActivity">
 
     <LinearLayout
         android:id="@+id/titleBar"
@@ -22,165 +22,218 @@
             android:layout_height="@dimen/layout_dp35"
             android:layout_marginStart="5dp"
             android:layout_marginTop="5dp"
-            android:src="@drawable/ic_arrow_back"
-            android:contentDescription="TODO" />
+            android:contentDescription="TODO"
+            android:src="@drawable/ic_arrow_back" />
 
         <TextView
             android:id="@+id/addPlaceTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/margin_start_dp16"
-            android:layout_marginTop="25dp"
             android:layout_centerHorizontal="true"
+            android:layout_marginStart="@dimen/margin_start_dp16"
+            android:layout_marginTop="5dp"
             android:fontFamily="@font/raleway_medium"
             android:text="Agregar una nueva ubicación"
             android:textColor="@color/title_color"
             android:textSize="20sp" />
-        </LinearLayout>
+    </LinearLayout>
 
 
-        <TextView
-            android:id="@+id/addName"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/titleBar"
-            android:layout_marginTop="15dp"
-            android:fontFamily="@font/raleway_medium"
-            android:text="Nombre del lugar"
-            android:textColor="@color/title_color"
-            android:textSize="16sp" />
+    <TextView
+        android:id="@+id/addName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/titleBar"
+        android:layout_marginTop="10dp"
+        android:fontFamily="@font/raleway_medium"
+        android:text="Nombre del lugar"
+        android:textColor="@color/title_color"
+        android:textSize="16sp" />
 
-        <EditText
-            android:id="@+id/addNameEditText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/addName"
-            android:layout_marginTop="5dp"
-            android:background="@drawable/neumorphism_edit_text"
-            android:fontFamily="@font/raleway_italic"
-            android:hint="Ingresa el nombre del lugar"
-            android:minHeight="48dp"
-            android:paddingStart="16dp"
-            android:textColor="@color/text_color"
-            android:textColorHint="@color/text_color"
-            android:textSize="16sp" />
+    <EditText
+        android:id="@+id/addNameEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/addName"
+        android:layout_marginTop="5dp"
+        android:background="@drawable/neumorphism_edit_text"
+        android:fontFamily="@font/raleway_italic"
+        android:hint="Ingresa el nombre del lugar"
+        android:minHeight="35dp"
+        android:paddingStart="16dp"
+        android:textColor="@color/text_color"
+        android:textColorHint="@color/text_color"
+        android:textSize="16sp" />
 
-        <TextView
-            android:id="@+id/addDescription"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/addNameEditText"
-            android:layout_marginTop="5dp"
-            android:fontFamily="@font/raleway_medium"
-            android:text="Descripción"
-            android:textColor="@color/title_color"
-            android:textSize="16sp" />
+    <TextView
+        android:id="@+id/addDescription"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/addNameEditText"
+        android:layout_marginTop="5dp"
+        android:fontFamily="@font/raleway_medium"
+        android:text="Descripción"
+        android:textColor="@color/title_color"
+        android:textSize="16sp" />
 
-        <EditText
-            android:id="@+id/descriptionEditText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/addDescription"
-            android:layout_marginTop="5dp"
-            android:background="@drawable/neumorphism_edit_text"
-            android:fontFamily="@font/raleway_italic"
-            android:gravity="top"
-            android:hint="Ingresa la descripción del lugar"
-            android:inputType="textMultiLine"
-            android:lines="5"
-            android:maxLines="5"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:textColor="@color/text_color"
-            android:textColorHint="@color/text_color"
-            android:textSize="16sp" />
+    <EditText
+        android:id="@+id/descriptionEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/addDescription"
+        android:layout_marginTop="5dp"
+        android:background="@drawable/neumorphism_edit_text"
+        android:fontFamily="@font/raleway_italic"
+        android:gravity="top"
+        android:hint="Ingresa la descripción del lugar"
+        android:inputType="textMultiLine"
+        android:lines="2"
+        android:maxLines="2"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:textColor="@color/text_color"
+        android:textColorHint="@color/text_color"
+        android:textSize="16sp" />
 
-        <TextView
-            android:id="@+id/addCategory"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/descriptionEditText"
-            android:layout_marginTop="5dp"
-            android:fontFamily="@font/raleway_medium"
-            android:text="Categoría"
-            android:textColor="@color/title_color"
-            android:textSize="16sp" />
+    <TextView
+        android:id="@+id/phoneTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/descriptionEditText"
+        android:layout_marginTop="5dp"
+        android:fontFamily="@font/raleway_medium"
+        android:text="Teléfono"
+        android:textColor="@color/title_color"
+        android:textSize="16sp" />
 
-        <Spinner
-            android:id="@+id/spinnerCategory"
-            style="@style/SpinnerStyle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/addCategory"
-            android:minHeight="48dp" />
+    <EditText
+        android:id="@+id/phoneEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/phoneTextView"
+        android:layout_marginTop="5dp"
+        android:background="@drawable/neumorphism_edit_text"
+        android:fontFamily="@font/raleway_italic"
+        android:hint="Ingresa el teléfono del lugar"
+        android:minHeight="35dp"
+        android:paddingStart="16dp"
+        android:textColor="@color/text_color"
+        android:textColorHint="@color/text_color"
+        android:textSize="16sp" />
 
-        <TextView
-            android:id="@+id/autoLatitude"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/spinnerCategory"
-            android:layout_marginTop="10dp"
-            android:fontFamily="@font/raleway_medium"
-            android:text="Latitud"
-            android:textColor="@color/title_color"
-            android:textSize="16sp" />
+    <TextView
+        android:id="@+id/websiteTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/phoneEditText"
+        android:layout_marginTop="5dp"
+        android:fontFamily="@font/raleway_medium"
+        android:text="Sitio web"
+        android:textColor="@color/title_color"
+        android:textSize="16sp" />
 
-        <EditText
-            android:id="@+id/latitudeEditText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Latitud"
-            android:inputType="numberDecimal"
-            android:enabled="false"
-            android:layout_below="@id/autoLatitude"
-            android:layout_marginTop="5dp"
-            android:background="@drawable/neumorphism_edit_text"
-            android:fontFamily="@font/raleway_italic"
-            android:minHeight="48dp"
-            android:paddingStart="16dp"
-            android:textColor="@color/text_color"
-            android:textColorHint="@color/text_color"
-            android:textSize="16sp" />
+    <EditText
+        android:id="@+id/websiteEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/websiteTextView"
+        android:layout_marginTop="5dp"
+        android:background="@drawable/neumorphism_edit_text"
+        android:fontFamily="@font/raleway_italic"
+        android:hint="Ingresa el sitio web del lugar"
+        android:minHeight="35dp"
+        android:paddingStart="16dp"
+        android:textColor="@color/text_color"
+        android:textColorHint="@color/text_color"
+        android:textSize="16sp" />
 
-        <TextView
-            android:id="@+id/autoLongitude"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/latitudeEditText"
-            android:layout_marginTop="10dp"
-            android:fontFamily="@font/raleway_medium"
-            android:text="Longitud"
-            android:textColor="@color/title_color"
-            android:textSize="16sp" />
+    <TextView
+        android:id="@+id/addCategory"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/websiteEditText"
+        android:layout_marginTop="5dp"
+        android:fontFamily="@font/raleway_medium"
+        android:text="Categoría"
+        android:textColor="@color/title_color"
+        android:textSize="16sp" />
 
-        <EditText
-            android:id="@+id/longitudeEditText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Longitud"
-            android:inputType="numberDecimal"
-            android:enabled="false"
-            android:layout_below="@id/autoLongitude"
-            android:layout_marginTop="5dp"
-            android:background="@drawable/neumorphism_edit_text"
-            android:fontFamily="@font/raleway_italic"
-            android:minHeight="48dp"
-            android:paddingStart="16dp"
-            android:textColor="@color/text_color"
-            android:textColorHint="@color/text_color"
-            android:textSize="16sp" />
+    <Spinner
+        android:id="@+id/spinnerCategory"
+        style="@style/SpinnerStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/addCategory"
+        android:minHeight="35dp" />
+
+    <TextView
+        android:id="@+id/autoLatitude"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/spinnerCategory"
+        android:layout_marginTop="5dp"
+        android:fontFamily="@font/raleway_medium"
+        android:text="Latitud"
+        android:textColor="@color/title_color"
+        android:textSize="16sp" />
+
+    <EditText
+        android:id="@+id/latitudeEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/autoLatitude"
+        android:layout_marginTop="5dp"
+        android:background="@drawable/neumorphism_edit_text"
+        android:enabled="false"
+        android:fontFamily="@font/raleway_italic"
+        android:hint="Latitud"
+        android:inputType="numberDecimal"
+        android:minHeight="35dp"
+        android:paddingStart="16dp"
+        android:textColor="@color/text_color"
+        android:textColorHint="@color/text_color"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/autoLongitude"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/latitudeEditText"
+        android:layout_marginTop="5dp"
+        android:fontFamily="@font/raleway_medium"
+        android:text="Longitud"
+        android:textColor="@color/title_color"
+        android:textSize="16sp" />
+
+    <EditText
+        android:id="@+id/longitudeEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/autoLongitude"
+        android:layout_marginTop="5dp"
+        android:background="@drawable/neumorphism_edit_text"
+        android:enabled="false"
+        android:fontFamily="@font/raleway_italic"
+        android:hint="Longitud"
+        android:inputType="numberDecimal"
+        android:minHeight="35dp"
+        android:paddingStart="16dp"
+        android:textColor="@color/text_color"
+        android:textColorHint="@color/text_color"
+        android:textSize="16sp" />
 
     <Button
-            android:id="@+id/addPlaceButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/longitudeEditText"
-            android:layout_marginTop="15dp"
-            android:background="@drawable/neumorphism_button"
-            android:fontFamily="@font/raleway_medium_italic"
-            android:text="Agregar lugar"
-            android:textColor="@color/button_text"
-            android:textSize="16sp" />
+        android:id="@+id/addPlaceButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/longitudeEditText"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/neumorphism_button"
+        android:fontFamily="@font/raleway_medium_italic"
+        android:text="Agregar lugar"
+        android:textColor="@color/button_text"
+        android:textSize="16sp" />
+
     <TextView
         android:id="@+id/pdPlacesTitle"
         android:layout_width="match_parent"
@@ -188,10 +241,10 @@
         android:layout_below="@id/addPlaceButton"
         android:layout_marginTop="10dp"
         android:fontFamily="@font/raleway_medium"
+        android:text="¡Importante!"
         android:textColor="@color/title_color"
         android:textSize="16sp"
-        android:textStyle="bold"
-        android:text="¡Importante!" />
+        android:textStyle="bold" />
 
     <TextView
         android:id="@+id/pdPlacesSubtitle"
@@ -199,10 +252,9 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/pdPlacesTitle"
         android:fontFamily="@font/raleway_medium"
+        android:text="Verificación en proceso.\nTu lugar será evaluado antes de ser agregado.\nAgradecemos tu comprensión."
         android:textColor="@color/title_color"
-        android:textSize="16sp"
-        android:text="Verificación en proceso.\nTu lugar será evaluado antes de ser agregado.\nAgradecemos tu comprensión." />
-
+        android:textSize="16sp" />
 
 
 </RelativeLayout>

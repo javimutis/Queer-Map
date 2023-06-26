@@ -1,4 +1,4 @@
-package com.cursoandroid.queermap.ui.activities
+package com.cursoandroid.queermap.activities
 
 import android.content.Intent
 import android.os.Bundle
@@ -7,14 +7,10 @@ import android.view.animation.AnimationUtils
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat.startActivity
 import com.cursoandroid.queermap.R
-import com.cursoandroid.queermap.interfaces.CoverContract
-import com.cursoandroid.queermap.presenter.CoverPresenter
+class CoverActivity : AppCompatActivity() {
 
-class CoverActivity : AppCompatActivity(), CoverContract.View {
-
-    private lateinit var presenter: CoverContract.Presenter
+    private lateinit var presenter: CoverPresenter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,7 +31,7 @@ class CoverActivity : AppCompatActivity(), CoverContract.View {
         }
     }
 
-    override fun showTitle() {
+    private fun showTitle() {
         val titleTextView: TextView = findViewById(R.id.titleTextView)
         titleTextView.visibility = View.INVISIBLE
 
@@ -46,13 +42,32 @@ class CoverActivity : AppCompatActivity(), CoverContract.View {
         }, 1300)
     }
 
-    override fun navigateToLogin() {
+    private fun navigateToLogin() {
         val intent = Intent(this, LoginActivity::class.java)
         startActivity(intent)
     }
 
-    override fun navigateToSignin() {
+    private fun navigateToSignin() {
         val intent = Intent(this, SigninActivity::class.java)
         startActivity(intent)
     }
+
+    inner class CoverPresenter(private val view: CoverActivity) {
+
+        fun start() {
+            view.showTitle()
+        }
+
+        fun onLoginButtonClicked() {
+            view.navigateToLogin()
+        }
+
+        fun onSigninButtonClicked() {
+            view.navigateToSignin()
+        }
+    }
 }
+
+
+
+

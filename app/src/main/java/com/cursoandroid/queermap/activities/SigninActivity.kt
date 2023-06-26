@@ -1,4 +1,4 @@
-package com.cursoandroid.queermap.ui.activities
+package com.cursoandroid.queermap.activities
 
 import android.app.DatePickerDialog
 import android.content.Context
@@ -16,10 +16,7 @@ import android.widget.ImageView
 import android.widget.PopupWindow
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import com.cursoandroid.queermap.MapsActivity
 import com.cursoandroid.queermap.R
-import com.cursoandroid.queermap.interfaces.SigninContract
-import com.cursoandroid.queermap.presenter.SigninPresenter
 import com.cursoandroid.queermap.utils.ValidationUtils
 import com.facebook.AccessToken
 import com.facebook.CallbackManager
@@ -40,7 +37,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
-class SigninActivity : AppCompatActivity(), SigninContract.View {
+class SigninActivity : AppCompatActivity() {
     private lateinit var mAuth: FirebaseAuth
     private lateinit var nameEditText: TextInputEditText
     private lateinit var userEditText: TextInputEditText
@@ -54,7 +51,7 @@ class SigninActivity : AppCompatActivity(), SigninContract.View {
     private lateinit var eyeIcon: ImageView
     private lateinit var repeatEyeIcon: ImageView
     private lateinit var popupBirthday: ImageView
-    private lateinit var presenter: SigninContract.Presenter
+    private val RC_GOOGLE_SIGN_IN = 9001
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,10 +60,7 @@ class SigninActivity : AppCompatActivity(), SigninContract.View {
         mAuth = FirebaseAuth.getInstance()
         initializeViews()
         setupDatePicker()
-
         callbackManager = CallbackManager.Factory.create()
-        presenter = SigninPresenter(this)
-        presenter.onCreate()
 
         eyeIcon.setOnClickListener {
             togglePasswordVisibility()
@@ -77,26 +71,27 @@ class SigninActivity : AppCompatActivity(), SigninContract.View {
 
         val registerButton: Button = findViewById(R.id.registerButton)
         registerButton.setOnClickListener {
-            presenter.onRegisterButtonClick()
+            validateAndShowTermsPopup()
         }
 
 
         val backButton: ImageView = findViewById(R.id.backButton)
         backButton.setOnClickListener {
-            presenter.onBackButtonClick()
+            onBackPressed()
         }
 
 
         val googleSignInButton: ImageButton = findViewById(R.id.googleSignInButton)
         Picasso.get().load(R.drawable.google_icon).into(googleSignInButton)
         googleSignInButton.setOnClickListener {
-            presenter.onGoogleSignInButtonClick()
+            signInWithGoogle()
         }
+
 
         val facebookSignInButton: ImageButton = findViewById(R.id.facebookLSignInButton)
         Picasso.get().load(R.drawable.facebook_icon).into(facebookSignInButton)
         facebookSignInButton.setOnClickListener {
-            presenter.onFacebookSignInButtonClick()
+            signInWithFacebook()
         }
 
 
@@ -134,7 +129,8 @@ class SigninActivity : AppCompatActivity(), SigninContract.View {
         setupPasswordVisibilityToggle()
         setupRepeatPasswordVisibilityToggle()
     }
-    override fun showErrorPopup(input: ImageView, errorMessage: String) {
+
+    fun showErrorPopup(input: ImageView, errorMessage: String) {
         val inflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
         val popupView = inflater.inflate(R.layout.popup_layout, null)
         val popupWindow = PopupWindow(
@@ -209,7 +205,7 @@ class SigninActivity : AppCompatActivity(), SigninContract.View {
         repeatPasswordEditText.setSelection(repeatPasswordEditText.text?.length ?: 0)
     }
 
-    override fun validateAndShowTermsPopup() {
+    fun validateAndShowTermsPopup() {
         val name: String = nameEditText.text.toString().trim()
         val username: String = userEditText.text.toString().trim()
         val password: String = passwordEditText.text.toString()
@@ -281,7 +277,6 @@ class SigninActivity : AppCompatActivity(), SigninContract.View {
     }
 
 
-
     private fun setError(input: TextInputEditText, message: String) {
         val inflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
         val popupView = inflater.inflate(R.layout.popup_error_layout, null)
@@ -313,7 +308,7 @@ class SigninActivity : AppCompatActivity(), SigninContract.View {
         finish()
     }
 
-    override fun showDatePickerDialog() {
+    fun showDatePickerDialog() {
         val calendar = Calendar.getInstance()
         val year = calendar.get(Calendar.YEAR)
         val month = calendar.get(Calendar.MONTH)
@@ -337,7 +332,7 @@ class SigninActivity : AppCompatActivity(), SigninContract.View {
         datePickerDialog.show()
     }
 
-    override fun handleFacebookAccessToken(token: AccessToken) {
+    fun handleFacebookAccessToken(token: AccessToken) {
         val credential = FacebookAuthProvider.getCredential(token.token)
         mAuth.signInWithCredential(credential).addOnCompleteListener(this) { task ->
             if (task.isSuccessful) {
@@ -349,13 +344,13 @@ class SigninActivity : AppCompatActivity(), SigninContract.View {
         }
     }
 
-    override fun navigateToMapActivity() {
+    fun navigateToMapActivity() {
         val intent = Intent(this, MapsActivity::class.java)
         startActivity(intent)
         finish()
     }
 
-    override fun showTermsPopup() {
+    fun showTermsPopup() {
         val inflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
         val popupView = inflater.inflate(R.layout.activity_read_terms, null)
         val popupWindow = PopupWindow(
@@ -386,7 +381,7 @@ class SigninActivity : AppCompatActivity(), SigninContract.View {
         }
     }
 
-    override fun showReadTermsPopup() {
+    fun showReadTermsPopup() {
         val inflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
         val popupView = inflater.inflate(R.layout.popup_read_terms_layout, null)
         val popupWindow = PopupWindow(
@@ -405,7 +400,7 @@ class SigninActivity : AppCompatActivity(), SigninContract.View {
         }
     }
 
-    override fun signInWithGoogle() {
+    fun signInWithGoogle() {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(getString(R.string.default_web_client_id)).requestEmail().build()
 
@@ -415,7 +410,7 @@ class SigninActivity : AppCompatActivity(), SigninContract.View {
     }
 
 
-    override fun signInWithFacebook() {
+    fun signInWithFacebook() {
         LoginManager.getInstance()
             .registerCallback(callbackManager, object : FacebookCallback<LoginResult> {
                 override fun onSuccess(loginResult: LoginResult) {
@@ -460,9 +455,5 @@ class SigninActivity : AppCompatActivity(), SigninContract.View {
                 // Error in login
             }
         }
-    }
-
-    companion object {
-        private const val RC_GOOGLE_SIGN_IN = 9001
     }
 }

@@ -220,26 +220,8 @@ Q.idea/sonarlint/securityhotspotstore/3/4/3479ce764bb31673d079af92180b3b063b9e80
 Q.idea/sonarlint/securityhotspotstore/5/6/56d09a4a87488856c70df96498c1077a367236c4,d\d\ddfe73011727cb5ec15cf61c380c9c71ba09f1b2
 Å
 Q.idea/sonarlint/securityhotspotstore/2/a/2afbb999f001938c88fa43fc2ef52abf0f8213e4,a\8\a8a52112049d840217cfa586a3a399d9502f9b94
-x
-Happ/src/main/java/com/cursoandroid/queermap/presenter/SplashPresenter.kt,d\6\d60c5ef4bfa32737e09896c5805e432953310784
-w
-Gapp/src/main/java/com/cursoandroid/queermap/interfaces/LoginContract.kt,9\5\95a4fc10988de3e134f3f7afa6c0a95e40e8dac5
-w
-Gapp/src/main/java/com/cursoandroid/queermap/presenter/LoginPresenter.kt,4\a\4a0787d4b66a7d1c5ddafc71347c1110dd115ca7
-t
-Dapp/src/main/java/com/cursoandroid/queermap/utils/ValidationUtils.kt,f\2\f2407117efea5bfb559936ae4d7a9737dea11f9f
 H
 app/google-services.json,f\d\fd8d34b142d02ec743a8efefefd2c097961666e9
-{
-Kapp/src/main/java/com/cursoandroid/queermap/ui/activities/SplashActivity.kt,9\d\9da302a907285619dda3ba45a19927d8ddad653e
-~
-Napp/src/main/java/com/cursoandroid/queermap/ui/activities/ReadTermsActivity.kt,e\e\ee219c9d1ef0486dc4f544b557461656f524756a
-w
-Gapp/src/main/java/com/cursoandroid/queermap/interfaces/CoverContract.kt,b\9\b93cb455a0d94f0464850a16fb2550c0fb59215e
-w
-Gapp/src/main/java/com/cursoandroid/queermap/presenter/CoverPresenter.kt,3\a\3a2ed491297b0eaa10eb97c4042c6dd0937fb161
-z
-Japp/src/main/java/com/cursoandroid/queermap/ui/activities/CoverActivity.kt,6\6\66913d48c3c13155f28495f75e0cc556c04c3089
 w
 G.idea/sonarlint/issuestore/4/a/4a0787d4b66a7d1c5ddafc71347c1110dd115ca7,0\1\01f471f5fc2de514579b46c137808dd17c7bc117
 Å
@@ -252,5 +234,3 @@ Q.idea/sonarlint/securityhotspotstore/9/5/95a4fc10988de3e134f3f7afa6c0a95e40e8da
 build.gradle,f\0\f07866736216be0ee2aba49e392191aeae700a35
 Å
 Q.idea/sonarlint/securityhotspotstore/d/6/d60c5ef4bfa32737e09896c5805e432953310784,3\e\3e6d551a8ef384bae29eb18223cc03a13ee16ac8
-z
-Japp/src/main/java/com/cursoandroid/queermap/ui/activities/LoginActivity.kt,d\4\d46af35058ba033a36a77b5ad6258f1fe93b5d10

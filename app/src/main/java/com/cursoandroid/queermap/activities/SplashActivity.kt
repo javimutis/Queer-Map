@@ -1,25 +1,25 @@
-package com.cursoandroid.queermap.ui.activities
+package com.cursoandroid.queermap.activities
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
 import androidx.appcompat.app.AppCompatActivity
 import com.cursoandroid.queermap.R
-import com.cursoandroid.queermap.interfaces.SplashContract
-import com.cursoandroid.queermap.presenter.SplashPresenter
 
-class SplashActivity : AppCompatActivity(), SplashContract.View {
+class SplashActivity : AppCompatActivity() {
 
-    private lateinit var presenter: SplashContract.Presenter
+    private val SPLASH_DURATION = 3500L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
 
-        presenter = SplashPresenter(this)
-        presenter.start()
+        Handler().postDelayed({
+            navigateToNextActivity()
+        }, SPLASH_DURATION)
     }
 
-    override fun navigateToNextActivity() {
+    private fun navigateToNextActivity() {
         val intent = Intent(this, CoverActivity::class.java)
         startActivity(intent)
 

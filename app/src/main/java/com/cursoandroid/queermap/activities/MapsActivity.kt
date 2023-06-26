@@ -1,49 +1,62 @@
-package com.cursoandroid.queermap
+package com.cursoandroid.queermap.activities
 
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.location.Location
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.view.View
+import android.widget.ImageButton
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.cursoandroid.queermap.R
 import com.cursoandroid.queermap.services.PlaceService
+import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.GoogleMap.OnMapClickListener
-import com.google.android.gms.maps.GoogleMap.OnMyLocationButtonClickListener
-import com.google.android.gms.maps.GoogleMap.OnMyLocationClickListener
 import com.google.android.gms.maps.GoogleMapOptions
 import com.google.android.gms.maps.MapsInitializer
-import com.google.android.gms.maps.MapsInitializer.Renderer
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.OnMapsSdkInitializedCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MapStyleOptions
+import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.libraries.places.api.Places
+import com.google.android.libraries.places.api.net.PlacesClient
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
-    OnMyLocationButtonClickListener, OnMyLocationClickListener,
-    OnMapsSdkInitializedCallback, OnMapClickListener {
+    GoogleMap.OnMyLocationButtonClickListener, GoogleMap.OnMyLocationClickListener,
+    OnMapsSdkInitializedCallback, GoogleMap.OnMapClickListener {
 
     private lateinit var googleMap: GoogleMap
-    private val iconWidth: Int = 60
-    private val iconHeight: Int = 70
-
+    private val iconWidth: Int = 65
+    private val iconHeight: Int = 75
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var placesClient: PlacesClient
+    private lateinit var bottomSheetBehavior: BottomSheetBehavior<View>
+    private lateinit var bottomSheetView: View
+    private var selectedMarker: Marker? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
 
         // Inicializar los mapas y el renderizador
-        MapsInitializer.initialize(applicationContext, Renderer.LATEST, this)
+        MapsInitializer.initialize(applicationContext, MapsInitializer.Renderer.LATEST, this)
 
         // Configurar las opciones del mapa
         val options = GoogleMapOptions()
@@ -53,14 +66,49 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
             .tiltGesturesEnabled(false)
 
         // Crear el fragmento del mapa con las opciones configuradas
-        val mapFragment = SupportMapFragment.newInstance(options)
+        val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as? SupportMapFragment
+            ?: SupportMapFragment.newInstance(options)
         supportFragmentManager.beginTransaction()
-            .add(R.id.mapFragment, mapFragment)
+            .replace(R.id.map, mapFragment)
             .commit()
 
         // Obtener el mapa de forma asíncrona cuando esté listo
         mapFragment.getMapAsync(this)
+
+        // Inicializar el cliente de ubicación
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+
+        // Inicializar el cliente de Places
+        Places.initialize(applicationContext, getString(R.string.google_maps_key))
+        placesClient = Places.createClient(this)
+
+        // Configurar el bottom sheet
+        bottomSheetView = findViewById(R.id.bottom_sheet)
+        bottomSheetBehavior = BottomSheetBehavior.from(bottomSheetView)
+
+        // Ocultar el bottom sheet inicialmente
+        bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
+
+        // Establecer un callback para detectar los cambios de estado del bottom sheet
+        bottomSheetBehavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
+            override fun onStateChanged(bottomSheet: View, newState: Int) {
+                if (newState == BottomSheetBehavior.STATE_EXPANDED) {
+                    // El bottom sheet está expandido
+                    // Realiza las acciones necesarias
+                } else if (newState == BottomSheetBehavior.STATE_COLLAPSED) {
+                    // El bottom sheet está colapsado
+                    // Realiza las acciones necesarias
+                    selectedMarker?.showInfoWindow()
+                }
+            }
+
+            override fun onSlide(bottomSheet: View, slideOffset: Float) {
+                // El bottom sheet está deslizándose
+                // Realiza las acciones necesarias
+            }
+        })
     }
+
 
     override fun onMapReady(map: GoogleMap) {
         googleMap = map
@@ -72,9 +120,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
 
         // Habilitar la capa "Mi ubicación" en el mapa
         enableMyLocation()
-
+        // Configurar la interacción con el mapa para mostrar el bottom sheet al hacer clic en un marcador
+        googleMap.setOnMarkerClickListener { marker ->
+            selectedMarker = marker
+            bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+            true
+        }
         // Obtener la última ubicación conocida del usuario
-        val fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         if (hasLocationPermission()) {
             try {
                 fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
@@ -108,6 +160,40 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
         // Habilitar los controles de zoom
         uiSettings.isZoomControlsEnabled = true
 
+
+        googleMap.setOnMarkerClickListener { marker ->
+            val name = marker.title
+            val snippet = marker.snippet
+
+            val nameTextView = bottomSheetView.findViewById<TextView>(R.id.nameTextView)
+            val categoryTextView = bottomSheetView.findViewById<TextView>(R.id.categoryTextView)
+            val phoneImageView = bottomSheetView.findViewById<ImageButton>(R.id.phoneImageView)
+            val websiteImageView = bottomSheetView.findViewById<ImageButton>(R.id.websiteImageView)
+            val descriptionTextView = bottomSheetView.findViewById<TextView>(R.id.descriptionTextView)
+
+
+            nameTextView.text = name
+            categoryTextView.text = "Categoría: ${snippet?.let { getCategoryName(it) }}"
+            phoneImageView.setOnClickListener {
+                val phone = marker?.snippet?.let { getDescription(it) }
+                if (!phone.isNullOrEmpty()) {
+                    val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:$phone"))
+                    startActivity(intent)
+                }
+            }
+            websiteImageView.setOnClickListener {
+                val website = marker?.snippet?.let { getWebsite(it) }
+                if (!website.isNullOrEmpty()) {
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(website))
+                    startActivity(intent)
+                }
+            }
+            descriptionTextView.text = "Descripción: ${snippet?.let { getDescription(it) }}"
+
+            bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+
+            return@setOnMarkerClickListener true
+        }
         val placeService = PlaceService()
         placeService.getPlaces { places ->
             for (place in places) {
@@ -117,17 +203,17 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
                     .title(place.name)
                     .snippet(place.description)
 
+
                 // Asociar un icono diferente dependiendo de la categoría
                 val iconBitmap = when (place.category) {
                     "Comunidad" -> BitmapFactory.decodeResource(resources, R.drawable.community_icon)
                     "Cultura" -> BitmapFactory.decodeResource(resources, R.drawable.culture_icon)
                     "Salud" -> BitmapFactory.decodeResource(resources, R.drawable.health_icon)
-                    "Entretenimiento" -> BitmapFactory.decodeResource(resources,R.drawable.entertainment_icon)
+                    "Entretenimiento" -> BitmapFactory.decodeResource(resources, R.drawable.entertainment_icon)
                     "Tiendas" -> BitmapFactory.decodeResource(resources, R.drawable.shops_icon)
-                    "Exploración" -> BitmapFactory.decodeResource(resources, R.drawable.exploration_icon                    )
+                    "Exploración" -> BitmapFactory.decodeResource(resources, R.drawable.exploration_icon)
                     else -> BitmapFactory.decodeResource(resources, R.drawable.default_marker)
                 }
-
                 // Cambiar el tamaño del icono
                 val scaledIcon = Bitmap.createScaledBitmap(iconBitmap, iconWidth, iconHeight, false)
                 markerOptions.icon(BitmapDescriptorFactory.fromBitmap(scaledIcon))
@@ -135,9 +221,42 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
                 googleMap.addMarker(markerOptions)
             }
         }
+        // Establecer el estilo del mapa
+        try {
+            val success = googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this,
+                R.raw.map_style))
+            if (!success) {
+                Log.e("MapsActivity", "Error al cargar el estilo del mapa.")
+            }
+        } catch (e: Resources.NotFoundException) {
+            Log.e("MapsActivity", "No se pudo encontrar el estilo del mapa. Error: $e")
+        }
+    }
+    private fun getCategoryName(snippet: String): String {
+        val categoryPattern = "Categoría: (.+?)\\|".toRegex()
+        val matchResult = categoryPattern.find(snippet)
+        return matchResult?.groupValues?.getOrNull(1) ?: "Desconocida"
     }
 
-        // Habilitar la capa "Mi ubicación" en el mapa
+    private fun getPhoneNumber(snippet: String): String {
+        val phonePattern = "Teléfono: (.+?)\\|".toRegex()
+        val matchResult = phonePattern.find(snippet)
+        return matchResult?.groupValues?.getOrNull(1) ?: "No disponible"
+    }
+
+    private fun getWebsite(snippet: String): String {
+        val websitePattern = "Página web: (.+?)\\|".toRegex()
+        val matchResult = websitePattern.find(snippet)
+        return matchResult?.groupValues?.getOrNull(1) ?: "No disponible"
+    }
+
+    private fun getDescription(snippet: String): String {
+        val descriptionPattern = "Descripción: (.+?)\\|".toRegex()
+        val matchResult = descriptionPattern.find(snippet)
+        return matchResult?.groupValues?.getOrNull(1) ?: "No disponible"
+    }
+
+    // Habilitar la capa "Mi ubicación" en el mapa
     private fun enableMyLocation() {
         if (hasLocationPermission()) {
             if (ActivityCompat.checkSelfPermission(
@@ -158,8 +277,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
             )
         }
     }
-
-
     // Verificar si se tiene permiso de ubicación
     private fun hasLocationPermission(): Boolean {
         return (ContextCompat.checkSelfPermission(
@@ -219,8 +336,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
 
     }
 
-
-
     // Verificar si se otorgó un permiso específico
     private fun isPermissionGranted(
         permissions: Array<String>,
@@ -236,10 +351,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
     }
 
     // Manejar la inicialización del SDK de mapas
-    override fun onMapsSdkInitialized(renderer: Renderer) {
+    override fun onMapsSdkInitialized(renderer: MapsInitializer.Renderer) {
         when (renderer) {
-            Renderer.LATEST -> Log.d("MapsDemo", "The latest version of the renderer is used.")
-            Renderer.LEGACY -> Log.d("MapsDemo", "The legacy version of the renderer is used.")
+            MapsInitializer.Renderer.LATEST -> Log.d("MapsDemo", "The latest version of the renderer is used.")
+            MapsInitializer.Renderer.LEGACY -> Log.d("MapsDemo", "The legacy version of the renderer is used.")
         }
     }
 

@@ -1,21 +1,5 @@
         NOTAS: MAPSACTIVITY
 
-        // Función para escalar el icono al tamaño deseado
-
-        fun scaleIcon(iconRes: Int, width: Int, height: Int): Bitmap {
-            val iconBitmap = BitmapFactory.decodeResource(resources, iconRes)
-            return Bitmap.createScaledBitmap(iconBitmap, width, height, false)
-        }
-
-
-        // Definir los íconos con los tamaños personalizados
-        val communityIcon = scaleIcon(R.drawable.community_icon, resources.getDimensionPixelSize(R.dimen.icon_width), resources.getDimensionPixelSize(R.dimen.icon_height))
-        val cultureIcon = scaleIcon(R.drawable.culture_icon, resources.getDimensionPixelSize(R.dimen.icon_width), resources.getDimensionPixelSize(R.dimen.icon_height))
-        val healthIcon = scaleIcon(R.drawable.health_icon, resources.getDimensionPixelSize(R.dimen.icon_width), resources.getDimensionPixelSize(R.dimen.icon_height))
-        val entertainmentIcon = scaleIcon(R.drawable.entertainment_icon, resources.getDimensionPixelSize(R.dimen.icon_width), resources.getDimensionPixelSize(R.dimen.icon_height))
-        val shopsIcon = scaleIcon(R.drawable.shops_icon, resources.getDimensionPixelSize(R.dimen.icon_width), resources.getDimensionPixelSize(R.dimen.icon_height))
-        val explorationIcon = scaleIcon(R.drawable.exploration_icon, resources.getDimensionPixelSize(R.dimen.icon_width), resources.getDimensionPixelSize(R.dimen.icon_height))
-
         // Añadir marcadores al mapa con sus respectivas opciones
         googleMap.addMarker(
             MarkerOptions()

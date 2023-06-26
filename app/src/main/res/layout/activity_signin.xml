@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -19,8 +18,8 @@
             android:layout_height="@dimen/layout_dp35"
             android:layout_marginStart="@dimen/margin_start_dp16"
             android:layout_marginTop="@dimen/margin_top_dp16"
-            android:src="@drawable/ic_arrow_back"
-            android:contentDescription="Botón de retroceso" />
+            android:contentDescription="Botón de retroceso"
+            android:src="@drawable/ic_arrow_back" />
 
         <!-- Título: Registro -->
         <TextView
@@ -67,7 +66,6 @@
             android:background="@drawable/neumorphism_edit_text"
             android:fontFamily="@font/raleway_light_italic"
             android:hint="Como quieres que te llamemos?"
-            android:inputType="textEmailAddress"
             android:minHeight="40dp"
             android:textColor="@color/text_color"
             android:textColorHint="@color/text_color"
@@ -114,18 +112,18 @@
             android:layout_marginEnd="@dimen/margin_end_dp32"
             android:orientation="horizontal">
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/passwordText"
-            android:layout_width="0dp"
-            android:layout_height="36dp"
-            android:layout_marginTop="-5dp"
-            android:layout_weight="9"
-             android:visibility="visible"
-            android:backgroundTint="#02FFFFFF"
-            android:fontFamily="@font/raleway_medium"
-            android:text="Contraseña"
-            android:textColor="@color/title_color"
-            android:textSize="@dimen/text_sp16"  />
+            <TextView
+                android:id="@+id/passwordText"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_marginTop="-5dp"
+                android:layout_weight="9"
+                android:backgroundTint="#02FFFFFF"
+                android:fontFamily="@font/raleway_medium"
+                android:text="Contraseña"
+                android:textColor="@color/title_color"
+                android:textSize="@dimen/text_sp16"
+                android:visibility="visible" />
 
             <ImageView
                 android:id="@+id/popupPassword"
@@ -134,8 +132,8 @@
                 android:layout_marginStart="@dimen/margin_top_dp10"
                 android:layout_marginEnd="9dp"
                 android:layout_weight="1"
-                android:src="@drawable/question_mark_icon"
-                android:contentDescription="Ícono de pregunta"/>
+                android:contentDescription="Ícono de pregunta"
+                android:src="@drawable/question_mark_icon" />
 
         </LinearLayout>
 
@@ -171,25 +169,25 @@
                 android:layout_marginStart="@dimen/margin_top_dp10"
                 android:layout_marginTop="4dp"
                 android:layout_weight="1"
-                android:src="@drawable/open_eye"
-                android:contentDescription="TODO" />
+                android:contentDescription="TODO"
+                android:src="@drawable/open_eye" />
 
         </LinearLayout>
 
         <!-- Título: Repetir contraseña -->
 
         <TextView
-                android:id="@+id/repeatPasswordText"
-                android:layout_width="match_parent"
-                android:layout_height="32dp"
-                android:layout_below="@id/passwordLayoutEdit"
-                android:layout_marginStart="@dimen/margin_start_dp32"
-                android:layout_marginTop="4dp"
-                android:layout_marginEnd="@dimen/margin_end_dp32"
-                android:fontFamily="@font/raleway_medium"
-                android:text="Repite tu contraseña"
-                android:textColor="@color/title_color"
-                android:textSize="@dimen/text_sp16" />
+            android:id="@+id/repeatPasswordText"
+            android:layout_width="match_parent"
+            android:layout_height="32dp"
+            android:layout_below="@id/passwordLayoutEdit"
+            android:layout_marginStart="@dimen/margin_start_dp32"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="@dimen/margin_end_dp32"
+            android:fontFamily="@font/raleway_medium"
+            android:text="Repite tu contraseña"
+            android:textColor="@color/title_color"
+            android:textSize="@dimen/text_sp16" />
 
         <LinearLayout
             android:id="@+id/repeatPasswordLayoutEdit"
@@ -223,8 +221,8 @@
                 android:layout_marginStart="@dimen/margin_top_dp10"
                 android:layout_marginTop="4dp"
                 android:layout_weight="1"
-                android:src="@drawable/open_eye"
-                android:contentDescription="TODO" />
+                android:contentDescription="TODO"
+                android:src="@drawable/open_eye" />
 
         </LinearLayout>
 
@@ -278,12 +276,12 @@
                 android:layout_height="36dp"
                 android:layout_marginTop="-5dp"
                 android:layout_weight="9"
-                android:visibility="visible"
                 android:backgroundTint="#02FFFFFF"
                 android:fontFamily="@font/raleway_medium"
                 android:text="Fecha de nacimiento"
                 android:textColor="@color/title_color"
-                android:textSize="@dimen/text_sp16"  />
+                android:textSize="@dimen/text_sp16"
+                android:visibility="visible" />
 
             <ImageView
                 android:id="@+id/popupBirthday"
@@ -292,10 +290,11 @@
                 android:layout_marginStart="@dimen/margin_top_dp10"
                 android:layout_marginEnd="9dp"
                 android:layout_weight="1"
-                android:src="@drawable/question_mark_icon"
-                android:contentDescription="Ícono de pregunta"/>
+                android:contentDescription="Ícono de pregunta"
+                android:src="@drawable/question_mark_icon" />
 
         </LinearLayout>
+
         <LinearLayout
             android:id="@+id/birthday_layout"
             android:layout_width="match_parent"
@@ -325,11 +324,11 @@
                 android:id="@+id/calendar_icon"
                 android:layout_width="30dp"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="3dp"
                 android:layout_marginTop="2dp"
+                android:layout_marginEnd="3dp"
                 android:layout_weight="1"
-                android:src="@drawable/calendar"
-                android:contentDescription="TODO" />
+                android:contentDescription="TODO"
+                android:src="@drawable/calendar" />
 
         </LinearLayout>
 
@@ -344,8 +343,8 @@
             android:layout_marginEnd="@dimen/margin_end_dp32"
             android:background="@drawable/neumorphism_button"
             android:fontFamily="@font/raleway_medium_italic"
-            android:text="Regístrate"
             android:onClick="goToReadTermsActivity"
+            android:text="Regístrate"
             android:textColor="@color/button_text"
             android:textSize="@dimen/text_sp20" />
 
