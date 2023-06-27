@@ -1,9 +1,7 @@
 package com.cursoandroid.queermap.activities
 
-import android.content.ContentValues.TAG
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
@@ -44,7 +42,6 @@ class PlaceActivity : AppCompatActivity() {
 
         // Obtener las categorías desde los recursos
         val categories = resources.getStringArray(R.array.spinnerCategory)
-
         // Configurar el adaptador del Spinner
         val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, categories)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
@@ -56,29 +53,26 @@ class PlaceActivity : AppCompatActivity() {
                 null,
                 addNameEditText.text.toString(),
                 descriptionEditText.text.toString(),
-                phoneEditText.text.toString(),
-                websiteEditText.text.toString(),
+                phoneEditText.text.toString().takeIf { it.isNotBlank() },
+                websiteEditText.text.toString().takeIf { it.isNotEmpty() },
                 spinnerCategory.selectedItem.toString(),
                 latitude,
-                longitude
+                longitude,
+                false
             )
 
-            placeService.createPlace(place)
+            placeService.addPlace(place)
 
             val intent = Intent(this, MapsActivity::class.java)
-            Log.d(TAG, "BBDD enviada")
             startActivity(intent)
             finish()
         }
 
-        // Regresar a la actividad anterior cuando se presiona el botón "Atrás"
+        // Volver a la actividad anterior cuando se hace clic en el botón "Atrás"
         backButton.setOnClickListener {
-            placeService.getPlaces { places ->
-                val intent = Intent(this, MapsActivity::class.java)
-                Log.d(TAG, "La lista de riesgos ${places}")
-                startActivity(intent)
-                finish()
-            }
+            val intent = Intent(this, MapsActivity::class.java)
+            startActivity(intent)
+            finish()
         }
     }
 }

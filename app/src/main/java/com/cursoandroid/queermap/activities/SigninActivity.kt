@@ -17,6 +17,7 @@ import android.widget.PopupWindow
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.cursoandroid.queermap.R
+import com.cursoandroid.queermap.activities.MapsActivity
 import com.cursoandroid.queermap.utils.ValidationUtils
 import com.facebook.AccessToken
 import com.facebook.CallbackManager

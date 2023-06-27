@@ -57,7 +57,7 @@
                                 android:orientation="vertical">
 
                                    <TextView
-                                       android:id="@+id/nameTextView"
+                                       android:id="@+id/bottomName"
                                        android:layout_width="wrap_content"
                                        android:layout_height="wrap_content"
                                        android:text="Nombre Lugar"
@@ -66,7 +66,7 @@
                                        android:textColor="@color/title_color" />
 
                                    <TextView
-                                       android:id="@+id/categoryTextView"
+                                       android:id="@+id/bottomSpinner"
                                        android:layout_width="wrap_content"
                                        android:layout_height="wrap_content"
                                        android:text="Categoría Lugar"
@@ -141,13 +141,14 @@
                                                      android:orientation="vertical">
 
                                                         <ImageButton
-                                                            android:id="@+id/phoneImageView"
+                                                            android:id="@+id/bottomPhone"
                                                             android:layout_width="match_parent"
                                                             android:layout_height="wrap_content"
                                                             android:background="?attr/selectableItemBackgroundBorderless"
                                                             android:clickable="true"
                                                             app:srcCompat="@drawable/baseline_phone_24"
-                                                            app:tint="@color/title_color" />
+                                                            app:tint="@color/title_color"
+                                                            android:focusable="true" />
 
                                                         <TextView
                                                             android:layout_width="wrap_content"
@@ -174,7 +175,7 @@
                                                      android:orientation="vertical">
 
                                                         <ImageButton
-                                                            android:id="@+id/websiteImageView"
+                                                            android:id="@+id/bottomWebsite"
                                                             android:layout_width="match_parent"
                                                             android:layout_height="wrap_content"
                                                             android:background="?attr/selectableItemBackgroundBorderless"
@@ -259,7 +260,7 @@
                                        android:textStyle="bold" />
 
                                    <TextView
-                                       android:id="@+id/descriptionTextView"
+                                       android:id="@+id/bottomDescription"
                                        android:layout_width="match_parent"
                                        android:layout_height="wrap_content"
                                        android:gravity="center_vertical"
