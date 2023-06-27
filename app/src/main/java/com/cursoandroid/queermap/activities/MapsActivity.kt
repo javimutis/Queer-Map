@@ -128,17 +128,23 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
                 val bottomSpinner = bottomSheetView.findViewById<TextView>(R.id.bottomSpinner)
                 val bottomPhone = bottomSheetView.findViewById<ImageButton>(R.id.bottomPhone)
                 val bottomWebsite = bottomSheetView.findViewById<ImageButton>(R.id.bottomWebsite)
-                val bottomDescription = bottomSheetView.findViewById<TextView>(R.id.bottomDescription)
+                val bottomDescription =
+                    bottomSheetView.findViewById<TextView>(R.id.bottomDescription)
 
                 bottomName.text = name
                 bottomSpinner.text = "Categoría: ${getCategoryName(snippet)}"
                 bottomDescription.text = getDescription(snippet)
 
-                val phone = getPhoneNumber(snippet)
-                bottomPhone.isEnabled = phone.isNotBlank()
-                bottomPhone.setOnClickListener {
-                    val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:$phone"))
-                    startActivity(intent)
+
+                val phone = getPhone(snippet)
+                if (phone.isNotEmpty()) {
+                    bottomPhone.isEnabled = true
+                    bottomPhone.setOnClickListener {
+                        val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:$phone"))
+                        startActivity(intent)
+                    }
+                } else {
+                    bottomPhone.isEnabled = false
                 }
 
                 val website = getWebsite(snippet)
@@ -198,31 +204,17 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
                     .snippet("Categoría: ${place.category} | Descripción: ${place.description}\nTeléfono: ${place.phone ?: "No disponible"}\nPágina web: ${place.website ?: "No disponible"}")
                 // Asociar un icono diferente dependiendo de la categoría
                 val iconBitmap = when (place.category) {
-                    "Comunidad" -> BitmapFactory.decodeResource(
-                        resources,
-                        R.drawable.community_icon
-                    )
-
+                    "Comunidad" -> BitmapFactory.decodeResource(resources, R.drawable.community_icon)
                     "Cultura" -> BitmapFactory.decodeResource(resources, R.drawable.culture_icon)
                     "Salud" -> BitmapFactory.decodeResource(resources, R.drawable.health_icon)
-                    "Entretenimiento" -> BitmapFactory.decodeResource(
-                        resources,
-                        R.drawable.entertainment_icon
-                    )
-
+                    "Entretenimiento" -> BitmapFactory.decodeResource(resources,R.drawable.entertainment_icon)
                     "Tiendas" -> BitmapFactory.decodeResource(resources, R.drawable.shops_icon)
-                    "Exploración" -> BitmapFactory.decodeResource(
-                        resources,
-                        R.drawable.exploration_icon
-                    )
-
+                    "Exploración" -> BitmapFactory.decodeResource(resources, R.drawable.exploration_icon)
                     else -> BitmapFactory.decodeResource(resources, R.drawable.default_marker)
                 }
-
                 // Cambiar el tamaño del icono
                 val scaledIcon = Bitmap.createScaledBitmap(iconBitmap, iconWidth, iconHeight, false)
                 markerOptions.icon(BitmapDescriptorFactory.fromBitmap(scaledIcon))
-
                 googleMap.addMarker(markerOptions)
             }
         }
@@ -241,21 +233,21 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
             Log.e("MapsActivity", "No se pudo encontrar el estilo del mapa. Error: $e")
         }
     }
-
-
     private fun getCategoryName(snippet: String): String {
         val categoryPattern = "Categoría: (.+?)\\|".toRegex()
         val matchResult = categoryPattern.find(snippet)
         return matchResult?.groupValues?.getOrNull(1) ?: "Desconocida"
     }
-
-
-    private fun getPhoneNumber(snippet: String): String {
+    private fun getPhone(snippet: String): String {
         val phonePattern = "Teléfono: (.+?)$".toRegex()
         val matchResult = phonePattern.find(snippet)
-        return matchResult?.groupValues?.getOrNull(1)?.trim() ?: ""
-    }
+        var phone = matchResult?.groupValues?.getOrNull(1)?.trim() ?: ""
 
+        if (phone.isNotEmpty() && !phone.startsWith("0")) {
+            phone = "0$phone"
+        }
+        return phone
+    }
     private fun getWebsite(snippet: String): String {
         val websitePattern = "Página web: (.+?)$".toRegex()
         val matchResult = websitePattern.find(snippet)

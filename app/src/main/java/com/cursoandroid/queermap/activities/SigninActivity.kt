@@ -15,6 +15,7 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.PopupWindow
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.cursoandroid.queermap.R
 import com.cursoandroid.queermap.activities.MapsActivity
@@ -32,7 +33,9 @@ import com.google.android.gms.common.api.ApiException
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.auth.FacebookAuthProvider
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.firestore.FirebaseFirestore
 import com.squareup.picasso.Picasso
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -53,49 +56,37 @@ class SigninActivity : AppCompatActivity() {
     private lateinit var repeatEyeIcon: ImageView
     private lateinit var popupBirthday: ImageView
     private val RC_GOOGLE_SIGN_IN = 9001
+    private lateinit var firestore: FirebaseFirestore
+    private lateinit var registerButton: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_signin)
 
         mAuth = FirebaseAuth.getInstance()
+        firestore = FirebaseFirestore.getInstance()
+
         initializeViews()
         setupDatePicker()
         callbackManager = CallbackManager.Factory.create()
-
-        eyeIcon.setOnClickListener {
-            togglePasswordVisibility()
+        eyeIcon.setOnClickListener {            togglePasswordVisibility()
         }
-        repeatEyeIcon.setOnClickListener {
-            toggleRepeatPasswordVisibility()
+        repeatEyeIcon.setOnClickListener {            toggleRepeatPasswordVisibility()
         }
-
-        val registerButton: Button = findViewById(R.id.registerButton)
-        registerButton.setOnClickListener {
-            validateAndShowTermsPopup()
+        registerButton.setOnClickListener {            validateAndShowTermsPopup()
+            saveUserDataToFirestore()
         }
-
-
         val backButton: ImageView = findViewById(R.id.backButton)
-        backButton.setOnClickListener {
-            onBackPressed()
+        backButton.setOnClickListener {            onBackPressed()
         }
-
-
         val googleSignInButton: ImageButton = findViewById(R.id.googleSignInButton)
         Picasso.get().load(R.drawable.google_icon).into(googleSignInButton)
-        googleSignInButton.setOnClickListener {
-            signInWithGoogle()
+        googleSignInButton.setOnClickListener {            signInWithGoogle()
         }
-
-
         val facebookSignInButton: ImageButton = findViewById(R.id.facebookLSignInButton)
         Picasso.get().load(R.drawable.facebook_icon).into(facebookSignInButton)
-        facebookSignInButton.setOnClickListener {
-            signInWithFacebook()
+        facebookSignInButton.setOnClickListener {            signInWithFacebook()
         }
-
-
         popupPassword = findViewById(R.id.popupPassword)
         popupPassword.setOnClickListener {
             showErrorPopup(
@@ -103,7 +94,6 @@ class SigninActivity : AppCompatActivity() {
                 "La contraseña debe tener al menos 8 caracteres, incluyendo una letra mayúscula, una letra minúscula, un número y un carácter especial."
             )
         }
-
         popupBirthday = findViewById(R.id.popupBirthday)
         popupBirthday.setOnClickListener {
             showErrorPopup(
@@ -111,10 +101,8 @@ class SigninActivity : AppCompatActivity() {
                 "Pedimos tu fecha de nacimiento para ajustar los eventos a tu rango de edad."
             )
         }
-
         initializeViews()
     }
-
     private fun initializeViews() {
         nameEditText = findViewById(R.id.nameEditText)
         userEditText = findViewById(R.id.userEditText)
@@ -125,6 +113,9 @@ class SigninActivity : AppCompatActivity() {
         datePickerButton = findViewById(R.id.calendar_icon)
         eyeIcon = findViewById(R.id.eyeIcon)
         repeatEyeIcon = findViewById(R.id.repeatEyeIcon)
+        popupPassword = findViewById(R.id.popupPassword)
+        popupBirthday = findViewById(R.id.popupBirthday)
+        registerButton = findViewById(R.id.registerButton)
 
         setupDatePicker()
         setupPasswordVisibilityToggle()
@@ -154,55 +145,43 @@ class SigninActivity : AppCompatActivity() {
         val yOffset = location[1] - anchorView.height
         popupWindow.showAtLocation(anchorView, Gravity.NO_GRAVITY, xOffset, yOffset)
     }
-
-
     private fun setupDatePicker() {
         datePickerButton.setOnClickListener {
             showDatePickerDialog()
         }
     }
-
     private fun setupPasswordVisibilityToggle() {
         eyeIcon.setOnClickListener {
             togglePasswordVisibility()
         }
     }
-
     private fun setupRepeatPasswordVisibilityToggle() {
         repeatEyeIcon.setOnClickListener {
             toggleRepeatPasswordVisibility()
         }
     }
-
-    private fun togglePasswordVisibility() {
-        val inputType = passwordEditText.inputType
+    private fun togglePasswordVisibility() {        val inputType = passwordEditText.inputType
 
         if (inputType == InputType.TYPE_TEXT_VARIATION_PASSWORD or InputType.TYPE_CLASS_TEXT) {
-            passwordEditText.inputType =
-                InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD or InputType.TYPE_CLASS_TEXT
+            passwordEditText.inputType =           InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD or InputType.TYPE_CLASS_TEXT
             eyeIcon.setImageResource(R.drawable.open_eye)
         } else {
-            passwordEditText.inputType =
-                InputType.TYPE_TEXT_VARIATION_PASSWORD or InputType.TYPE_CLASS_TEXT
+            passwordEditText.inputType =               InputType.TYPE_TEXT_VARIATION_PASSWORD or InputType.TYPE_CLASS_TEXT
             eyeIcon.setImageResource(R.drawable.closed_eye)
         }
-
         passwordEditText.setSelection(passwordEditText.text?.length ?: 0)
     }
-
     private fun toggleRepeatPasswordVisibility() {
         val inputType = repeatPasswordEditText.inputType
 
         if (inputType == InputType.TYPE_TEXT_VARIATION_PASSWORD or InputType.TYPE_CLASS_TEXT) {
-            repeatPasswordEditText.inputType =
-                InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD or InputType.TYPE_CLASS_TEXT
+            repeatPasswordEditText.inputType =                InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD or InputType.TYPE_CLASS_TEXT
             repeatEyeIcon.setImageResource(R.drawable.open_eye)
         } else {
             repeatPasswordEditText.inputType =
                 InputType.TYPE_TEXT_VARIATION_PASSWORD or InputType.TYPE_CLASS_TEXT
             repeatEyeIcon.setImageResource(R.drawable.closed_eye)
         }
-
         repeatPasswordEditText.setSelection(repeatPasswordEditText.text?.length ?: 0)
     }
 
@@ -227,56 +206,44 @@ class SigninActivity : AppCompatActivity() {
             setError(passwordEditText, "Ingrese una contraseña")
             return
         }
-
         if (repeatPassword.isEmpty()) {
             setError(repeatPasswordEditText, "Repita la contraseña")
             return
         }
-
         if (email.isEmpty()) {
             setError(emailEditText, "Ingrese un correo electrónico")
             return
         }
-
         if (birthday.isEmpty()) {
             setError(birthdayEditText, "Ingrese una fecha de nacimiento")
             return
         }
-
         if (!ValidationUtils.isValidSignUsername(username)) {
             setError(userEditText, "Nombre de usuario inválido")
             return
         }
-
         if (!ValidationUtils.isValidSignName(name)) {
             setError(nameEditText, "Nombre inválido")
             return
         }
-
         if (!ValidationUtils.isValidSignPassword(password)) {
             setError(passwordEditText, "Contraseña inválida")
             return
         }
-
         if (repeatPassword != password) {
             setError(repeatPasswordEditText, "Las contraseñas no coinciden")
             return
         }
-
         if (!ValidationUtils.isValidSignEmail(email)) {
             setError(emailEditText, "Email inválido")
             return
         }
-
         if (!ValidationUtils.isValidSignBirthday(birthday)) {
             setError(birthdayEditText, "Fecha de nacimiento inválida")
             return
         }
-
-
         showTermsPopup()
     }
-
 
     private fun setError(input: TextInputEditText, message: String) {
         val inflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
@@ -291,24 +258,18 @@ class SigninActivity : AppCompatActivity() {
             ViewGroup.LayoutParams.WRAP_CONTENT,
             true
         )
-
         popupWindow.animationStyle = R.style.PopupAnimation
         popupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0)
-
     }
-
     override fun finish() {
         super.finish()
         // Implement finish logic if needed
     }
-
-
     override fun onBackPressed() {
         val intent = Intent(this, CoverActivity::class.java)
         startActivity(intent)
         finish()
     }
-
     fun showDatePickerDialog() {
         val calendar = Calendar.getInstance()
         val year = calendar.get(Calendar.YEAR)
@@ -338,6 +299,19 @@ class SigninActivity : AppCompatActivity() {
         mAuth.signInWithCredential(credential).addOnCompleteListener(this) { task ->
             if (task.isSuccessful) {
                 // Successful login
+                saveUserDataToFirestore() // Agrega esta línea
+                showTermsPopup()
+            } else {
+                // Error in login
+            }
+        }
+    }
+    private fun firebaseAuthWithGoogle(account: GoogleSignInAccount?) {
+        val credential = GoogleAuthProvider.getCredential(account?.idToken, null)
+        mAuth.signInWithCredential(credential).addOnCompleteListener(this) { task ->
+            if (task.isSuccessful) {
+                // Successful login
+                saveUserDataToFirestore() // Agrega esta línea
                 showTermsPopup()
             } else {
                 // Error in login
@@ -350,7 +324,6 @@ class SigninActivity : AppCompatActivity() {
         startActivity(intent)
         finish()
     }
-
     fun showTermsPopup() {
         val inflater = getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
         val popupView = inflater.inflate(R.layout.activity_read_terms, null)
@@ -371,12 +344,9 @@ class SigninActivity : AppCompatActivity() {
         termsTextView.setOnClickListener {
             showReadTermsPopup()
         }
-
-
         acceptButton.setOnClickListener {
             navigateToMapActivity()
         }
-
         cancelButton.setOnClickListener {
             popupWindow.dismiss()
         }
@@ -400,7 +370,6 @@ class SigninActivity : AppCompatActivity() {
             popupWindow.dismiss()
         }
     }
-
     fun signInWithGoogle() {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(getString(R.string.default_web_client_id)).requestEmail().build()
@@ -410,27 +379,21 @@ class SigninActivity : AppCompatActivity() {
         startActivityForResult(signInIntent, RC_GOOGLE_SIGN_IN)
     }
 
-
     fun signInWithFacebook() {
         LoginManager.getInstance()
             .registerCallback(callbackManager, object : FacebookCallback<LoginResult> {
                 override fun onSuccess(loginResult: LoginResult) {
                     handleFacebookAccessToken(loginResult.accessToken)
                 }
-
                 override fun onCancel() {
                     // Canceled by user
                 }
-
                 override fun onError(error: FacebookException) {
                     // Error in Facebook login
                 }
             })
-
         LoginManager.getInstance().logInWithReadPermissions(this, listOf("email"))
     }
-
-
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         callbackManager.onActivityResult(requestCode, resultCode, data)
@@ -445,16 +408,35 @@ class SigninActivity : AppCompatActivity() {
             }
         }
     }
+    private fun saveUserDataToFirestore() {
+        val user: FirebaseUser? = mAuth.currentUser
+        if (user != null) {
+            val name: String = nameEditText.text.toString().trim()
+            val username: String = userEditText.text.toString().trim()
+            val email: String = emailEditText.text.toString().trim()
+            val birthday: String = birthdayEditText.text.toString().trim()
 
-    private fun firebaseAuthWithGoogle(account: GoogleSignInAccount?) {
-        val credential = GoogleAuthProvider.getCredential(account?.idToken, null)
-        mAuth.signInWithCredential(credential).addOnCompleteListener(this) { task ->
-            if (task.isSuccessful) {
-                // Successful login
-                showTermsPopup()
-            } else {
-                // Error in login
-            }
+            val userData = hashMapOf(
+                "name" to name,
+                "username" to username,
+                "email" to email,
+                "birthday" to birthday
+            )
+
+            firestore.collection("users")
+                .document(user.uid)
+                .set(userData)
+                .addOnSuccessListener {
+                    // Guardado exitoso en Firestore
+                }
+                .addOnFailureListener { e ->
+                    // Error al guardar en Firestore
+                    Toast.makeText(
+                        this,
+                        "Error al guardar los datos en Firestore",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
         }
     }
 }

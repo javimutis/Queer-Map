@@ -234,14 +234,8 @@ Q.idea/sonarlint/securityhotspotstore/f/0/f07866736216be0ee2aba49e392191aeae700a
 Q.idea/sonarlint/securityhotspotstore/7/e/7ed7aebe2b7810578bfbfebb9cdef2d49b637789,d\f\df105b9c5cb8bcb2c98260bed9a2fe8f9cd2b66c
 Å
 Q.idea/sonarlint/securityhotspotstore/4/3/43153fb2e486cce8f084bb1cba9e86d7d368b13a,4\a\4a9adab91666d9711eb7f288b52fec3e92b28b2e
-@
-app/build.gradle,f\4\f4a01d6a4fcb971362ec00a83903fd3902f52164
-t
-Dapp/src/main/java/com/cursoandroid/queermap/utils/ValidationUtils.kt,f\2\f2407117efea5bfb559936ae4d7a9737dea11f9f
 w
 Gapp/src/main/java/com/cursoandroid/queermap/activities/CoverActivity.kt,7\0\702503124f624172b5e23da81d726ed5c3ce5c80
-w
-Gapp/src/main/java/com/cursoandroid/queermap/activities/LoginActivity.kt,e\a\eaa3c1162f05bb381f04509f7b9acb404fcc8449
 a
 1app/src/main/java/com/cursoandroid/queermap/Notas,5\7\57464721e2cd8e16d63f0a71fc3e40fc19392ed7
 {

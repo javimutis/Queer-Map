@@ -26,13 +26,15 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.firestore.FirebaseFirestore
 import com.squareup.picasso.Picasso
 
-// Actividad principal
+
 class LoginActivity : AppCompatActivity(), FacebookCallback<LoginResult> {
 
-    // Variables miembro
+
     private lateinit var auth: FirebaseAuth
     private lateinit var forgotPasswordDialog: Dialog
     private lateinit var emailEditText: EditText
@@ -42,12 +44,16 @@ class LoginActivity : AppCompatActivity(), FacebookCallback<LoginResult> {
     private lateinit var callbackManager: CallbackManager
     private lateinit var eyeIcon: ImageView
     private val RC_GOOGLE_SIGN_IN = 1001
+    private lateinit var firestore: FirebaseFirestore
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
         initializeFirebaseAuthentication()
+        firestore = FirebaseFirestore.getInstance()
         initializeViews()
         initializeGoogleSignIn()
         initializeFacebookLogin()
@@ -209,13 +215,14 @@ class LoginActivity : AppCompatActivity(), FacebookCallback<LoginResult> {
     // Inicia sesión con correo electrónico y contraseña
     private fun signInWithEmailAndPassword(email: String, password: String) {
         auth.signInWithEmailAndPassword(email, password)
-            .addOnCompleteListener { task ->
+                 .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     showSignInSuccess()
                 } else {
                     showSignInError()
                 }
             }
+        verifyUserInFirestore()
 
         val rememberMe = rememberCheckBox.isChecked
 
@@ -236,6 +243,28 @@ class LoginActivity : AppCompatActivity(), FacebookCallback<LoginResult> {
     // Muestra el diálogo de restablecimiento de contraseña
     private fun showForgotPasswordDialog() {
         forgotPasswordDialog.show()
+    }
+    private fun verifyUserInFirestore() {
+        val user: FirebaseUser? = auth.currentUser
+
+        user?.let {
+            firestore.collection("users")
+                .document(it.uid)
+                .get()
+                .addOnSuccessListener { document ->
+                    if (document.exists()) {
+                        // Verificación exitosa
+                        // Realiza la acción deseada
+                    } else {
+                        // Documento no encontrado en Firestore
+                        // Realiza la acción deseada
+                    }
+                }
+                .addOnFailureListener { e ->
+                    // Error al acceder a Firestore
+                    // Realiza la acción deseada
+                }
+        }
     }
 
     override fun onSuccess(loginResult: LoginResult) {
