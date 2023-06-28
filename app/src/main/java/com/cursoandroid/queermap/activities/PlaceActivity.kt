@@ -7,6 +7,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.Spinner
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.cursoandroid.queermap.R
 import com.cursoandroid.queermap.models.Place
@@ -49,23 +50,48 @@ class PlaceActivity : AppCompatActivity() {
 
         // Agregar un lugar cuando se presiona el botón "Agregar"
         addPlaceButton.setOnClickListener {
-            val place = Place(
-                null,
-                addNameEditText.text.toString(),
-                descriptionEditText.text.toString(),
-                phoneEditText.text.toString().takeIf { it.isNotBlank() },
-                websiteEditText.text.toString().takeIf { it.isNotEmpty() },
-                spinnerCategory.selectedItem.toString(),
-                latitude,
-                longitude,
+            val name = addNameEditText.text.toString()
+            val description = descriptionEditText.text.toString()
+            val phone = phoneEditText.text.toString()
+            val website = websiteEditText.text.toString()
+            val category = spinnerCategory.selectedItem.toString()
+
+            // Verificar el formato del teléfono
+            val validPhone = if (phone.isNotEmpty() && !isValidPhone(phone)) {
+                Toast.makeText(this, "Formato de teléfono incorrecto", Toast.LENGTH_SHORT).show()
                 false
-            )
+            } else {
+                true
+            }
 
-            placeService.addPlace(place)
+            // Verificar el formato del sitio web
+            val validWebsite = if (website.isNotEmpty() && !isValidWebsite(website)) {
+                Toast.makeText(this, "Formato de sitio web incorrecto", Toast.LENGTH_SHORT).show()
+                false
+            } else {
+                true
+            }
 
-            val intent = Intent(this, MapsActivity::class.java)
-            startActivity(intent)
-            finish()
+            // Si los campos de teléfono y sitio web son válidos, agregar el lugar
+            if (validPhone && validWebsite) {
+                val place = Place(
+                    null,
+                    name,
+                    description,
+                    phone,
+                    website,
+                    category,
+                    latitude,
+                    longitude,
+                    false
+                )
+
+                placeService.addPlace(place)
+
+                val intent = Intent(this, MapsActivity::class.java)
+                startActivity(intent)
+                finish()
+            }
         }
 
         // Volver a la actividad anterior cuando se hace clic en el botón "Atrás"
@@ -75,4 +101,34 @@ class PlaceActivity : AppCompatActivity() {
             finish()
         }
     }
+
+    // Función para verificar el formato del teléfono en Chile
+    private fun isValidPhone(phone: String): Boolean {
+        // Eliminar espacios en blanco y guiones del número de teléfono
+        val cleanPhone = phone.replace("\\s|\\-".toRegex(), "")
+
+        // Verificar que el número de teléfono tenga 9 dígitos
+        if (cleanPhone.length != 9) {
+            return false
+        }
+
+        // Verificar que el número de teléfono comience con un dígito válido
+        val validStartDigits = listOf("9", "2", "3", "4", "5", "6", "7")
+        val startDigit = cleanPhone.substring(0, 1)
+        if (!validStartDigits.contains(startDigit)) {
+            return false
+        }
+
+        // Verificar que todos los caracteres restantes sean dígitos numéricos
+        val numericPattern = "\\d+".toRegex()
+        return cleanPhone.substring(1).matches(numericPattern)
+    }
+
+    // Función para verificar el formato del sitio web
+    private fun isValidWebsite(website: String): Boolean {
+        val urlPattern = "^(https?://)?(www\\.)?.+[a-zA-Z]{2,3}(/\\S*)?$"
+        val regex = Regex(urlPattern)
+        return regex.matches(website)
+    }
 }
+

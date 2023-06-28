@@ -1,6 +1,7 @@
 package com.cursoandroid.queermap.activities
 
 import android.Manifest
+import android.content.ContentValues.TAG
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Resources
@@ -37,6 +38,8 @@ import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.net.PlacesClient
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.firestore.FirebaseFirestore
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
     GoogleMap.OnMyLocationButtonClickListener, GoogleMap.OnMyLocationClickListener,
@@ -47,11 +50,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
     private val iconHeight: Int = 75
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var placesClient: PlacesClient
+    private lateinit var pendingPlaces: List<Place>
+    private val verifiedPlaces: MutableList<Place> = mutableListOf()
+    private val db = FirebaseFirestore.getInstance()
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<View>
     private lateinit var bottomSheetView: View
     private var selectedMarker: Marker? = null
-    private lateinit var pendingPlaces: List<Place>
-    private val verifiedPlaces: MutableList<Place> = mutableListOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -74,9 +78,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
             .replace(R.id.map, mapFragment)
             .commit()
 
-        // Obtener el mapa de forma asíncrona cuando esté listo
-        mapFragment.getMapAsync(this)
-
         // Inicializar el cliente de ubicación
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
@@ -84,10 +85,15 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
         Places.initialize(applicationContext, getString(R.string.google_maps_key))
         placesClient = Places.createClient(this)
 
+        // Obtener el mapa de forma asíncrona cuando esté listo
+        mapFragment.getMapAsync(this)
+
+
         // Configurar el bottom sheet
         bottomSheetView = findViewById(R.id.bottom_sheet)
         bottomSheetBehavior = BottomSheetBehavior.from(bottomSheetView)
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
+
 
         // Establecer un callback para detectar los cambios de estado del bottom sheet
         bottomSheetBehavior.addBottomSheetCallback(object :
@@ -101,6 +107,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
                     // Realiza las acciones necesarias
                 }
             }
+
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
                 // El bottom sheet está deslizándose
                 // Realiza las acciones necesarias
@@ -146,7 +153,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
                     val markerOptions = MarkerOptions()
                         .position(latLng)
                         .title(place.name)
-                        .snippet("Categoría: ${place.category} | Descripción: ${place.description}\nTeléfono: ${place.phone ?: "No disponible"}\nPágina web: ${place.website ?: "No disponible"}")
+                        .snippet(place.id)
 
                     // Asociar un icono diferente dependiendo de la categoría
                     val iconBitmap = when (place.category) {
@@ -188,47 +195,77 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
         }
         // Configurar la interacción con el mapa para mostrar el bottom sheet al hacer clic en un marcador
         googleMap.setOnMarkerClickListener { marker ->
-            val snippet = marker.snippet
-            if (!snippet.isNullOrBlank()) {
-                val name = marker.title
-                val bottomName = bottomSheetView.findViewById<TextView>(R.id.bottomName)
-                val bottomSpinner = bottomSheetView.findViewById<TextView>(R.id.bottomSpinner)
-                val bottomPhone = bottomSheetView.findViewById<ImageButton>(R.id.bottomPhone)
-                val bottomWebsite = bottomSheetView.findViewById<ImageButton>(R.id.bottomWebsite)
-                val bottomDescription =
-                    bottomSheetView.findViewById<TextView>(R.id.bottomDescription)
+            val placeId = marker.snippet
 
-                bottomName.text = name
-                bottomSpinner.text = "Categoría: ${getCategoryName(snippet)}"
-                bottomDescription.text = getDescription(snippet)
+            if (!placeId.isNullOrBlank()) {
+                // Consultar la base de datos utilizando el ID del marcador
+                db.collection("places").document(placeId).get()
+                    .addOnSuccessListener { document ->
+                        if (document.exists()) {
+                            val place = document.toObject(Place::class.java)
 
-                val phone = getPhone(snippet)
-                if (phone.isNotEmpty()) {
-                    bottomPhone.isEnabled = true
-                    bottomPhone.setOnClickListener {
-                        val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:$phone"))
-                        startActivity(intent)
+                            // Actualizar la vista del bottom sheet con los datos obtenidos
+                            val bottomName = bottomSheetView.findViewById<TextView>(R.id.bottomName)
+                            bottomName.text = place?.name
+
+                            val bottomSpinner =
+                                bottomSheetView.findViewById<TextView>(R.id.bottomSpinner)
+                            bottomSpinner.text = place?.category
+
+                            val bottomPhone =
+                                bottomSheetView.findViewById<ImageButton>(R.id.bottomPhone)
+                            bottomPhone.setOnClickListener {
+                                val phoneNumber = place?.phone
+                                if (!phoneNumber.isNullOrBlank()) {
+                                    val intent =
+                                        Intent(Intent.ACTION_DIAL, Uri.parse("tel:$phoneNumber"))
+                                    startActivity(intent)
+                                } else {
+                                    val message =
+                                        "No se ha proporcionado un número de teléfono para este lugar."
+                                    Snackbar.make(bottomSheetView, message, Snackbar.LENGTH_SHORT)
+                                        .show()
+                                }
+                            }
+                            val bottomWebsite =
+                                bottomSheetView.findViewById<ImageButton>(R.id.bottomWebsite)
+                            bottomWebsite.setOnClickListener {
+                                val website = place?.website
+                                if (!website.isNullOrBlank()) {
+                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(website))
+                                    val activities = packageManager.queryIntentActivities(
+                                        intent,
+                                        PackageManager.MATCH_DEFAULT_ONLY
+                                    )
+                                    if (activities.isNotEmpty()) {
+                                        startActivity(intent)
+                                    } else {
+                                        // No hay aplicaciones de navegador disponibles
+                                         Toast.makeText(
+                                            this,
+                                            "No se encontró una aplicación de navegador.",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                }
+                            }
+
+
+                            val bottomDescription =
+                                bottomSheetView.findViewById<TextView>(R.id.bottomDescription)
+                            bottomDescription.text = place?.description
+
+                            bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+                        }
                     }
-                } else {
-                    bottomPhone.isEnabled = false
-                }
-
-                val website = getWebsite(snippet)
-                if (website.isNotEmpty()) {
-                    bottomWebsite.isEnabled = true
-                    bottomWebsite.setOnClickListener {
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(website))
-                        startActivity(intent)
+                    .addOnFailureListener { exception ->
+                        // Manejar la falla en la consulta a la base de datos
+                        Log.e(TAG, "Error al consultar la base de datos: ", exception)
                     }
-                } else {
-                    bottomWebsite.isEnabled = false
-                }
             }
-            bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
-            selectedMarker = marker
-            true
-        }
 
+            true // Devolver true para indicar que el evento del clic en el marcador ha sido manejado
+        }
 
         // Obtener la última ubicación conocida del usuario
         if (hasLocationPermission()) {
@@ -259,39 +296,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
         }
     }
 
-    private fun getCategoryName(snippet: String): String {
-        val categoryPattern = "Categoría: (.+?)\\|".toRegex()
-        val matchResult = categoryPattern.find(snippet)
-        return matchResult?.groupValues?.getOrNull(1) ?: "Desconocida"
-    }
-
-    private fun getPhone(snippet: String): String {
-        val phonePattern = "Teléfono: (.+?)$".toRegex()
-        val matchResult = phonePattern.find(snippet)
-        var phone = matchResult?.groupValues?.getOrNull(1)?.trim() ?: ""
-
-        if (phone.isNotEmpty() && !phone.startsWith("0")) {
-            phone = "0$phone"
-        }
-        return phone
-    }
-
-    private fun getWebsite(snippet: String): String {
-        val websitePattern = "Página web: (.+?)$".toRegex()
-        val matchResult = websitePattern.find(snippet)
-        var website = matchResult?.groupValues?.getOrNull(1)?.trim() ?: ""
-
-        if (website.isNotEmpty() && !website.startsWith("http://") && !website.startsWith("https://")) {
-            website = "https://$website"
-        }
-        return website
-    }
-
-    private fun getDescription(snippet: String): String {
-        val descriptionPattern = "Descripción: (.+?)$".toRegex()
-        val matchResult = descriptionPattern.find(snippet)
-        return matchResult?.groupValues?.getOrNull(1) ?: "No disponible"
-    }
 
     // Habilitar la capa "Mi ubicación" en el mapa
     private fun enableMyLocation() {

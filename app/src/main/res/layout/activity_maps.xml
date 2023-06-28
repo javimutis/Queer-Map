@@ -96,12 +96,6 @@
                                 app:srcCompat="@drawable/baseline_expand_more_24"
                                 app:tint="@color/title_color" />
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Starbucks Valencia"
-                                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-                                android:textColor="@color/title_color" />
 
                      </LinearLayout>
 

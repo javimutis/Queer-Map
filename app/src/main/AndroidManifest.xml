@@ -14,6 +14,7 @@
 
     <application
         android:allowBackup="true"
+        android:usesCleartextTraffic="true"
         android:icon="@drawable/logoqueer"
         android:label="@string/app_name"
         android:roundIcon="@drawable/logoqueer"
