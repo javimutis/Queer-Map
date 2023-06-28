@@ -101,7 +101,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
                     // Realiza las acciones necesarias
                 }
             }
-
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
                 // El bottom sheet está deslizándose
                 // Realiza las acciones necesarias
@@ -119,80 +118,24 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
         // Habilitar la capa "Mi ubicación" en el mapa
         enableMyLocation()
 
-        // Configurar la interacción con el mapa para mostrar el bottom sheet al hacer clic en un marcador
-        googleMap.setOnMarkerClickListener { marker ->
-            val snippet = marker.snippet
-            if (!snippet.isNullOrBlank()) {
-                val name = marker.title
-                val bottomName = bottomSheetView.findViewById<TextView>(R.id.bottomName)
-                val bottomSpinner = bottomSheetView.findViewById<TextView>(R.id.bottomSpinner)
-                val bottomPhone = bottomSheetView.findViewById<ImageButton>(R.id.bottomPhone)
-                val bottomWebsite = bottomSheetView.findViewById<ImageButton>(R.id.bottomWebsite)
-                val bottomDescription =
-                    bottomSheetView.findViewById<TextView>(R.id.bottomDescription)
-
-                bottomName.text = name
-                bottomSpinner.text = "Categoría: ${getCategoryName(snippet)}"
-                bottomDescription.text = getDescription(snippet)
-
-                val phone = getPhone(snippet)
-                if (phone.isNotEmpty()) {
-                    bottomPhone.isEnabled = true
-                    bottomPhone.setOnClickListener {
-                        val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:$phone"))
-                        startActivity(intent)
-                    }
-                } else {
-                    bottomPhone.isEnabled = false
-                }
-
-                val website = getWebsite(snippet)
-                if (website.isNotEmpty()) {
-                    bottomWebsite.isEnabled = true
-                    bottomWebsite.setOnClickListener {
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(website))
-                        startActivity(intent)
-                    }
-                } else {
-                    bottomWebsite.isEnabled = false
-                }
-            }
-            bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
-            selectedMarker = marker
-            true
-        }
-
-        // Obtener la última ubicación conocida del usuario
-        if (hasLocationPermission()) {
-            try {
-                fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
-                    if (location != null) {
-                        val currentPosition = LatLng(location.latitude, location.longitude)
-                        googleMap.moveCamera(
-                            CameraUpdateFactory.newLatLngZoom(
-                                currentPosition,
-                                15f
-                            )
-                        )
-                    }
-                }
-            } catch (e: SecurityException) {
-                e.printStackTrace()
-            }
-        } else {
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                ),
-                LOCATION_PERMISSION_REQUEST_CODE
-            )
-        }
         // Obtener la configuración de la interfaz de usuario del mapa
         val uiSettings = googleMap.uiSettings
         // Habilitar los controles de zoom
         uiSettings.isZoomControlsEnabled = true
+        // Establecer el estilo del mapa
+        try {
+            val success = googleMap.setMapStyle(
+                MapStyleOptions.loadRawResourceStyle(
+                    this,
+                    R.raw.map_style
+                )
+            )
+            if (!success) {
+                Log.e("MapsActivity", "Error al cargar el estilo del mapa.")
+            }
+        } catch (e: Resources.NotFoundException) {
+            Log.e("MapsActivity", "No se pudo encontrar el estilo del mapa. Error: $e")
+        }
 
         val placeService = PlaceService()
         placeService.getPlaces { places ->
@@ -242,21 +185,77 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
                     }
                 }
             }
+        }
+        // Configurar la interacción con el mapa para mostrar el bottom sheet al hacer clic en un marcador
+        googleMap.setOnMarkerClickListener { marker ->
+            val snippet = marker.snippet
+            if (!snippet.isNullOrBlank()) {
+                val name = marker.title
+                val bottomName = bottomSheetView.findViewById<TextView>(R.id.bottomName)
+                val bottomSpinner = bottomSheetView.findViewById<TextView>(R.id.bottomSpinner)
+                val bottomPhone = bottomSheetView.findViewById<ImageButton>(R.id.bottomPhone)
+                val bottomWebsite = bottomSheetView.findViewById<ImageButton>(R.id.bottomWebsite)
+                val bottomDescription =
+                    bottomSheetView.findViewById<TextView>(R.id.bottomDescription)
 
-            // Establecer el estilo del mapa
-            try {
-                val success = googleMap.setMapStyle(
-                    MapStyleOptions.loadRawResourceStyle(
-                        this,
-                        R.raw.map_style
-                    )
-                )
-                if (!success) {
-                    Log.e("MapsActivity", "Error al cargar el estilo del mapa.")
+                bottomName.text = name
+                bottomSpinner.text = "Categoría: ${getCategoryName(snippet)}"
+                bottomDescription.text = getDescription(snippet)
+
+                val phone = getPhone(snippet)
+                if (phone.isNotEmpty()) {
+                    bottomPhone.isEnabled = true
+                    bottomPhone.setOnClickListener {
+                        val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:$phone"))
+                        startActivity(intent)
+                    }
+                } else {
+                    bottomPhone.isEnabled = false
                 }
-            } catch (e: Resources.NotFoundException) {
-                Log.e("MapsActivity", "No se pudo encontrar el estilo del mapa. Error: $e")
+
+                val website = getWebsite(snippet)
+                if (website.isNotEmpty()) {
+                    bottomWebsite.isEnabled = true
+                    bottomWebsite.setOnClickListener {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(website))
+                        startActivity(intent)
+                    }
+                } else {
+                    bottomWebsite.isEnabled = false
+                }
             }
+            bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+            selectedMarker = marker
+            true
+        }
+
+
+        // Obtener la última ubicación conocida del usuario
+        if (hasLocationPermission()) {
+            try {
+                fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
+                    if (location != null) {
+                        val currentPosition = LatLng(location.latitude, location.longitude)
+                        googleMap.moveCamera(
+                            CameraUpdateFactory.newLatLngZoom(
+                                currentPosition,
+                                15f
+                            )
+                        )
+                    }
+                }
+            } catch (e: SecurityException) {
+                e.printStackTrace()
+            }
+        } else {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ),
+                LOCATION_PERMISSION_REQUEST_CODE
+            )
         }
     }
 
