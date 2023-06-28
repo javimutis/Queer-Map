@@ -9,7 +9,7 @@ data class Place(
     val category: String,
     val latitude: Double,
     val longitude: Double,
-    var verified: Boolean
+    var verified: Boolean = false
 ) {
     // Constructor primario de la clase que inicializa todos los campos.
     constructor() : this("", "", "", "", "", "", 0.0, 0.0, false)

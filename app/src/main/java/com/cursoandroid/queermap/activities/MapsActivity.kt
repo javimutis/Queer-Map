@@ -51,6 +51,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
     private lateinit var bottomSheetView: View
     private var selectedMarker: Marker? = null
     private lateinit var pendingPlaces: List<Place>
+    private val verifiedPlaces: MutableList<Place> = mutableListOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -98,7 +99,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
                 } else if (newState == BottomSheetBehavior.STATE_COLLAPSED) {
                     // El bottom sheet está colapsado
                     // Realiza las acciones necesarias
-                    selectedMarker?.showInfoWindow()
                 }
             }
 
@@ -135,7 +135,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
                 bottomSpinner.text = "Categoría: ${getCategoryName(snippet)}"
                 bottomDescription.text = getDescription(snippet)
 
-
                 val phone = getPhone(snippet)
                 if (phone.isNotEmpty()) {
                     bottomPhone.isEnabled = true
@@ -159,6 +158,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
                 }
             }
             bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+            selectedMarker = marker
             true
         }
 
@@ -196,48 +196,76 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
 
         val placeService = PlaceService()
         placeService.getPlaces { places ->
+            pendingPlaces = places
             for (place in places) {
-                val latLng = LatLng(place.latitude, place.longitude)
-                val markerOptions = MarkerOptions()
-                    .position(latLng)
-                    .title(place.name)
-                    .snippet("Categoría: ${place.category} | Descripción: ${place.description}\nTeléfono: ${place.phone ?: "No disponible"}\nPágina web: ${place.website ?: "No disponible"}")
-                // Asociar un icono diferente dependiendo de la categoría
-                val iconBitmap = when (place.category) {
-                    "Comunidad" -> BitmapFactory.decodeResource(resources, R.drawable.community_icon)
-                    "Cultura" -> BitmapFactory.decodeResource(resources, R.drawable.culture_icon)
-                    "Salud" -> BitmapFactory.decodeResource(resources, R.drawable.health_icon)
-                    "Entretenimiento" -> BitmapFactory.decodeResource(resources,R.drawable.entertainment_icon)
-                    "Tiendas" -> BitmapFactory.decodeResource(resources, R.drawable.shops_icon)
-                    "Exploración" -> BitmapFactory.decodeResource(resources, R.drawable.exploration_icon)
-                    else -> BitmapFactory.decodeResource(resources, R.drawable.default_marker)
+                if (place.verified) {
+                    val latLng = LatLng(place.latitude, place.longitude)
+                    val markerOptions = MarkerOptions()
+                        .position(latLng)
+                        .title(place.name)
+                        .snippet("Categoría: ${place.category} | Descripción: ${place.description}\nTeléfono: ${place.phone ?: "No disponible"}\nPágina web: ${place.website ?: "No disponible"}")
+
+                    // Asociar un icono diferente dependiendo de la categoría
+                    val iconBitmap = when (place.category) {
+                        "Comunidad" -> BitmapFactory.decodeResource(
+                            resources,
+                            R.drawable.community_icon
+                        )
+
+                        "Cultura" -> BitmapFactory.decodeResource(
+                            resources,
+                            R.drawable.culture_icon
+                        )
+
+                        "Salud" -> BitmapFactory.decodeResource(resources, R.drawable.health_icon)
+                        "Entretenimiento" -> BitmapFactory.decodeResource(
+                            resources,
+                            R.drawable.entertainment_icon
+                        )
+
+                        "Tiendas" -> BitmapFactory.decodeResource(resources, R.drawable.shops_icon)
+                        "Exploración" -> BitmapFactory.decodeResource(
+                            resources,
+                            R.drawable.exploration_icon
+                        )
+
+                        else -> BitmapFactory.decodeResource(resources, R.drawable.default_marker)
+                    }
+                    // Cambiar el tamaño del icono
+                    if (iconBitmap != null) {
+                        val scaledIcon =
+                            Bitmap.createScaledBitmap(iconBitmap, iconWidth, iconHeight, false)
+                        markerOptions.icon(BitmapDescriptorFactory.fromBitmap(scaledIcon))
+                        googleMap.addMarker(markerOptions)
+                    } else {
+                        googleMap.addMarker(markerOptions)
+                    }
                 }
-                // Cambiar el tamaño del icono
-                val scaledIcon = Bitmap.createScaledBitmap(iconBitmap, iconWidth, iconHeight, false)
-                markerOptions.icon(BitmapDescriptorFactory.fromBitmap(scaledIcon))
-                googleMap.addMarker(markerOptions)
             }
-        }
-        // Establecer el estilo del mapa
-        try {
-            val success = googleMap.setMapStyle(
-                MapStyleOptions.loadRawResourceStyle(
-                    this,
-                    R.raw.map_style
+
+            // Establecer el estilo del mapa
+            try {
+                val success = googleMap.setMapStyle(
+                    MapStyleOptions.loadRawResourceStyle(
+                        this,
+                        R.raw.map_style
+                    )
                 )
-            )
-            if (!success) {
-                Log.e("MapsActivity", "Error al cargar el estilo del mapa.")
+                if (!success) {
+                    Log.e("MapsActivity", "Error al cargar el estilo del mapa.")
+                }
+            } catch (e: Resources.NotFoundException) {
+                Log.e("MapsActivity", "No se pudo encontrar el estilo del mapa. Error: $e")
             }
-        } catch (e: Resources.NotFoundException) {
-            Log.e("MapsActivity", "No se pudo encontrar el estilo del mapa. Error: $e")
         }
     }
+
     private fun getCategoryName(snippet: String): String {
         val categoryPattern = "Categoría: (.+?)\\|".toRegex()
         val matchResult = categoryPattern.find(snippet)
         return matchResult?.groupValues?.getOrNull(1) ?: "Desconocida"
     }
+
     private fun getPhone(snippet: String): String {
         val phonePattern = "Teléfono: (.+?)$".toRegex()
         val matchResult = phonePattern.find(snippet)
@@ -248,6 +276,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
         }
         return phone
     }
+
     private fun getWebsite(snippet: String): String {
         val websitePattern = "Página web: (.+?)$".toRegex()
         val matchResult = websitePattern.find(snippet)
@@ -258,6 +287,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
         }
         return website
     }
+
     private fun getDescription(snippet: String): String {
         val descriptionPattern = "Descripción: (.+?)$".toRegex()
         val matchResult = descriptionPattern.find(snippet)
@@ -317,7 +347,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
             ) {
                 enableMyLocation()
             } else {
-                Toast.makeText(this, "Permiso de ubicación denegado.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Permiso de ubicación denegado.", Toast.LENGTH_SHORT)
+                    .show()
             }
         } else {
             super.onRequestPermissionsResult(requestCode, permissions, grantResults)
@@ -365,12 +396,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
                 "MapsDemo",
                 "The latest version of the renderer is used."
             )
+
             MapsInitializer.Renderer.LEGACY -> Log.d(
                 "MapsDemo",
                 "The legacy version of the renderer is used."
             )
         }
     }
+
     companion object {
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1
     }
