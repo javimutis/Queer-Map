@@ -13,6 +13,16 @@
            android:layout_height="match_parent"
            tools:context=".MainActivity" />
 
+       <ImageButton
+           android:id="@+id/markDanger"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:layout_margin="16dp"
+           android:src="@drawable/baseline_new_releases_24"
+           app:backgroundTint="@android:color/transparent"
+           app:layout_constraintStart_toStartOf="parent"
+           app:layout_constraintTop_toTopOf="parent" />
+
        <androidx.core.widget.NestedScrollView
            android:id="@+id/nested_scroll_view"
            android:layout_width="match_parent"

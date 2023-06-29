@@ -85,15 +85,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
         Places.initialize(applicationContext, getString(R.string.google_maps_key))
         placesClient = Places.createClient(this)
 
-        // Obtener el mapa de forma asíncrona cuando esté listo
         mapFragment.getMapAsync(this)
-
 
         // Configurar el bottom sheet
         bottomSheetView = findViewById(R.id.bottom_sheet)
         bottomSheetBehavior = BottomSheetBehavior.from(bottomSheetView)
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
-
 
         // Establecer un callback para detectar los cambios de estado del bottom sheet
         bottomSheetBehavior.addBottomSheetCallback(object :
@@ -227,21 +224,19 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback,
                                         .show()
                                 }
                             }
-                            val bottomWebsite =
-                                bottomSheetView.findViewById<ImageButton>(R.id.bottomWebsite)
+                            val bottomWebsite = bottomSheetView.findViewById<ImageButton>(R.id.bottomWebsite)
                             bottomWebsite.setOnClickListener {
                                 val website = place?.website
                                 if (!website.isNullOrBlank()) {
                                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse(website))
-                                    val activities = packageManager.queryIntentActivities(
-                                        intent,
-                                        PackageManager.MATCH_DEFAULT_ONLY
-                                    )
+                                    intent.setPackage("com.android.chrome")
+
+                                    val activities = packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY)
                                     if (activities.isNotEmpty()) {
                                         startActivity(intent)
                                     } else {
                                         // No hay aplicaciones de navegador disponibles
-                                         Toast.makeText(
+                                        Toast.makeText(
                                             this,
                                             "No se encontró una aplicación de navegador.",
                                             Toast.LENGTH_SHORT
