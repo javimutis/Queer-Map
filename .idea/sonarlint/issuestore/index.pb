@@ -206,16 +206,6 @@ G.idea/sonarlint/issuestore/f/0/f07866736216be0ee2aba49e392191aeae700a35,b\f\bf
 Q.idea/sonarlint/securityhotspotstore/f/0/f07866736216be0ee2aba49e392191aeae700a35,2\5\25f6469773b9f3ebb994178c1114a60412389f58
 a
 1app/src/main/java/com/cursoandroid/queermap/Notas,5\7\57464721e2cd8e16d63f0a71fc3e40fc19392ed7
-{
-Kapp/src/main/java/com/cursoandroid/queermap/activities/ReadTermsActivity.kt,3\0\302c8ad361bface754d1ee699788928ddbe6e4bf
-x
-Happ/src/main/java/com/cursoandroid/queermap/activities/SplashActivity.kt,2\5\2565cea60358c8df023950c0279b249008abbad0
-w
-Gapp/src/main/java/com/cursoandroid/queermap/activities/LoginActivity.kt,e\a\eaa3c1162f05bb381f04509f7b9acb404fcc8449
-x
-Happ/src/main/java/com/cursoandroid/queermap/activities/SigninActivity.kt,f\5\f5c49d44a5a73208cfadc07f12948a61fdd3f2f3
-w
-Gapp/src/main/java/com/cursoandroid/queermap/activities/CoverActivity.kt,7\0\702503124f624172b5e23da81d726ed5c3ce5c80
 w
 G.idea/sonarlint/issuestore/e/1/e1bf4233783f9d8a6f44817ac15fdaa7da90d15d,f\7\f76a51c429c2725485f4f5ee2f0e55bbcaa5ef64
 w
