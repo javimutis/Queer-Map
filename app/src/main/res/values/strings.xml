@@ -33,6 +33,7 @@
     <string name="pexels_key">lncMUMsOuA3gsNfWRSxMG9nDBUQ8GD4987XLf0MD4XjATMdS8w1K6lps</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="app_logo">logo app</string>
 
 
 </resources>
