@@ -44,10 +44,7 @@
         <activity
             android:name=".activities.PlaceActivity"
             android:exported="true" />
-        <activity
-            android:name=".activities.CoverActivity"
-            android:exported="true"
-            android:screenOrientation="portrait" />
+
         <activity
             android:name=".activities.LoginActivity"
             android:exported="true"

@@ -14,4 +14,19 @@
             app:destination="@id/coverFragment" />
     </fragment>
 
+    <fragment
+        android:id="@+id/coverFragment"
+        android:name="com.cursoandroid.queermap.presentation.ui.view.CoverFragment"
+        android:label="Cover"
+        tools:layout="@layout/fragment_cover">
+
+        <action
+            android:id="@+id/action_cover_to_login"
+            app:destination="@id/loginFragment" />
+
+        <action
+            android:id="@+id/action_cover_to_signin"
+            app:destination="@id/signinFragment" />
+    </fragment>
+
 </navigation>

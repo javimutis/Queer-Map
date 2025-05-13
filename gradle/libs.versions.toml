@@ -1,0 +1,67 @@
+[versions]
+kotlin = "1.9.22"
+agp = "8.3.1"
+hilt = "2.50"
+firebase-bom = "32.7.0"
+retrofit = "2.9.0"
+gson = "2.10.1"
+maps = "18.2.0"
+places = "3.3.0"
+material = "1.11.0"
+core-ktx = "1.13.1"
+appcompat = "1.6.1"
+cardview = "1.0.0"
+picasso = "2.8"
+google-services = "4.4.1"
+secrets = "2.0.1"
+facebook-login = "16.3.0"
+junit = "4.13.2"
+ext-junit = "1.1.5"
+espresso = "3.5.1"
+navigation = "2.7.5"
+activity = "1.8.0"
+constraintlayout = "2.2.1"
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+android-library = { id = "com.android.library", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
+google-services = { id = "com.google.gms.google-services", version.ref = "google-services" }
+secrets = { id = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin", version.ref = "secrets" }
+
+[libraries]
+firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebase-bom" }
+firebase-analytics = { module = "com.google.firebase:firebase-analytics-ktx" }
+firebase-auth = { module = "com.google.firebase:firebase-auth-ktx" }
+firebase-db = { module = "com.google.firebase:firebase-database-ktx" }
+firebase-firestore = { module = "com.google.firebase:firebase-firestore-ktx" }
+
+maps = { module = "com.google.android.gms:play-services-maps", version.ref = "maps" }
+places = { module = "com.google.android.libraries.places:places", version.ref = "places" }
+auth = { module = "com.google.android.gms:play-services-auth", version = "21.0.0" }
+facebook-login = { module = "com.facebook.android:facebook-login", version.ref = "facebook-login" }
+
+retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
+converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit" }
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+
+picasso = { module = "com.squareup.picasso:picasso", version.ref = "picasso" }
+material = { module = "com.google.android.material:material", version.ref = "material" }
+
+core-ktx = { module = "androidx.core:core-ktx", version.ref = "core-ktx" }
+appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
+cardview = { module = "androidx.cardview:cardview", version.ref = "cardview" }
+
+# Navigation
+androidx-navigation-fragment = { module = "androidx.navigation:navigation-fragment-ktx", version.ref = "navigation" }
+androidx-navigation-ui = { module = "androidx.navigation:navigation-ui-ktx", version.ref = "navigation" }
+
+junit = { module = "junit:junit", version.ref = "junit" }
+ext-junit = { module = "androidx.test.ext:junit", version.ref = "ext-junit" }
+espresso = { module = "androidx.test.espresso:espresso-core", version.ref = "espresso" }
+
+hilt-core = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
+hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hilt" }
+androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
+androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
