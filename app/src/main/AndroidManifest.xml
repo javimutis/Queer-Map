@@ -21,8 +21,8 @@
         android:theme="@style/Theme.QueerMap"
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
-        <activity
-            android:name=".presentation.ui.MainActivity"
+
+        <activity android:name=".ui.test.SingleFragmentActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -30,6 +30,15 @@
             </intent-filter>
         </activity>
 
+<!--        <activity-->
+<!--            android:name=".presentation.ui.MainActivity"-->
+<!--            android:exported="true">-->
+<!--            <intent-filter>-->
+<!--                <action android:name="android.intent.action.MAIN" />-->
+
+<!--                <category android:name="android.intent.category.LAUNCHER" />-->
+<!--            </intent-filter>-->
+<!--        </activity>-->
         <activity
             android:name=".activities.AdminActivity"
             android:enabled="true"
@@ -41,12 +50,12 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".activities.PlaceActivity"
             android:exported="true" />
-
         <activity
-            android:name=".activities.LoginActivity"
+            android:name=".activities.LoginActivity_"
             android:exported="true"
             android:screenOrientation="fullSensor"
             android:windowSoftInputMode="adjustResize" />

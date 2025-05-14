@@ -35,7 +35,7 @@ class CoverFragment : Fragment() {
         }
 
         binding.coverSigninButton.setOnClickListener {
-            findNavController().navigate(R.id.action_cover_to_signin)
+//            findNavController().navigate(R.id.action_cover_to_signin)
         }
     }
 

@@ -54,6 +54,7 @@
 
 
     <dimen name="map_padding">16dp</dimen>
+    <dimen name="margin_top_dp50">50dp</dimen>
 
 </resources>
 

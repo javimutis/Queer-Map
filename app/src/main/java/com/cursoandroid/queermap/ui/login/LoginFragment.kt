@@ -7,10 +7,13 @@ import android.widget.Toast
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.cursoandroid.queermap.R
 import com.cursoandroid.queermap.databinding.FragmentLoginBinding
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class LoginFragment : Fragment(R.layout.fragment_login) {
@@ -28,19 +31,23 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
             val remember = binding.rememberCheckBox.isChecked
 
             if (isValidEmail(email) && isValidPassword(password)) {
-                viewModel.login(email, password, remember) { saveCredentials(email, password) }
+                // Corrección aquí: se pasa una referencia de función (de tipo correcto)
+                viewModel.login(email, password, remember, ::saveCredentials)
             } else {
                 showToast("Correo o contraseña inválidos")
             }
         }
 
-        viewModel.uiState.collectIn(viewLifecycleOwner) { state ->
-            binding.progressBar.visibility = if (state.isLoading) View.VISIBLE else View.GONE
-            if (state.isSuccess) {
-                showToast("Inicio de sesión exitoso")
-                findNavController().navigate(R.id.action_loginFragment_to_readTermsFragment)
+        // Corrección aquí: se reemplaza collectIn por lifecycleScope.launch + collect
+        lifecycleScope.launch {
+            viewModel.uiState.collect { state ->
+                binding.progressBar.visibility = if (state.isLoading) View.VISIBLE else View.GONE
+                if (state.isSuccess) {
+                    showToast("Inicio de sesión exitoso")
+//                    findNavController().navigate(R.id.action_loginFragment_to_readTermsFragment)
+                }
+                state.errorMessage?.let { showToast(it) }
             }
-            state.errorMessage?.let { showToast(it) }
         }
     }
 

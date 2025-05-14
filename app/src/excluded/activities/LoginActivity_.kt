@@ -32,7 +32,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.squareup.picasso.Picasso
 
 
-class LoginActivity : AppCompatActivity(), FacebookCallback<LoginResult> {
+class LoginActivity_ : AppCompatActivity(), FacebookCallback<LoginResult> {
 
 
     private lateinit var auth: FirebaseAuth

@@ -17,7 +17,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <!-- Título -->
     <TextView
@@ -25,17 +25,16 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/welcome"
-        android:layout_marginTop="15dp"
         android:textColor="@color/button_text"
         android:textSize="@dimen/text_sp37"
         android:textStyle="bold"
         android:padding="30dp"
         android:lineSpacingMultiplier="1.5"
         android:fontFamily="@font/raleway_medium_italic"
+        android:layout_marginTop="@dimen/margin_top_dp50"
+        android:layout_marginStart="@dimen/margin_start_dp25"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintTop_margin="@dimen/margin_top_dp50"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintStart_margin="@dimen/margin_start_dp25" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <!-- Botón Login -->
     <Button
@@ -52,7 +51,7 @@
         android:background="@drawable/neumorphism_button"
         app:layout_constraintTop_toBottomOf="@id/titleTextView"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <!-- Botón Signin -->
     <Button
@@ -69,6 +68,6 @@
         android:background="@drawable/neumorphism_button"
         app:layout_constraintTop_toBottomOf="@id/cover_login_button"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

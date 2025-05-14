@@ -6,7 +6,7 @@
 
     <fragment
         android:id="@+id/splashFragment"
-        android:name="com.cursoandroid.queermap.presentation.ui.splash.SplashFragment"
+        android:name="com.cursoandroid.queermap.ui.splash.SplashFragment"
         android:label="Splash"
         tools:layout="@layout/fragment_splash" >
         <action
@@ -24,23 +24,23 @@
             android:id="@+id/action_cover_to_login"
             app:destination="@id/loginFragment" />
 
-        <action
-            android:id="@+id/action_cover_to_signin"
-            app:destination="@id/signinFragment" />
+<!--        <action-->
+<!--            android:id="@+id/action_cover_to_signin"-->
+<!--            app:destination="@id/signinFragment" />-->
     </fragment>
 
     <fragment
         android:id="@+id/loginFragment"
         android:name="com.cursoandroid.queermap.ui.login.LoginFragment"
         android:label="Login">
-        <action
-            android:id="@+id/action_loginFragment_to_readTermsFragment"
-            app:destination="@id/readTermsFragment" />
+<!--        <action-->
+<!--            android:id="@+id/action_loginFragment_to_readTermsFragment"-->
+<!--            app:destination="@id/readTermsFragment" />-->
     </fragment>
 
-    <fragment
-        android:id="@+id/readTermsFragment"
-        android:name="com.cursoandroid.queermap.ui.terms.ReadTermsFragment"
-        android:label="Términos" />
+<!--    <fragment-->
+<!--        android:id="@+id/readTermsFragment"-->
+<!--        android:name="com.cursoandroid.queermap.ui.terms.ReadTermsFragment"-->
+<!--        android:label="Términos" />-->
 
 </navigation>
