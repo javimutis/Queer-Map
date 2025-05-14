@@ -14,9 +14,9 @@
     <string name="remember_me"> Recuérdame</string>
     <string name="forgot_password">Olvidaste la contraseña?</string>
     <string name="login_button">Ingresar</string>
-    <string name="or_connect_with">O conéctate con</string>
+    <string name="or_connect_with">O conéctate usando:</string>
     <string name="no_account">No tienes cuenta?</string>
-    <string name="signup">Regístrate</string>
+    <string name="sign_up">Regístrate</string>
     <string name="reset_password">Recuperar contraseña</string>
     <string name="cancel">Cancelar</string>
 
@@ -34,6 +34,8 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="app_logo">logo app</string>
+    <string name="google_login">Iniciar sesión con Google</string>
+    <string name="facebook_login">Iniciar sesión con Facebook</string>
 
 
 </resources>

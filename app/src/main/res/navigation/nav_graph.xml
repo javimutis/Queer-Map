@@ -6,7 +6,7 @@
 
     <fragment
         android:id="@+id/splashFragment"
-        android:name="com.cursoandroid.queermap.presentation.ui.view.SplashFragment"
+        android:name="com.cursoandroid.queermap.presentation.ui.splash.SplashFragment"
         android:label="Splash"
         tools:layout="@layout/fragment_splash" >
         <action
@@ -16,7 +16,7 @@
 
     <fragment
         android:id="@+id/coverFragment"
-        android:name="com.cursoandroid.queermap.presentation.ui.view.CoverFragment"
+        android:name="com.cursoandroid.queermap.ui.cover.CoverFragment"
         android:label="Cover"
         tools:layout="@layout/fragment_cover">
 
@@ -28,5 +28,19 @@
             android:id="@+id/action_cover_to_signin"
             app:destination="@id/signinFragment" />
     </fragment>
+
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.cursoandroid.queermap.ui.login.LoginFragment"
+        android:label="Login">
+        <action
+            android:id="@+id/action_loginFragment_to_readTermsFragment"
+            app:destination="@id/readTermsFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/readTermsFragment"
+        android:name="com.cursoandroid.queermap.ui.terms.ReadTermsFragment"
+        android:label="Términos" />
 
 </navigation>

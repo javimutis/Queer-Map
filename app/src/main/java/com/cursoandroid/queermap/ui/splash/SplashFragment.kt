@@ -1,4 +1,4 @@
-package com.cursoandroid.queermap.presentation.ui.view
+package com.cursoandroid.queermap.ui.splash
 
 import android.os.Bundle
 import android.os.Handler
