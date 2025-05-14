@@ -1,33 +1,113 @@
 ![Queermap Banner](Queermapbanner.png)
 
+
+> **Una app que geolocaliza espacios seguros, culturales, de salud, y de ocio para la comunidad LGBTIQ+ en Chile.**
+
+---
+
 <div align="justify">
 
-En un mundo donde la diversidad y la inclusión son valores fundamentales, surge Queermap como una herramienta para la comunidad LGBTIQ+. Nuestra aplicación surge de la necesidad de proporcionar espacios seguros y acogedores para todas las personas que se identifican dentro de esta comunidad vibrante y diversa.
+En un mundo donde la diversidad y la inclusión son valores fundamentales, surge **Queermap** como una herramienta útil y transformadora para la comunidad LGBTIQ+. Esta aplicación nace de la necesidad de contar con espacios seguros, acogedores y visibilizados, donde todas las personas puedan ser plenamente ellas mismas.
 
-El camino hacia la aceptación y el amor propio puede ser desafiante, especialmente cuando se enfrentan obstáculos y discriminación. En Queermap, nos inspira la idea de que todos merecen tener acceso a servicios, entretenimiento, cultura, goce y espacios de salud donde puedan ser ell@s mism@s sin temor al juicio o la exclusión.
+**Queermap** conecta personas con servicios locales confiables en salud, entretenimiento, cultura, educación, orientación y seguridad.
 
+---
 
-<details>  
-<summary><b>Detalles de la Aplicación</b></summary>
-<br>
+## 🚀 Estado del Proyecto
 
-Queermap es una aplicación móvil diseñada específicamente para ayudar a las personas LGBTIQ+ a encontrar lugares seguros y amigables en su área local y en todo el país. Nuestra aplicación ofrece una amplia gama de servicios, incluyendo entretenimiento, cultura, salud, educación, orientación y seguridad.
+- [x] Arquitectura modular limpia
+- [x] Login con correo electrónico (Firebase)
+- [x] Splash + Cover de bienvenida
+- [ ] Mapa interactivo (en desarrollo)
+- [ ] Perfil de usuario
+- [ ] Guardado de lugares favoritos
+- [ ] Funcionalidades sociales
+- [ ] Notificaciones y alertas
+- [ ] Botón de emergencia para contención
+- [ ] Demarcación de zonas de riesgo
 
-Comprendemos la importancia de encontrar lugares donde la comunidad LGBTIQ+ pueda expresarse libremente, conectarse con otros miembros de la comunidad y acceder a recursos que promuevan el bienestar y la felicidad. Estamos comprometidos a proporcionar información actualizada y precisa para que cada usuario pueda explorar, experimentar y disfrutar de todo lo que la comunidad tiene para ofrecer.
+---
 
+## 🧠 Stack Tecnológico
+
+- **Kotlin** + Jetpack
+- **MVVM** (Model-View-ViewModel)
+- **Clean Architecture**
+- **Firebase Authentication**
+- **Jetpack Navigation Component**
+- **Modularización por capas** (`data`, `domain`, `ui`, `di`)
+
+---
+
+## 📁 Estructura del Proyecto
+
+Queermap/
+├── data
+│ ├── repository
+│ │ └── AuthRepositoryImpl.kt
+│ └── source
+│ └── remote
+│ └── FirebaseAuthDataSource.kt
+├── di
+│ └── AppModule.kt
+├── domain
+│ ├── model
+│ │ └── User.kt
+│ ├── repository
+│ │ └── AuthRepository.kt
+│ └── usecase
+│ └── LoginWithEmailUseCase.kt
+├── ui
+│ ├── login
+│ │ ├── LoginFragment.kt
+│ │ ├── LoginViewModel.kt
+│ │ └── LoginUiState.kt
+│ ├── cover
+│ │ └── CoverFragment.kt
+│ ├── splash
+│ │ └── SplashFragment.kt
+│ └── MainActivity.kt
+
+yaml
+Copiar código
+
+> 🔹 Esta estructura sigue las buenas prácticas de arquitectura limpia para mantener una separación clara entre lógica de negocio, datos y presentación. Facilita el testing, escalabilidad y mantenibilidad del proyecto.
+
+---
+
+## 🧩 Arquitectura y Principios
+
+- **Clean Architecture**:
+    - Separación en capas: `domain`, `data`, `ui`
+    - Cada capa tiene una única responsabilidad
+
+- **Inyección de dependencias**:
+    - Hilt/Dagger (en preparación para integración)
+
+- **MVVM + State Management**:
+    - `ViewModel` y `State` personalizados para manejar cambios reactivos en la UI
+
+---
+## 📌 Funcionalidades Clave (MVP)
+
+<details>
+<summary><b>✔ Registro y perfil de usuario</b></summary>
+Los usuarios pueden registrarse mediante correo electrónico y crear su perfil inicial usando Firebase Authentication.
 </details>
 
-<details>  
-<summary><b>Información sobre la realidad en Chile</b></summary>
-<br>
+<details>
+<summary><b>📍 Mapa interactivo (próximamente)</b></summary>
+El corazón de la aplicación será un mapa donde las personas podrán ubicar y compartir espacios seguros y relevantes para la comunidad LGBTIQ+.
+</details>
 
-En Chile, a pesar de los avances legales y sociales, la discriminación y la violencia aún son una realidad para muchas personas de la comunidad. Es importante mencionar algunos aspectos relevantes de la realidad chilena:
+---
 
-- Ley Antidiscriminación: En Chile, existe una Ley Antidiscriminación (Ley N° 20.609) que prohíbe la discriminación arbitraria en diversos ámbitos, incluyendo la orientación sexual e identidad de género.
+## 🌍 Enfoque Social
 
-- Ley de Identidad de Género: La Ley de Identidad de Género (Ley N° 21.120) permite el cambio legal de nombre y género en los documentos oficiales para las personas transgénero mayores de 14 años, sin necesidad de intervención quirúrgica ni autorización judicial.
+<details>
+<summary><b>📚 Información sobre la realidad en Chile</b></summary>
 
-- Crímenes de odio contra personas pertenecientes a la diversidad sexual y de género: A pesar de los avances legales, los crímenes de odio aún persisten en la sociedad chilena. Es fundamental seguir trabajando para promover la inclusión y el respeto hacia todas las personas.
+Aunque Chile ha avanzado en leyes de igualdad, persisten desafíos como los crímenes de odio, discriminación laboral y exclusión social. Queermap busca combatir estas barreras desde la tecnología, visibilizando lugares seguros, iniciativas comunitarias y recursos críticos para el bienestar.
 
 </details>
 
@@ -36,12 +116,12 @@ En Chile, a pesar de los avances legales y sociales, la discriminación y la vio
 <br>
 
 ![cluster](clustermap.png)
-  
+
 </details>
 
-<details>  
-<summary><b>Referencias y Recursos</b></summary>
-<br>
+---
+
+## 🧪 Referencias y Recursos
 
   - Fundación Todo Mejora - www.todomejora.org: Prevención del suicidio y discriminación hacia jóvenes LGBT+.
   - OTD (Organizando Trans Diversidades) - www.otdchile.org: Promoción de los derechos de personas trans en Chile.
@@ -51,13 +131,12 @@ En Chile, a pesar de los avances legales y sociales, la discriminación y la vio
   - Fundación Iguales - www.iguales.cl : Igualdad de derechos para personas LGBTIQ+ en Chile.
   - MOVILH (Movimiento de Integración y Liberación Homosexual) - www.movilh.cl: Lucha por los derechos LGBTIQ+ en Chile.
 
-Recuerda que nuestra aplicación está en constante evolución y mejora. Valoramos tus comentarios y sugerencias para que podamos seguir construyendo un espacio inclusivo y seguro para la comunidad LGBTIQ+.
+---
 
-</details>
+## 📖 Historias que inspiran
 
-<details>  
-<summary><b>Esta es la historia de Mariana</b></summary>
-<br>
+<details>
+<summary><b>La historia de Mariana</b></summary>
 
 En un rincón de Viña del Mar, una joven lesbiana llamada Mariana buscaba desesperadamente un espacio seguro donde poder ser ella misma, expresar su amor y conectar con otros individuos que compartieran su realidad. Pero se encontró con un muro de discriminación y desconocimiento. Fue entonces cuando descubrió Queermap, un mapa digital que prometía una experiencia transformadora.
 Con solo un toque en su pantalla, Mariana se adentró en un mundo de colores vibrantes que reflejaban su identidad y respetaban la diversidad. Encontró una amplia gama de servicios, desde entretenimiento hasta salud y orientación, todo diseñado específicamente para satisfacer las necesidades de la comunidad LGBT+.
@@ -68,19 +147,9 @@ Mariana encontró una comunidad que la apoyaba en su viaje personal y juntos des
 
 </details>
 
-<details>  
-<summary><b>Primer acercamiento a la app</b></summary>
-<br>
+---
 
-![MVP](firstapproach.png)
-
-  1. Registro y perfil de usuario: Crea el login. Los usuarios deben poder registrarse en la aplicación y crear un perfil personalizado.
-  2. Funcionalidad principal: Integra el mapa interactivo a la aplicación.
-
-</details>
-<details>  
-<summary><b>Entregas a futuro e ideas a integrar</b></summary>
-<br>
+## 💡 Próximas funcionalidades
 
   - El perfil permite guardar los lugares favoritos, unirse a comunidades y recibir recomendaciones personalizadas.
   - Información detallada de los lugares: Cada lugar en el mapa debe tener una página de información detallada que incluya descripción, fotos, horarios, comentarios y calificaciones de otros usuarios. Esto permitirá a los usuarios tomar decisiones informadas sobre los lugares que deseen visitar.
@@ -93,14 +162,31 @@ Mariana encontró una comunidad que la apoyaba en su viaje personal y juntos des
 Recuerda que nuestra aplicación está en constante evolución y mejora. Valoramos tus comentarios y sugerencias para que podamos seguir construyendo un espacio inclusivo y seguro para la comunidad LGBTIQ+.
 
 
-### Contacto
-Si tienes alguna pregunta, sugerencia o simplemente quieres contactarnos, no dudes en hacerlo a través de nuestros medios de contacto.
+## 🧪 Cómo colaborar
+
+¿Te interesa colaborar con el desarrollo de Queermap?
+
+1. Haz un fork del repositorio
+2. Crea una rama con tu feature: `git checkout -b feature/nueva-funcionalidad`
+3. Haz push y crea un pull request explicando tus cambios
+
+---
+
+## 📬 Contacto
+
+¡Estamos construyendo esto en comunidad! Escríbenos para colaborar, compartir feedback o aportar con ideas.
 
 [![Linkedin Badge](https://img.shields.io/badge/-javimutis-blue?style=flat-square&logo=Linkedin&logoColor=white&link=https://www.linkedin.com/in/javimutis/)](https://www.linkedin.com/in/javimutis/)
 [![Instagram Badge](https://img.shields.io/badge/-javi.mutis-E4405F?style=flat-square&labelColor=E4405F&logo=instagram&logoColor=white&link=https://www.instagram.com/javi.mutis/)](https://www.instagram.com/javi.mutis/)
 [![Github Badge](https://img.shields.io/badge/-javimutis-black?style=flat-square&logo=github&logoColor=white&link=https://github.com/javimutis)](https://github.com/javimutis)
 [![Email Badge](https://img.shields.io/badge/-javimutisdev%40gmail.com-red?style=flat-square&logo=gmail&logoColor=white&link=mailto:javimutisdev%40gmail.com)](mailto:javimutisdev@gmail.com)
 
-¡Gracias por tu apoyo y contribuciones!
+---
+
+## ❤️ Agradecimientos
+
+Gracias a quienes apoyan con ideas, tiempo, código y cariño este proyecto por y para la comunidad.
+
+---
 
 </div>
