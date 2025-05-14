@@ -15,7 +15,7 @@ class SplashFragment : Fragment() {
 
     private var _binding: FragmentSplashBinding? = null
     private val binding get() = _binding!!
-    private val splashDuration = 3500L
+    private val splashDuration = 1000L
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -34,7 +34,11 @@ class SplashFragment : Fragment() {
     }
 
     private fun goToCover() {
-        findNavController().navigate(R.id.action_splash_to_cover)
+        try {
+            findNavController().navigate(R.id.action_splash_to_cover)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
 
