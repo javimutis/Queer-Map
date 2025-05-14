@@ -68,9 +68,6 @@ Queermap/
 │ │ └── SplashFragment.kt
 │ └── MainActivity.kt
 
-yaml
-Copiar código
-
 > 🔹 Esta estructura sigue las buenas prácticas de arquitectura limpia para mantener una separación clara entre lógica de negocio, datos y presentación. Facilita el testing, escalabilidad y mantenibilidad del proyecto.
 
 ---
