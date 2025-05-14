@@ -41,34 +41,7 @@ En un mundo donde la diversidad y la inclusión son valores fundamentales, surge
 
 ## 📁 Estructura del Proyecto
 
-Queermap/
-├── data
-│ ├── repository
-│ │ └── AuthRepositoryImpl.kt
-│ └── source
-│ └── remote
-│ └── FirebaseAuthDataSource.kt
-├── di
-│ └── AppModule.kt
-├── domain
-│ ├── model
-│ │ └── User.kt
-│ ├── repository
-│ │ └── AuthRepository.kt
-│ └── usecase
-│ └── LoginWithEmailUseCase.kt
-├── ui
-│ ├── login
-│ │ ├── LoginFragment.kt
-│ │ ├── LoginViewModel.kt
-│ │ └── LoginUiState.kt
-│ ├── cover
-│ │ └── CoverFragment.kt
-│ ├── splash
-│ │ └── SplashFragment.kt
-│ └── MainActivity.kt
-
-> 🔹 Esta estructura sigue las buenas prácticas de arquitectura limpia para mantener una separación clara entre lógica de negocio, datos y presentación. Facilita el testing, escalabilidad y mantenibilidad del proyecto.
+> 🔹 El proyecto sigue buenas prácticas de arquitectura limpia para mantener una separación clara entre lógica de negocio, datos y presentación. Facilita el testing, escalabilidad y mantenibilidad del proyecto.
 
 ---
 
