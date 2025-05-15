@@ -3,17 +3,21 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/splashFragment">
-
+    app:startDestination="@id/welcomeFragment">
 
     <fragment
-        android:id="@+id/splashFragment"
-        android:name="com.cursoandroid.queermap.ui.splash.SplashFragment"
-        android:label="Splash"
-        tools:layout="@layout/fragment_splash" >
+        android:id="@+id/welcomeFragment"
+        android:name="com.cursoandroid.queermap.ui.welcome.WelcomeFragment"
+        android:label="Welcome"
+        tools:layout="@layout/fragment_welcome">
         <action
-            android:id="@+id/action_splash_to_cover"
-            app:destination="@id/coverFragment" />
+            android:id="@+id/action_welcome_to_cover"
+            app:destination="@id/coverFragment"
+            app:enterAnim="@anim/fade_in"
+            app:exitAnim="@anim/fade_out"
+            app:popEnterAnim="@anim/fade_in"
+            app:popExitAnim="@anim/fade_out" />
+
     </fragment>
 
     <fragment
@@ -24,9 +28,14 @@
 
         <action
             android:id="@+id/action_cover_to_login"
-            app:destination="@id/loginFragment" />
+            app:destination="@id/loginFragment"
+            app:enterAnim="@anim/fade_in"
+            app:exitAnim="@anim/fade_out"
+            app:popEnterAnim="@anim/fade_in"
+            app:popExitAnim="@anim/fade_out" />
 
-<!--        <action-->
+
+        <!--        <action-->
 <!--            android:id="@+id/action_cover_to_signin"-->
 <!--            app:destination="@id/signinFragment" />-->
     </fragment>

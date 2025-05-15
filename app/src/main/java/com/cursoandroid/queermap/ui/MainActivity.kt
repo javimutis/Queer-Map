@@ -1,7 +1,8 @@
-package com.cursoandroid.queermap.presentation.ui
+package com.cursoandroid.queermap.ui
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.cursoandroid.queermap.R
@@ -12,6 +13,17 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val splashScreen = installSplashScreen()
+
+        splashScreen.setOnExitAnimationListener { splashScreenView ->
+            splashScreenView.view.animate()
+                .alpha(0f)
+                .setDuration(100L)
+                .withEndAction {
+                    splashScreenView.remove()
+                }.start()
+        }
+
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -21,11 +33,8 @@ class MainActivity : AppCompatActivity() {
 
         val navController = navHostFragment.navController
 
-        // Opcional: si tienes un Toolbar
-        setupActionBarWithNavController(navController)
     }
 
-    // Permite navegar hacia atrás con botón de barra superior
     override fun onSupportNavigateUp(): Boolean {
         val navHostFragment = supportFragmentManager
             .findFragmentById(R.id.nav_host_fragment) as NavHostFragment

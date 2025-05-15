@@ -42,7 +42,7 @@
         android:id="@+id/cover_login_button"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="60dp"
+        android:layout_marginTop="100dp"
         android:layout_marginStart="@dimen/margin_start_dp32"
         android:layout_marginEnd="@dimen/margin_end_dp32"
         android:text="@string/login_title"

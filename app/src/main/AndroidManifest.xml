@@ -13,11 +13,11 @@
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <supports-screens
-        android:smallScreens="true"
-        android:normalScreens="true"
+        android:anyDensity="true"
         android:largeScreens="true"
-        android:xlargeScreens="true"
-        android:anyDensity="true" />
+        android:normalScreens="true"
+        android:smallScreens="true"
+        android:xlargeScreens="true" />
 
     <application
         android:allowBackup="true"
@@ -29,62 +29,50 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
 
-
-
+         <activity
+         android:name=".ui.MainActivity"
+             android:exported="true"
+             android:theme="@style/Theme.QueerMap.Splash">
+         <intent-filter>
+         <action android:name="android.intent.action.MAIN" />
+         <category android:name="android.intent.category.LAUNCHER" />
+         </intent-filter>
+         </activity>
         <activity android:name=".ui.test.SingleFragmentActivity"
-            android:theme="@style/Theme.QueerMap.Splash"
-            android:exported="true">
-
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-
-<!--        <activity-->
-<!--            android:name=".presentation.ui.MainActivity"-->
-<!--            android:exported="true">-->
-<!--            <intent-filter>-->
-<!--                <action android:name="android.intent.action.MAIN" />-->
-
-<!--                <category android:name="android.intent.category.LAUNCHER" />-->
-<!--            </intent-filter>-->
-<!--        </activity>-->
-<!--        <activity-->
-<!--            android:name=".activities.AdminActivity"-->
-<!--            android:enabled="true"-->
-<!--            android:exported="true"-->
-<!--            android:label="Admin Activity">-->
-<!--            <intent-filter>-->
-<!--                <action android:name="com.example.app.ACTION_ADMIN" />-->
-
-<!--                <category android:name="android.intent.category.DEFAULT" />-->
-<!--            </intent-filter>-->
-<!--        </activity>-->
-
-<!--        <activity-->
-<!--            android:name=".activities.PlaceActivity"-->
-<!--            android:exported="true" />-->
-<!--        <activity-->
-<!--            android:name=".activities.LoginActivity_"-->
-<!--            android:exported="true"-->
-<!--            android:screenOrientation="fullSensor"-->
-<!--            android:windowSoftInputMode="adjustResize" />-->
-<!--        <activity-->
-<!--            android:name=".activities.SigninActivity"-->
-<!--            android:exported="true"-->
-<!--            android:screenOrientation="fullSensor"-->
-<!--            android:windowSoftInputMode="adjustResize" />-->
-<!--        <activity-->
-<!--            android:name=".activities.ReadTermsActivity"-->
-<!--            android:exported="true"-->
-<!--            android:screenOrientation="fullSensor"-->
-<!--            android:windowSoftInputMode="adjustResize" />-->
-<!--        <activity-->
-<!--            android:name=".activities.MapsActivity"-->
-<!--            android:exported="true"-->
-<!--            android:screenOrientation="fullSensor"-->
-<!--            android:windowSoftInputMode="adjustResize" /> &lt;!&ndash; Agrega las actividades necesarias para Google Sign-In &ndash;&gt;-->
+            android:exported="false" />
+<!--         <activity -->
+<!--        &lt;!&ndash; android:name=".activities.AdminActivity" &ndash;&gt;-->
+        <!-- android:enabled="true" -->
+        <!-- android:exported="true" -->
+        <!-- android:label="Admin Activity"> -->
+        <!-- <intent-filter> -->
+        <!-- <action android:name="com.example.app.ACTION_ADMIN" /> -->
+        <!-- <category android:name="android.intent.category.DEFAULT" /> -->
+        <!-- </intent-filter> -->
+        <!-- </activity> -->
+        <!-- <activity -->
+        <!-- android:name=".activities.PlaceActivity" -->
+        <!-- android:exported="true" /> -->
+        <!-- <activity -->
+        <!-- android:name=".activities.LoginActivity_" -->
+        <!-- android:exported="true" -->
+        <!-- android:screenOrientation="fullSensor" -->
+        <!-- android:windowSoftInputMode="adjustResize" /> -->
+        <!-- <activity -->
+        <!-- android:name=".activities.SigninActivity" -->
+        <!-- android:exported="true" -->
+        <!-- android:screenOrientation="fullSensor" -->
+        <!-- android:windowSoftInputMode="adjustResize" /> -->
+        <!-- <activity -->
+        <!-- android:name=".activities.ReadTermsActivity" -->
+        <!-- android:exported="true" -->
+        <!-- android:screenOrientation="fullSensor" -->
+        <!-- android:windowSoftInputMode="adjustResize" /> -->
+        <!-- <activity -->
+        <!-- android:name=".activities.MapsActivity" -->
+        <!-- android:exported="true" -->
+        <!-- android:screenOrientation="fullSensor" -->
+        <!-- android:windowSoftInputMode="adjustResize" /> &lt;!&ndash; Agrega las actividades necesarias para Google Sign-In &ndash;&gt; -->
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" /> <!-- Agrega las actividades necesarias para Facebook Login -->
@@ -111,8 +99,6 @@
                 <data android:scheme="@string/fb_login_protocol_scheme" />
             </intent-filter>
         </activity>
-
-
     </application>
 
 </manifest>

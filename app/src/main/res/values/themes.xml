@@ -5,14 +5,15 @@
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
 
-        <style name="Theme.QueerMap.Splash" parent="Theme.SplashScreen">
-            <!-- Personaliza el ícono y fondo -->
-            <item name="windowSplashScreenBackground">@color/background_color</item>
-            <item name="windowSplashScreenAnimatedIcon">@drawable/queermap_logo_anim</item>
-            <item name="postSplashScreenTheme">@style/Theme.QueerMap</item>
-        </style>
-
     </style>
+
+    <style name="Theme.QueerMap.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/background_color</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_queermap_launcher_foreground</item>
+        <item name="postSplashScreenTheme">@style/Theme.QueerMap</item>
+    </style>
+
+
 
     <style name="Theme.QueerMap" parent="Base.Theme.QueerMap" />
 </resources>
