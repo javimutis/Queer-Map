@@ -3,6 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
+    android:fitsSystemWindows="true"
     android:layout_height="match_parent">
 
     <!-- Fondo -->
@@ -28,11 +29,11 @@
         android:textColor="@color/button_text"
         android:textSize="@dimen/text_sp37"
         android:textStyle="bold"
-        android:padding="30dp"
-        android:lineSpacingMultiplier="1.5"
+        android:padding="32dp"
+        android:lineSpacingMultiplier="1.4"
         android:fontFamily="@font/raleway_medium_italic"
-        android:layout_marginTop="@dimen/margin_top_dp50"
-        android:layout_marginStart="@dimen/margin_start_dp25"
+        android:layout_marginTop="40dp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
@@ -41,7 +42,7 @@
         android:id="@+id/cover_login_button"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="80dp"
+        android:layout_marginTop="60dp"
         android:layout_marginStart="@dimen/margin_start_dp32"
         android:layout_marginEnd="@dimen/margin_end_dp32"
         android:text="@string/login_title"
@@ -65,6 +66,7 @@
         android:textColor="@color/button_text"
         android:fontFamily="@font/raleway_semi_bold_italic"
         android:textSize="@dimen/text_sp22"
+        android:layout_marginBottom="32dp"
         android:background="@drawable/neumorphism_button"
         app:layout_constraintTop_toBottomOf="@id/cover_login_button"
         app:layout_constraintStart_toStartOf="parent"

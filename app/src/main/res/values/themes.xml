@@ -1,8 +1,17 @@
 <resources>
     <!-- Base application theme. -->
     <style name="Base.Theme.QueerMap" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+
+        <style name="Theme.QueerMap.Splash" parent="Theme.SplashScreen">
+            <!-- Personaliza el ícono y fondo -->
+            <item name="windowSplashScreenBackground">@color/background_color</item>
+            <item name="windowSplashScreenAnimatedIcon">@drawable/queermap_logo_anim</item>
+            <item name="postSplashScreenTheme">@style/Theme.QueerMap</item>
+        </style>
+
     </style>
 
     <style name="Theme.QueerMap" parent="Base.Theme.QueerMap" />

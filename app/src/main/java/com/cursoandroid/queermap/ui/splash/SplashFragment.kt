@@ -6,6 +6,8 @@ import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.cursoandroid.queermap.R
@@ -15,7 +17,7 @@ class SplashFragment : Fragment() {
 
     private var _binding: FragmentSplashBinding? = null
     private val binding get() = _binding!!
-    private val splashDuration = 1000L
+    private val splashDuration = 1500L
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -31,7 +33,8 @@ class SplashFragment : Fragment() {
         Handler(Looper.getMainLooper()).postDelayed({
             goToCover()
         }, splashDuration)
-    }
+
+           }
 
     private fun goToCover() {
         try {

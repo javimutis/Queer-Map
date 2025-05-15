@@ -21,6 +21,7 @@ espresso = "3.5.1"
 navigation = "2.7.5"
 activity = "1.8.0"
 constraintlayout = "2.2.1"
+core-splashscreen = "1.0.1"
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -53,6 +54,7 @@ core-ktx = { module = "androidx.core:core-ktx", version.ref = "core-ktx" }
 appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
 cardview = { module = "androidx.cardview:cardview", version.ref = "cardview" }
 
+core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "core-splashscreen" }
 # Navigation
 androidx-navigation-fragment = { module = "androidx.navigation:navigation-fragment-ktx", version.ref = "navigation" }
 androidx-navigation-ui = { module = "androidx.navigation:navigation-ui-ktx", version.ref = "navigation" }

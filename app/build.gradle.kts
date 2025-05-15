@@ -69,6 +69,8 @@ dependencies {
     implementation(libs.appcompat)
     implementation(libs.cardview)
 
+    implementation(libs.core.splashscreen)
+
     implementation(libs.hilt.core)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
