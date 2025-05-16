@@ -20,6 +20,7 @@
         android:xlargeScreens="true" />
 
     <application
+        android:name=".QueerMapApp"
         android:allowBackup="true"
         android:icon="@drawable/logoqueer"
         android:label="@string/app_name"

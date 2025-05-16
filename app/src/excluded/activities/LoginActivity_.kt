@@ -202,34 +202,34 @@ class LoginActivity_ : AppCompatActivity(), FacebookCallback<LoginResult> {
         }
     }
 
-    // Acción cuando se hace clic en el botón de inicio de sesión
-    private fun onLoginButtonClick(email: String, password: String) {
-        if (isValidEmail(email) && isValidPassword(password)) {
-            showSigningInMessage()
-            signInWithEmailAndPassword(email, password)
-        } else {
-            showInvalidCredentialsError()
-        }
-    }
+//    // Acción cuando se hace clic en el botón de inicio de sesión
+//    private fun onLoginButtonClick(email: String, password: String) {
+//        if (isValidEmail(email) && isValidPassword(password)) {
+//            showSigningInMessage()
+//            signInWithEmailAndPassword(email, password)
+//        } else {
+//            showInvalidCredentialsError()
+//        }
+//    }
 
-    // Inicia sesión con correo electrónico y contraseña
-    private fun signInWithEmailAndPassword(email: String, password: String) {
-        auth.signInWithEmailAndPassword(email, password)
-                 .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    showSignInSuccess()
-                } else {
-                    showSignInError()
-                }
-            }
-        verifyUserInFirestore()
-
-        val rememberMe = rememberCheckBox.isChecked
-
-        if (rememberMe) {
-            saveCredentials(email, password)
-        }
-    }
+//    // Inicia sesión con correo electrónico y contraseña
+//    private fun signInWithEmailAndPassword(email: String, password: String) {
+//        auth.signInWithEmailAndPassword(email, password)
+//                 .addOnCompleteListener { task ->
+//                if (task.isSuccessful) {
+//                    showSignInSuccess()
+//                } else {
+//                    showSignInError()
+//                }
+//            }
+//        verifyUserInFirestore()
+//
+//        val rememberMe = rememberCheckBox.isChecked
+//
+//        if (rememberMe) {
+//            saveCredentials(email, password)
+//        }
+//    }
 
     // Guarda las credenciales en SharedPreferences
     private fun saveCredentials(email: String, password: String) {
@@ -244,28 +244,28 @@ class LoginActivity_ : AppCompatActivity(), FacebookCallback<LoginResult> {
     private fun showForgotPasswordDialog() {
         forgotPasswordDialog.show()
     }
-    private fun verifyUserInFirestore() {
-        val user: FirebaseUser? = auth.currentUser
-
-        user?.let {
-            firestore.collection("users")
-                .document(it.uid)
-                .get()
-                .addOnSuccessListener { document ->
-                    if (document.exists()) {
-                        // Verificación exitosa
-                        // Realiza la acción deseada
-                    } else {
-                        // Documento no encontrado en Firestore
-                        // Realiza la acción deseada
-                    }
-                }
-                .addOnFailureListener { e ->
-                    // Error al acceder a Firestore
-                    // Realiza la acción deseada
-                }
-        }
-    }
+//    private fun verifyUserInFirestore() {
+//        val user: FirebaseUser? = auth.currentUser
+//
+//        user?.let {
+//            firestore.collection("users")
+//                .document(it.uid)
+//                .get()
+//                .addOnSuccessListener { document ->
+//                    if (document.exists()) {
+//                        // Verificación exitosa
+//                        // Realiza la acción deseada
+//                    } else {
+//                        // Documento no encontrado en Firestore
+//                        // Realiza la acción deseada
+//                    }
+//                }
+//                .addOnFailureListener { e ->
+//                    // Error al acceder a Firestore
+//                    // Realiza la acción deseada
+//                }
+//        }
+//    }
 
     override fun onSuccess(loginResult: LoginResult) {
         onFacebookLoginSuccess()
@@ -371,26 +371,26 @@ class LoginActivity_ : AppCompatActivity(), FacebookCallback<LoginResult> {
         return ValidationUtils.isValidPassword(password)
     }
 
-    // Muestra un mensaje de inicio de sesión en curso
-    private fun showSigningInMessage() {
-        Toast.makeText(this, "Signing in...", Toast.LENGTH_SHORT).show()
-    }
+//    // Muestra un mensaje de inicio de sesión en curso
+//    private fun showSigningInMessage() {
+//        Toast.makeText(this, "Signing in...", Toast.LENGTH_SHORT).show()
+//    }
+//
+//    // Muestra un mensaje de error de credenciales inválidas
+//    private fun showInvalidCredentialsError() {
+//        Toast.makeText(this, "Invalid email or password", Toast.LENGTH_SHORT).show()
+//    }
+//
+//    // Muestra un mensaje de inicio de sesión exitoso
+//    private fun showSignInSuccess() {
+//        Toast.makeText(this, "Sign in successful", Toast.LENGTH_SHORT).show()
+//        showReadTermsScreen()
+//    }
 
-    // Muestra un mensaje de error de credenciales inválidas
-    private fun showInvalidCredentialsError() {
-        Toast.makeText(this, "Invalid email or password", Toast.LENGTH_SHORT).show()
-    }
-
-    // Muestra un mensaje de inicio de sesión exitoso
-    private fun showSignInSuccess() {
-        Toast.makeText(this, "Sign in successful", Toast.LENGTH_SHORT).show()
-        showReadTermsScreen()
-    }
-
-    // Muestra un mensaje de error de inicio de sesión
-    private fun showSignInError() {
-        Toast.makeText(this, "Sign in error", Toast.LENGTH_SHORT).show()
-    }
+//    // Muestra un mensaje de error de inicio de sesión
+//    private fun showSignInError() {
+//        Toast.makeText(this, "Sign in error", Toast.LENGTH_SHORT).show()
+//    }
 
     // Muestra un mensaje de éxito para el restablecimiento de contraseña
     private fun showPasswordResetEmailSent(email: String) {

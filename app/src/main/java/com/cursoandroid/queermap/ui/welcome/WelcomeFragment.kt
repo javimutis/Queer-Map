@@ -10,7 +10,9 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.cursoandroid.queermap.R
 import com.cursoandroid.queermap.databinding.FragmentWelcomeBinding
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class WelcomeFragment : Fragment() {
 
     private var _binding: FragmentWelcomeBinding? = null

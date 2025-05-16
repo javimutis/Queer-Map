@@ -13,7 +13,9 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.cursoandroid.queermap.R
 import com.cursoandroid.queermap.databinding.FragmentCoverBinding
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class CoverFragment : Fragment() {
 
     private var _binding: FragmentCoverBinding? = null
