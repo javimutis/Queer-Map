@@ -49,6 +49,25 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
                 state.errorMessage?.let { showToast(it) }
             }
         }
+        // Observa el estado de visibilidad
+        lifecycleScope.launch {
+            viewModel.isPasswordVisible.collect { isVisible ->
+                val inputType = if (isVisible) {
+                    android.text.InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+                } else {
+                    android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
+                }
+
+                binding.passwordEditText.inputType = inputType
+                binding.passwordEditText.setSelection(binding.passwordEditText.text?.length ?: 0) // Mantiene el cursor al final
+                binding.eyeIcon.setImageResource(if (isVisible) R.drawable.closed_eye else R.drawable.open_eye)
+            }
+        }
+
+// Al hacer clic en el ícono, cambia visibilidad
+        binding.eyeIcon.setOnClickListener {
+            viewModel.togglePasswordVisibility()
+        }
     }
 
     private fun saveCredentials(email: String, password: String) {

@@ -19,6 +19,9 @@ class LoginViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState
 
+    private val _isPasswordVisible = MutableStateFlow(false)
+    val isPasswordVisible: StateFlow<Boolean> = _isPasswordVisible
+
     fun login(email: String, password: String, remember: Boolean, saveCredentials: (String, String) -> Unit) {
         viewModelScope.launch {
             _uiState.value = LoginUiState(isLoading = true)
@@ -38,5 +41,8 @@ class LoginViewModel @Inject constructor(
                 _uiState.value = LoginUiState(errorMessage = result.exceptionOrNull()?.message)
             }
         }
+    }
+    fun togglePasswordVisibility() {
+        _isPasswordVisible.value = !_isPasswordVisible.value
     }
 }

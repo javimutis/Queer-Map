@@ -166,21 +166,21 @@ class LoginActivity_ : AppCompatActivity(), FacebookCallback<LoginResult> {
     }
 
     // Alterna la visibilidad de la contraseña
-    private fun togglePasswordVisibility() {
-        val inputType = passwordEditText.inputType
-
-        if (inputType == InputType.TYPE_TEXT_VARIATION_PASSWORD or InputType.TYPE_CLASS_TEXT) {
-            passwordEditText.inputType =
-                InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD or InputType.TYPE_CLASS_TEXT
-            eyeIcon.setImageResource(R.drawable.open_eye)
-        } else {
-            passwordEditText.inputType =
-                InputType.TYPE_TEXT_VARIATION_PASSWORD or InputType.TYPE_CLASS_TEXT
-            eyeIcon.setImageResource(R.drawable.closed_eye)
-        }
-
-        passwordEditText.setSelection(passwordEditText.text?.length ?: 0)
-    }
+//    private fun togglePasswordVisibility() {
+//        val inputType = passwordEditText.inputType
+//
+//        if (inputType == InputType.TYPE_TEXT_VARIATION_PASSWORD or InputType.TYPE_CLASS_TEXT) {
+//            passwordEditText.inputType =
+//                InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD or InputType.TYPE_CLASS_TEXT
+//            eyeIcon.setImageResource(R.drawable.open_eye)
+//        } else {
+//            passwordEditText.inputType =
+//                InputType.TYPE_TEXT_VARIATION_PASSWORD or InputType.TYPE_CLASS_TEXT
+//            eyeIcon.setImageResource(R.drawable.closed_eye)
+//        }
+//
+//        passwordEditText.setSelection(passwordEditText.text?.length ?: 0)
+//    }
 
     // Carga las credenciales guardadas
     private fun loadSavedCredentials() {

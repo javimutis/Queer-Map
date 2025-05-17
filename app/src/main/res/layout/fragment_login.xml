@@ -135,6 +135,7 @@
 
                 <ImageView
                     android:id="@+id/eyeIcon"
+                    android:contentDescription="@string/toggle_password_visibility"
                     android:layout_width="30dp"
                     android:layout_height="30dp"
                     android:layout_marginStart="@dimen/margin_top_dp10"
