@@ -64,6 +64,11 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
             }
         }
 
+        binding.forgotPasswordTextView.setOnClickListener {
+            findNavController().navigate(R.id.action_loginFragment_to_forgotPasswordFragment)
+        }
+
+
 // Al hacer clic en el ícono, cambia visibilidad
         binding.eyeIcon.setOnClickListener {
             viewModel.togglePasswordVisibility()
@@ -83,6 +88,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
     private fun isValidPassword(password: String) = password.length >= 6
     private fun showToast(msg: String) =
         Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
+
 
     override fun onDestroyView() {
         super.onDestroyView()

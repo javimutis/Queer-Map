@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Colores -->
+    <!-- Login -->
     <color name="button_text">#FBFAFB</color>
     <color name="background_color">#EFE1EA</color>
     <color name="title_color">#630573</color>
@@ -9,5 +9,10 @@
     <color name="error_text_color">#6420A8</color>
     <color name="colorAccent">#FFC0CB</color>
     <color name="radius">#ff91dc</color>
+
+
+
+
+
 
 </resources>

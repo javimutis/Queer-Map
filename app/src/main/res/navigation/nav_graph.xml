@@ -54,4 +54,10 @@
 <!--        android:name="com.cursoandroid.queermap.ui.terms.ReadTermsFragment"-->
 <!--        android:label="Términos" />-->
 
+    <fragment
+        android:id="@+id/forgotPasswordFragment"
+        android:name="com.cursoandroid.queermap.ui.forgotpassword.ForgotPasswordFragment"
+        android:label="forgot_password"
+        tools:layout="@layout/fragment_forgot_password" />
+
 </navigation>
