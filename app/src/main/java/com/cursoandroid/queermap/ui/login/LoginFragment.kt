@@ -1,94 +1,53 @@
 package com.cursoandroid.queermap.ui.login
 
-import android.content.Context
 import android.os.Bundle
+import android.text.InputType
+import android.view.LayoutInflater
 import android.view.View
-import android.widget.Toast
-import androidx.core.widget.doOnTextChanged
+import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.cursoandroid.queermap.R
 import com.cursoandroid.queermap.databinding.FragmentLoginBinding
+import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
-class LoginFragment : Fragment(R.layout.fragment_login) {
+class LoginFragment : Fragment() {
 
     private var _binding: FragmentLoginBinding? = null
     private val binding get() = _binding!!
-    private val viewModel: LoginViewModel by viewModels()
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentLoginBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        _binding = FragmentLoginBinding.bind(view)
+        super.onViewCreated(view, savedInstanceState)
 
-        binding.loginButton.setOnClickListener {
-            val email = binding.emailEditText.text.toString().trim()
-            val password = binding.passwordEditText.text.toString().trim()
-            val remember = binding.rememberCheckBox.isChecked
-
-            if (isValidEmail(email) && isValidPassword(password)) {
-                // Corrección aquí: se pasa una referencia de función (de tipo correcto)
-                viewModel.login(email, password, remember, ::saveCredentials)
+        // Ejemplo: mostrar mensaje si el usuario deja el campo vacío
+        binding.btnLogin.setOnClickListener {
+            val email = binding.etEmail.text?.toString()?.trim()
+            if (email.isNullOrEmpty()) {
+                showSnackbar("Por favor, ingresa un correo válido")
             } else {
-                showToast("Correo o contraseña inválidos")
+                // Aquí iría tu lógica de login (validación, autenticación, etc.)
             }
         }
-
-        // Corrección aquí: se reemplaza collectIn por lifecycleScope.launch + collect
-        lifecycleScope.launch {
-            viewModel.uiState.collect { state ->
-                binding.progressBar.visibility = if (state.isLoading) View.VISIBLE else View.GONE
-                if (state.isSuccess) {
-                    showToast("Inicio de sesión exitoso")
-//                    findNavController().navigate(R.id.action_loginFragment_to_readTermsFragment)
-                }
-                state.errorMessage?.let { showToast(it) }
-            }
-        }
-        // Observa el estado de visibilidad
-        lifecycleScope.launch {
-            viewModel.isPasswordVisible.collect { isVisible ->
-                val inputType = if (isVisible) {
-                    android.text.InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-                } else {
-                    android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
-                }
-
-                binding.passwordEditText.inputType = inputType
-                binding.passwordEditText.setSelection(binding.passwordEditText.text?.length ?: 0) // Mantiene el cursor al final
-                binding.eyeIcon.setImageResource(if (isVisible) R.drawable.closed_eye else R.drawable.open_eye)
-            }
-        }
-
-        binding.forgotPasswordTextView.setOnClickListener {
+        binding.tvForgotPassword.setOnClickListener {
             findNavController().navigate(R.id.action_loginFragment_to_forgotPasswordFragment)
         }
-
-
-// Al hacer clic en el ícono, cambia visibilidad
-        binding.eyeIcon.setOnClickListener {
-            viewModel.togglePasswordVisibility()
-        }
     }
 
-    private fun saveCredentials(email: String, password: String) {
-        val prefs = requireContext().getSharedPreferences("login", Context.MODE_PRIVATE)
-        prefs.edit().apply {
-            putString("email", email)
-            putString("password", password)
-            apply()
-        }
+
+    private fun showSnackbar(message: String) {
+        Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
     }
-
-    private fun isValidEmail(email: String) = email.contains("@")
-    private fun isValidPassword(password: String) = password.length >= 6
-    private fun showToast(msg: String) =
-        Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
-
 
     override fun onDestroyView() {
         super.onDestroyView()

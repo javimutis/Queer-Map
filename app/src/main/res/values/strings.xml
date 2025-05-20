@@ -37,6 +37,8 @@
     <string name="google_login">Iniciar sesión con Google</string>
     <string name="facebook_login">Iniciar sesión con Facebook</string>
     <string name="toggle_password_visibility">Mostrar u ocultar contraseña</string>
+    <string name="hint_email">queermap@gmail.com</string>
+    <string name="hint_mail">queermap@gmail.com</string>
 
 
 </resources>

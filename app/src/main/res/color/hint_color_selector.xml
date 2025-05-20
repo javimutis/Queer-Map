@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Cuando tiene foco -->
+    <item android:color="@color/hint_color_focused" android:state_focused="true"/>
+    <!-- Cuando tiene texto ingresado (estado activado) -->
+    <item android:color="@color/hint_color_focused" android:state_activated="true"/>
+    <!-- Por defecto (sin foco, sin texto) -->
+    <item android:color="@color/hint_color_unfocused"/>
+</selector>

@@ -9,10 +9,10 @@
     <color name="error_text_color">#6420A8</color>
     <color name="colorAccent">#FFC0CB</color>
     <color name="radius">#ff91dc</color>
-
-
-
-
-
+    <color name="borde_luz">#ECECEC</color>
+    <color name="borde_sombra">#BABECC</color>
+    <color name="hint_color">#9a05ac</color>>
+    <color name="hint_color_focused">#5E35B1</color>
+    <color name="hint_color_unfocused">#8D6C9E</color>
 
 </resources>
