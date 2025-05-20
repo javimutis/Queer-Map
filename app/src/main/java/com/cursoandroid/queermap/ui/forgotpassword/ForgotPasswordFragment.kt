@@ -1,16 +1,14 @@
 package com.cursoandroid.queermap.ui.forgotpassword
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
-import android.widget.Toast
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.cursoandroid.queermap.R
 import com.cursoandroid.queermap.databinding.FragmentForgotPasswordBinding
+import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -24,28 +22,43 @@ class ForgotPasswordFragment : Fragment(R.layout.fragment_forgot_password) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         _binding = FragmentForgotPasswordBinding.bind(view)
 
-        binding.sendResetButton.setOnClickListener {
-            val email = binding.emailEditText.text.toString().trim()
-            if (email.isNotEmpty() && email.contains("@")) {
+        binding.btnResetPassword.setOnClickListener {
+            val email = binding.etEmail.text.toString().trim()
+            if (isValidEmail(email)) {
                 viewModel.sendPasswordReset(email)
             } else {
-                showToast("Ingrese un correo válido")
+                showSnackbar("Ingrese un correo válido")
             }
+        }
+
+        binding.btnCancel.setOnClickListener {
+            findNavController().popBackStack()
         }
 
         lifecycleScope.launch {
             viewModel.uiState.collect { state ->
+                binding.btnResetPassword.isEnabled = !state.isLoading
                 binding.progressBar.visibility = if (state.isLoading) View.VISIBLE else View.GONE
-                state.message?.let { showToast(it) }
+
+                state.message?.let {
+                    showSnackbar(it)
+                    viewModel.clearMessage()
+                }
+
                 if (state.isSuccess) {
-                    findNavController().popBackStack() // O ir a otra pantalla si deseas
+                    findNavController().popBackStack()
                 }
             }
         }
     }
 
-    private fun showToast(msg: String) =
-        Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
+    private fun isValidEmail(email: String): Boolean {
+        return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
+    }
+
+    private fun showSnackbar(message: String) {
+        Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
+    }
 
     override fun onDestroyView() {
         super.onDestroyView()

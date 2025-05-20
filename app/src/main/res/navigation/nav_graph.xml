@@ -43,11 +43,20 @@
     <fragment
         android:id="@+id/loginFragment"
         android:name="com.cursoandroid.queermap.ui.login.LoginFragment"
-        android:label="Login">
+        android:label="Login"
+        tools:layout="@layout/fragment_login">
+
+        <action
+            android:id="@+id/action_loginFragment_to_forgotPasswordFragment"
+            app:destination="@id/forgotPasswordFragment"
+            app:enterAnim="@anim/fade_in"
+            app:exitAnim="@anim/fade_out"
+            app:popEnterAnim="@anim/fade_in"
+            app:popExitAnim="@anim/fade_out" />
+    </fragment>
 <!--        <action-->
 <!--            android:id="@+id/action_loginFragment_to_readTermsFragment"-->
 <!--            app:destination="@id/readTermsFragment" />-->
-    </fragment>
 
 <!--    <fragment-->
 <!--        android:id="@+id/readTermsFragment"-->

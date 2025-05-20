@@ -68,7 +68,7 @@
             android:fontFamily="@font/raleway_medium_italic" />
 
         <Button
-            android:id="@+id/cancelButton"
+            android:id="@+id/btnCancel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/acceptButton"

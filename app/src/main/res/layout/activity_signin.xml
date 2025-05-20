@@ -13,7 +13,7 @@
 
         <!-- Flecha para volver atrás -->
         <ImageView
-            android:id="@+id/backButton"
+            android:id="@+id/ivBack"
             android:layout_width="@dimen/layout_dp35"
             android:layout_height="@dimen/layout_dp35"
             android:layout_marginStart="@dimen/margin_start_dp16"
@@ -23,7 +23,7 @@
 
         <!-- Título: Registro -->
         <TextView
-            android:id="@+id/titleTextView"
+            android:id="@+id/tvTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
@@ -148,7 +148,7 @@
             android:orientation="horizontal">
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/passwordEditText"
+                android:id="@+id/etPassword"
                 android:layout_width="0dp"
                 android:layout_height="40dp"
                 android:layout_marginTop="-5dp"
@@ -163,7 +163,7 @@
                 tools:ignore="TouchTargetSizeCheck" />
 
             <ImageView
-                android:id="@+id/eyeIcon"
+                android:id="@+id/ivEyeIcon"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
                 android:layout_marginStart="@dimen/margin_top_dp10"
@@ -229,7 +229,7 @@
         <!-- Casillero de Correo Electrónico -->
 
         <TextView
-            android:id="@+id/log_mail"
+            android:id="@+id/tvEmail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/repeatPasswordLayoutEdit"
@@ -242,10 +242,10 @@
             android:textSize="@dimen/text_sp16" />
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/emailEditText"
+            android:id="@+id/etEmail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/log_mail"
+            android:layout_below="@id/tvEmail"
             android:layout_marginStart="@dimen/margin_start_dp32"
             android:layout_marginTop="@dimen/margin_top_dp5"
             android:layout_marginEnd="@dimen/margin_end_dp32"
@@ -263,7 +263,7 @@
             android:id="@+id/birthdayLayout"
             android:layout_width="match_parent"
             android:layout_height="32dp"
-            android:layout_below="@id/emailEditText"
+            android:layout_below="@id/etEmail"
             android:layout_marginStart="@dimen/margin_start_dp32"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="@dimen/margin_end_dp32"
@@ -349,7 +349,7 @@
             android:textSize="@dimen/text_sp20" />
 
         <TextView
-            android:id="@+id/or_connect_with"
+            android:id="@+id/tvConnectWith"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/registerButton"
@@ -367,7 +367,7 @@
             android:id="@+id/socialButtonsLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/or_connect_with"
+            android:layout_below="@id/tvConnectWith"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="@dimen/margin_top_dp10"
             android:orientation="horizontal">
@@ -378,7 +378,7 @@
                 android:layout_weight="1" />
 
             <ImageButton
-                android:id="@+id/googleSignInButton"
+                android:id="@+id/btnGoogleSignIn"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:background="@drawable/google_icon"

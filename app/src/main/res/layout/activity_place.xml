@@ -17,7 +17,7 @@
 
         <!-- Back button -->
         <ImageView
-            android:id="@+id/backButton"
+            android:id="@+id/ivBack"
             android:layout_width="@dimen/layout_dp35"
             android:layout_height="@dimen/layout_dp35"
             android:layout_marginStart="5dp"

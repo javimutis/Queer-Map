@@ -44,22 +44,22 @@ class CoverFragment : Fragment() {
 
         showTitle()
 
-        binding.coverLoginButton.setOnClickListener {
+        binding.btnCoverLogin.setOnClickListener {
             findNavController().navigate(R.id.action_cover_to_login)
         }
 
-        binding.coverSigninButton.setOnClickListener {
+        binding.btnCoverSignIn.setOnClickListener {
 //            findNavController().navigate(R.id.action_cover_to_signin)
         }
     }
 
     private fun showTitle() {
-        binding.titleTextView.visibility = View.INVISIBLE
+        binding.tvTitle.visibility = View.INVISIBLE
 
         Handler(Looper.getMainLooper()).postDelayed({
             val fadeIn = AnimationUtils.loadAnimation(requireContext(), android.R.anim.fade_in)
-            binding.titleTextView.visibility = View.VISIBLE
-            binding.titleTextView.startAnimation(fadeIn)
+            binding.tvTitle.visibility = View.VISIBLE
+            binding.tvTitle.startAnimation(fadeIn)
         }, 1300)
     }
 
