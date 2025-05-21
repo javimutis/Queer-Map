@@ -39,4 +39,8 @@ class FirebaseAuthDataSource(
             Result.failure(e)
         }
     }
+
+    override suspend fun firebaseAuthWithGoogle(idToken: String): Result<Boolean> {
+        TODO("Not yet implemented")
+    }
 }

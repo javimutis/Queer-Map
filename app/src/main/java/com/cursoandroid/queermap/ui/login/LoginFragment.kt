@@ -10,6 +10,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.cursoandroid.queermap.R
 import com.cursoandroid.queermap.databinding.FragmentLoginBinding
@@ -18,6 +19,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.common.api.ApiException
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class LoginFragment : Fragment() {
@@ -27,7 +29,9 @@ class LoginFragment : Fragment() {
 
     private lateinit var googleSignInLauncher: ActivityResultLauncher<Intent>
     private val loginViewModel: LoginViewModel by viewModels()
-    private lateinit var googleSignInClient: GoogleSignInClient
+
+    @Inject
+    lateinit var googleSignInClient: GoogleSignInClient
 
 
     override fun onCreateView(
@@ -43,7 +47,24 @@ class LoginFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         setupGoogleSignInLauncher()
         setupListeners()
+        observeViewModel()
+
     }
+
+    private fun observeViewModel() {
+        lifecycleScope.launchWhenStarted {
+            loginViewModel.uiState.collect { state ->
+                if (state.isLoading) {
+                    // mostrar loader si quieres
+                } else if (state.isSuccess) {
+                    //      findNavController().navigate(R.id.action_loginFragment_to_homeFragment)
+                } else if (!state.errorMessage.isNullOrEmpty()) {
+                    showSnackbar(state.errorMessage)
+                }
+            }
+        }
+    }
+
 
     private fun setupGoogleSignInLauncher() {
         googleSignInLauncher = registerForActivityResult(
@@ -56,6 +77,7 @@ class LoginFragment : Fragment() {
             }
         }
     }
+
     private fun setupListeners() {
         binding.btnLogin.setOnClickListener {
             val email = binding.etEmail.text?.toString()?.trim()
@@ -80,7 +102,6 @@ class LoginFragment : Fragment() {
     }
 
     private fun onGoogleSignInButtonClicked() {
-        // TODO: Asegúrate de que googleSignInClient esté inicializado
         val signInIntent = googleSignInClient.signInIntent
         googleSignInLauncher.launch(signInIntent)
     }
@@ -91,8 +112,7 @@ class LoginFragment : Fragment() {
             val account = task.getResult(ApiException::class.java)
             val idToken = account?.idToken
             if (idToken != null) {
-                // loginViewModel.loginWithGoogle(idToken)
-                showSnackbar("ID token recibido. Enviar al ViewModel.")
+                loginViewModel.loginWithGoogle(idToken)
             } else {
                 showSnackbar("ID token no disponible")
             }
