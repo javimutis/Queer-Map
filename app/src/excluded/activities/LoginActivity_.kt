@@ -130,40 +130,40 @@ class LoginActivity_ : AppCompatActivity(), FacebookCallback<LoginResult> {
     }
 
     // Inicializa el diálogo de restablecimiento de contraseña
-    private fun initializeForgotPasswordDialog() {
-        forgotPasswordDialog = Dialog(this)
-        forgotPasswordDialog.setContentView(R.layout.forgot_password)
-
-        val resetButton: Button = forgotPasswordDialog.findViewById(R.id.resetPasswordButton)
-        val cancelButton: Button = forgotPasswordDialog.findViewById(R.id.cancelButton)
-        val emailEditText: EditText = forgotPasswordDialog.findViewById(R.id.emailEditText)
-
-        resetButton.setOnClickListener {
-            val email = emailEditText.text.toString().trim()
-            if (email.isNotEmpty()) {
-                onForgotPasswordClick(email)
-                forgotPasswordDialog.dismiss()
-            } else {
-                Toast.makeText(this, "Please enter a valid email", Toast.LENGTH_SHORT).show()
-            }
-        }
-
-        cancelButton.setOnClickListener {
-            forgotPasswordDialog.dismiss()
-        }
-    }
+//    private fun initializeForgotPasswordDialog() {
+//        forgotPasswordDialog = Dialog(this)
+//        forgotPasswordDialog.setContentView(R.layout.forgot_password)
+//
+//        val resetButton: Button = forgotPasswordDialog.findViewById(R.id.resetPasswordButton)
+//        val cancelButton: Button = forgotPasswordDialog.findViewById(R.id.cancelButton)
+//        val emailEditText: EditText = forgotPasswordDialog.findViewById(R.id.emailEditText)
+//
+//        resetButton.setOnClickListener {
+//            val email = emailEditText.text.toString().trim()
+//            if (email.isNotEmpty()) {
+//                onForgotPasswordClick(email)
+//                forgotPasswordDialog.dismiss()
+//            } else {
+//                Toast.makeText(this, "Please enter a valid email", Toast.LENGTH_SHORT).show()
+//            }
+//        }
+//
+//        cancelButton.setOnClickListener {
+//            forgotPasswordDialog.dismiss()
+//        }
+//    }
 
     // Acción cuando se hace clic en el botón de restablecimiento de contraseña
-    private fun onForgotPasswordClick(email: String) {
-        auth.sendPasswordResetEmail(email)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    showPasswordResetEmailSent(email)
-                } else {
-                    showPasswordResetEmailError()
-                }
-            }
-    }
+//    private fun onForgotPasswordClick(email: String) {
+//        auth.sendPasswordResetEmail(email)
+//            .addOnCompleteListener { task ->
+//                if (task.isSuccessful) {
+//                    showPasswordResetEmailSent(email)
+//                } else {
+//                    showPasswordResetEmailError()
+//                }
+//            }
+//    }
 
     // Alterna la visibilidad de la contraseña
 //    private fun togglePasswordVisibility() {
@@ -241,9 +241,9 @@ class LoginActivity_ : AppCompatActivity(), FacebookCallback<LoginResult> {
     }
 
     // Muestra el diálogo de restablecimiento de contraseña
-    private fun showForgotPasswordDialog() {
-        forgotPasswordDialog.show()
-    }
+//    private fun showForgotPasswordDialog() {
+//        forgotPasswordDialog.show()
+//    }
 //    private fun verifyUserInFirestore() {
 //        val user: FirebaseUser? = auth.currentUser
 //
