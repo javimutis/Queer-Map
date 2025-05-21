@@ -3,11 +3,13 @@ package com.cursoandroid.queermap.data.repository
 import com.cursoandroid.queermap.domain.model.User
 import com.cursoandroid.queermap.domain.repository.AuthRepository
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.DocumentSnapshot
 import kotlinx.coroutines.tasks.await
 
 class AuthRepositoryImpl(
-    private val remote: AuthRepository
+    private val remote: AuthRepository,
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
 ) : AuthRepository {
     override suspend fun loginWithEmailAndPassword(email: String, password: String): Result<User> =
         remote.loginWithEmailAndPassword(email, password)
@@ -19,6 +21,16 @@ class AuthRepositoryImpl(
         return try {
             FirebaseAuth.getInstance().sendPasswordResetEmail(email).await()
             Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun firebaseAuthWithGoogle(idToken: String): Result<Boolean> {
+        return try {
+            val credential = GoogleAuthProvider.getCredential(idToken, null)
+            auth.signInWithCredential(credential).await()
+            Result.success(true)
         } catch (e: Exception) {
             Result.failure(e)
         }

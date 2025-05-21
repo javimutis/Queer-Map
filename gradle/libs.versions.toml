@@ -22,6 +22,9 @@ navigation = "2.7.5"
 activity = "1.8.0"
 constraintlayout = "2.2.1"
 core-splashscreen = "1.0.1"
+google-auth = "20.7.0"
+
+
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -31,17 +34,20 @@ hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 google-services = { id = "com.google.gms.google-services", version.ref = "google-services" }
 secrets = { id = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin", version.ref = "secrets" }
 
+
 [libraries]
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebase-bom" }
 firebase-analytics = { module = "com.google.firebase:firebase-analytics-ktx" }
 firebase-auth = { module = "com.google.firebase:firebase-auth-ktx" }
 firebase-db = { module = "com.google.firebase:firebase-database-ktx" }
 firebase-firestore = { module = "com.google.firebase:firebase-firestore-ktx" }
+firebase-coroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3"
 
 maps = { module = "com.google.android.gms:play-services-maps", version.ref = "maps" }
 places = { module = "com.google.android.libraries.places:places", version.ref = "places" }
 auth = { module = "com.google.android.gms:play-services-auth", version = "21.0.0" }
 facebook-login = { module = "com.facebook.android:facebook-login", version.ref = "facebook-login" }
+google-auth = "com.google.android.gms:play-services-auth:${versions.google-auth}"
 
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit" }

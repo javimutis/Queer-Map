@@ -350,16 +350,16 @@ class LoginActivity_ : AppCompatActivity(), FacebookCallback<LoginResult> {
     }
 
     // Envía un correo electrónico de restablecimiento de contraseña
-    private fun sendPasswordResetEmail(email: String) {
-        auth.sendPasswordResetEmail(email)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    showPasswordResetEmailSent(email)
-                } else {
-                    showPasswordResetEmailError()
-                }
-            }
-    }
+//    private fun sendPasswordResetEmail(email: String) {
+//        auth.sendPasswordResetEmail(email)
+//            .addOnCompleteListener { task ->
+//                if (task.isSuccessful) {
+//                    showPasswordResetEmailSent(email)
+//                } else {
+//                    showPasswordResetEmailError()
+//                }
+//            }
+//    }
 
     // Valida si el correo electrónico es válido
     private fun isValidEmail(email: String): Boolean {
@@ -393,18 +393,18 @@ class LoginActivity_ : AppCompatActivity(), FacebookCallback<LoginResult> {
 //    }
 
     // Muestra un mensaje de éxito para el restablecimiento de contraseña
-    private fun showPasswordResetEmailSent(email: String) {
-        Toast.makeText(
-            this,
-            "Password reset email sent to $email",
-            Toast.LENGTH_SHORT
-        ).show()
-    }
+//    private fun showPasswordResetEmailSent(email: String) {
+//        Toast.makeText(
+//            this,
+//            "Password reset email sent to $email",
+//            Toast.LENGTH_SHORT
+//        ).show()
+//    }
 
     // Muestra un mensaje de error para el restablecimiento de contraseña
-    private fun showPasswordResetEmailError() {
-        Toast.makeText(this, "Failed to send password reset email", Toast.LENGTH_SHORT).show()
-    }
+//    private fun showPasswordResetEmailError() {
+//        Toast.makeText(this, "Failed to send password reset email", Toast.LENGTH_SHORT).show()
+//    }
 
     // Muestra un mensaje de error de inicio de sesión de Google
     private fun showGoogleSignInError() {
