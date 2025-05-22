@@ -5,6 +5,9 @@ import androidx.appcompat.app.AppCompatActivity
 import com.cursoandroid.queermap.R
 import dagger.hilt.android.AndroidEntryPoint
 
+/**
+ * Activity para pruebas de UI y fragmentos independientes.
+ */
 @AndroidEntryPoint
 class SingleFragmentActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -7,11 +7,10 @@ import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
 class QueerMapApp : Application() {
+
     override fun onCreate() {
         super.onCreate()
         FacebookSdk.sdkInitialize(applicationContext)
         AppEventsLogger.activateApp(this)
     }
 }
-
-
