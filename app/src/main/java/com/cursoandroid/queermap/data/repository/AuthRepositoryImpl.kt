@@ -14,9 +14,15 @@ class AuthRepositoryImpl @Inject constructor(
         return remoteDataSource.loginWithEmailAndPassword(email, password)
     }
 
-    override suspend fun verifyUserInFirestore(uid: String): Result<DocumentSnapshot> {
-        return remoteDataSource.verifyUserInFirestore(uid)
+    override suspend fun verifyUserInFirestore(uid: String): Result<Boolean> {
+        return try {
+            val snapshot = remoteDataSource.verifyUserInFirestore(uid).getOrThrow()
+            Result.success(snapshot.exists())
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
+
 
     override suspend fun sendPasswordResetEmail(email: String): Result<Unit> {
         return remoteDataSource.sendPasswordResetEmail(email)

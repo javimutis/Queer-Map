@@ -1,4 +1,4 @@
-package com.cursoandroid.queermap.ui
+package com.cursoandroid.queermap.ui.main
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
