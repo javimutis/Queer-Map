@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.cursoandroid.queermap.domain.repository.AuthRepository
 import com.cursoandroid.queermap.domain.usecase.LoginWithEmailUseCase
 import com.cursoandroid.queermap.domain.usecase.LoginWithFacebookUseCase
+import com.cursoandroid.queermap.domain.usecase.LoginWithGoogleUseCase
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,6 +17,7 @@ import javax.inject.Inject
 class LoginViewModel @Inject constructor(
     private val loginWithEmailUseCase: LoginWithEmailUseCase,
     private val loginWithFacebookUseCase: LoginWithFacebookUseCase,
+    private val loginWithGoogleUseCase: LoginWithGoogleUseCase,
     private val authRepository: AuthRepository
 ) : ViewModel() {
 
@@ -60,7 +62,7 @@ class LoginViewModel @Inject constructor(
     fun loginWithGoogle(idToken: String) {
         viewModelScope.launch {
             _uiState.value = LoginUiState(isLoading = true)
-            val result = authRepository.firebaseAuthWithGoogle(idToken)
+            val result = loginWithGoogleUseCase(idToken)
             if (result.isSuccess) {
                 val user = FirebaseAuth.getInstance().currentUser
                 user?.let {
@@ -68,8 +70,7 @@ class LoginViewModel @Inject constructor(
                     if (firestoreResult.isSuccess) {
                         _uiState.value = LoginUiState(isSuccess = true)
                     } else {
-                        _uiState.value =
-                            LoginUiState(errorMessage = "Usuario de Google no registrado")
+                        _uiState.value = LoginUiState(errorMessage = "Usuario de Google no registrado")
                     }
                 }
             } else {
@@ -77,6 +78,7 @@ class LoginViewModel @Inject constructor(
             }
         }
     }
+
     fun loginWithFacebook(token: String) {
         viewModelScope.launch {
             _uiState.value = LoginUiState(isLoading = true)

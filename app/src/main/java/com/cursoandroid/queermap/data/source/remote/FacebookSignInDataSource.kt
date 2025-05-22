@@ -8,7 +8,6 @@ import com.facebook.login.LoginResult
 import kotlinx.coroutines.suspendCancellableCoroutine
 import java.util.*
 import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
 
 //maneja el flujo de login con Facebook (callback, permisos).
 class FacebookSignInDataSource(private val context: Context) {
@@ -22,7 +21,7 @@ class FacebookSignInDataSource(private val context: Context) {
             .logInWithReadPermissions(activity, listOf("email", "public_profile"))
     }
 
-    suspend fun handleFacebookAccessToken(result: LoginResult): String =
+    suspend fun handleFacebookAccessToken(result: Any): String =
         suspendCancellableCoroutine { cont ->
             val accessToken = result.accessToken.token
             cont.resume(accessToken)
