@@ -13,12 +13,14 @@ import kotlin.coroutines.resume
 class FacebookSignInDataSource @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
+
     private val callbackManager = CallbackManager.Factory.create()
 
     fun getCallbackManager(): CallbackManager = callbackManager
 
     fun login(activity: Activity) {
-        LoginManager.getInstance().logInWithReadPermissions(activity, listOf("email", "public_profile"))
+        LoginManager.getInstance()
+            .logInWithReadPermissions(activity, listOf("email", "public_profile"))
     }
 
     suspend fun handleFacebookAccessToken(result: LoginResult): String =

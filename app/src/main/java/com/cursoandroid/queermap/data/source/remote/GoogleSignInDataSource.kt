@@ -11,6 +11,7 @@ import javax.inject.Inject
 class GoogleSignInDataSource @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
+
     fun getGoogleSignInClient(): GoogleSignInClient {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(context.getString(R.string.default_web_client_id))
