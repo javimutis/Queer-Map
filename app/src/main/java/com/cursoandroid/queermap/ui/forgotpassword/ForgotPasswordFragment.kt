@@ -4,7 +4,9 @@ import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.cursoandroid.queermap.R
 import com.cursoandroid.queermap.databinding.FragmentForgotPasswordBinding
@@ -24,7 +26,7 @@ class ForgotPasswordFragment : Fragment(R.layout.fragment_forgot_password) {
 
         binding.btnResetPassword.setOnClickListener {
             val email = binding.etEmail.text.toString().trim()
-            if (isValidEmail(email)) {
+            if (ForgotPasswordValidator.isValidEmail(email)) {
                 viewModel.sendPasswordReset(email)
             } else {
                 showSnackbar("Ingrese un correo válido")
@@ -35,25 +37,27 @@ class ForgotPasswordFragment : Fragment(R.layout.fragment_forgot_password) {
             findNavController().popBackStack()
         }
 
-        lifecycleScope.launch {
-            viewModel.uiState.collect { state ->
-                binding.btnResetPassword.isEnabled = !state.isLoading
-                binding.progressBar.visibility = if (state.isLoading) View.VISIBLE else View.GONE
+        observeUiState()
+    }
 
-                state.message?.let {
-                    showSnackbar(it)
-                    viewModel.clearMessage()
-                }
+    private fun observeUiState() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState.collect { state ->
+                    binding.btnResetPassword.isEnabled = !state.isLoading
+                    binding.progressBar.visibility = if (state.isLoading) View.VISIBLE else View.GONE
 
-                if (state.isSuccess) {
-                    findNavController().popBackStack()
+                    state.message?.let {
+                        showSnackbar(it)
+                        viewModel.clearMessage()
+                    }
+
+                    if (state.isSuccess) {
+                        findNavController().popBackStack()
+                    }
                 }
             }
         }
-    }
-
-    private fun isValidEmail(email: String): Boolean {
-        return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
     }
 
     private fun showSnackbar(message: String) {

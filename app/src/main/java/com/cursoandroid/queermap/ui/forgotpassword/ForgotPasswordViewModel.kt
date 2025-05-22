@@ -20,14 +20,13 @@ class ForgotPasswordViewModel @Inject constructor(
     val uiState: StateFlow<ForgotPasswordUiState> = _uiState
 
     fun sendPasswordReset(email: String) {
+        _uiState.value = _uiState.value.copy(isLoading = true)
         viewModelScope.launch {
-            _uiState.value = ForgotPasswordUiState(isLoading = true)
             val result = sendResetPasswordUseCase(email)
             _uiState.value = if (result.isSuccess) {
                 ForgotPasswordUiState(isSuccess = true, message = "Correo enviado")
             } else {
-                val exception = result.exceptionOrNull()
-                val errorMessage = when (exception) {
+                val errorMessage = when (val exception = result.exceptionOrNull()) {
                     is FirebaseAuthInvalidUserException -> "No hay ninguna cuenta con ese correo"
                     is FirebaseAuthInvalidCredentialsException -> "Correo inválido"
                     else -> exception?.localizedMessage ?: "Ocurrió un error"
