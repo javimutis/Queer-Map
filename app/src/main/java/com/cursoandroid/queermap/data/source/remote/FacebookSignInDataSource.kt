@@ -5,23 +5,23 @@ import android.content.Context
 import com.facebook.*
 import com.facebook.login.LoginManager
 import com.facebook.login.LoginResult
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.suspendCancellableCoroutine
-import java.util.*
+import javax.inject.Inject
 import kotlin.coroutines.resume
 
-//maneja el flujo de login con Facebook (callback, permisos).
-class FacebookSignInDataSource(private val context: Context) {
-
+class FacebookSignInDataSource @Inject constructor(
+    @ApplicationContext private val context: Context
+) {
     private val callbackManager = CallbackManager.Factory.create()
 
     fun getCallbackManager(): CallbackManager = callbackManager
 
     fun login(activity: Activity) {
-        LoginManager.getInstance()
-            .logInWithReadPermissions(activity, listOf("email", "public_profile"))
+        LoginManager.getInstance().logInWithReadPermissions(activity, listOf("email", "public_profile"))
     }
 
-    suspend fun handleFacebookAccessToken(result: Any): String =
+    suspend fun handleFacebookAccessToken(result: LoginResult): String =
         suspendCancellableCoroutine { cont ->
             val accessToken = result.accessToken.token
             cont.resume(accessToken)

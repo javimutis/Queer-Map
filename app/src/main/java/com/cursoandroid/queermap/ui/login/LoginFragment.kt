@@ -16,6 +16,7 @@ import com.cursoandroid.queermap.R
 import com.cursoandroid.queermap.data.source.remote.FacebookSignInDataSource
 import com.cursoandroid.queermap.databinding.FragmentLoginBinding
 import com.facebook.CallbackManager
+import com.facebook.login.LoginResult
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.common.api.ApiException
@@ -146,7 +147,7 @@ class LoginFragment : Fragment() {
         }
     }
 
-    private fun handleFacebookLogin(result: Any) {
+    private fun handleFacebookLogin(result: LoginResult) {
         lifecycleScope.launch {
             try {
                 val token = facebookSignInDataSource.handleFacebookAccessToken(result)

@@ -7,30 +7,26 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.DocumentSnapshot
 import kotlinx.coroutines.tasks.await
+import javax.inject.Inject
 
-class AuthRepositoryImpl(
-    private val remote: AuthRepository,
-    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
+class AuthRepositoryImpl @Inject constructor(
+    private val firebaseAuth: FirebaseAuth,
+    private val remoteDataSource: com.cursoandroid.queermap.data.source.remote.FirebaseAuthDataSource
 ) : AuthRepository {
+
     override suspend fun loginWithEmailAndPassword(email: String, password: String): Result<User> =
-        remote.loginWithEmailAndPassword(email, password)
+        remoteDataSource.loginWithEmailAndPassword(email, password)
 
     override suspend fun verifyUserInFirestore(uid: String): Result<DocumentSnapshot> =
-        remote.verifyUserInFirestore(uid)
+        remoteDataSource.verifyUserInFirestore(uid)
 
-    override suspend fun sendPasswordResetEmail(email: String): Result<Unit> {
-        return try {
-            FirebaseAuth.getInstance().sendPasswordResetEmail(email).await()
-            Result.success(Unit)
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
+    override suspend fun sendPasswordResetEmail(email: String): Result<Unit> =
+        remoteDataSource.sendPasswordResetEmail(email)
 
     override suspend fun firebaseAuthWithGoogle(idToken: String): Result<Boolean> {
         return try {
             val credential = GoogleAuthProvider.getCredential(idToken, null)
-            auth.signInWithCredential(credential).await()
+            firebaseAuth.signInWithCredential(credential).await()
             Result.success(true)
         } catch (e: Exception) {
             Result.failure(e)
@@ -39,13 +35,11 @@ class AuthRepositoryImpl(
 
     override suspend fun firebaseAuthWithFacebook(token: String): Result<Boolean> {
         return try {
-            val credential = FacebookAuthProvider.getCredential(token.toString())
-            val authResult = auth.signInWithCredential(credential).await()
+            val credential = FacebookAuthProvider.getCredential(token)
+            firebaseAuth.signInWithCredential(credential).await()
             Result.success(true)
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
-
 }
-
