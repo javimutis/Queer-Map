@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -31,15 +30,13 @@ class LoginFragment : Fragment() {
     private var _binding: FragmentLoginBinding? = null
     private val binding get() = _binding!!
 
-    private val loginViewModel: LoginViewModel by viewModels()
+    private val viewModel: LoginViewModel by viewModels()
 
     @Inject lateinit var googleSignInClient: GoogleSignInClient
     @Inject lateinit var facebookSignInDataSource: FacebookSignInDataSource
 
-    private lateinit var googleSignInLauncher: ActivityResultLauncher<Intent>
+    private lateinit var googleSignInLauncher: androidx.activity.result.ActivityResultLauncher<Intent>
     private lateinit var callbackManager: CallbackManager
-
-    // ----------------------- Ciclo de vida -----------------------
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -54,20 +51,57 @@ class LoginFragment : Fragment() {
         initGoogleSignInLauncher()
         initFacebookLogin()
         setupListeners()
-        observeViewModel()
+        observeState()
+        observeEvents()
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        callbackManager.onActivityResult(requestCode, resultCode, data)
+    private fun setupListeners() {
+        binding.btnLogin.setOnClickListener {
+            val email = binding.etEmail.text.toString()
+            val password = binding.etPassword.text.toString()
+            if (email.isBlank() || password.isBlank()) {
+                showSnackbar("Email y contraseña requeridos")
+            } else {
+                viewModel.loginWithEmail(email, password)
+            }
+        }
+
+        binding.btnGoogleSignIn.setOnClickListener {
+            googleSignInLauncher.launch(googleSignInClient.signInIntent)
+        }
+
+        binding.tvForgotPassword.setOnClickListener {
+            viewModel.onForgotPasswordClicked()
+        }
+
+        binding.ivBack.setOnClickListener {
+            viewModel.onBackPressed()
+        }
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
+    private fun observeState() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.uiState.collect { state ->
+                // Aquí puedes manejar loaders si quieres
+            }
+        }
     }
 
-    // ----------------------- Inicializaciones -----------------------
+    private fun observeEvents() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.event.collect { event ->
+                when (event) {
+                    is LoginEvent.ShowMessage -> showSnackbar(event.message)
+                    is LoginEvent.NavigateToHome ->
+                        findNavController().navigate(R.id.action_loginFragment_to_coverFragment)
+                    is LoginEvent.NavigateToForgotPassword ->
+                        findNavController().navigate(R.id.action_loginFragment_to_forgotPasswordFragment)
+                    is LoginEvent.NavigateBack ->
+                        findNavController().popBackStack()
+                }
+            }
+        }
+    }
 
     private fun initGoogleSignInLauncher() {
         googleSignInLauncher = registerForActivityResult(
@@ -76,7 +110,7 @@ class LoginFragment : Fragment() {
             if (result.resultCode == Activity.RESULT_OK) {
                 handleGoogleSignInResult(result.data)
             } else {
-                showSnackbar("Inicio de sesión cancelado o fallido")
+                showSnackbar("Inicio de sesión cancelado")
             }
         }
     }
@@ -89,69 +123,17 @@ class LoginFragment : Fragment() {
         }
 
         facebookSignInDataSource.registerCallback(
-            onSuccess = { result ->
-                handleFacebookLogin(result)
-            },
-            onCancel = {
-                showSnackbar("Inicio de sesión de Facebook cancelado")
-            },
-            onError = {
-                showSnackbar("Error de Facebook Login: ${it.message}")
-            }
+            onSuccess = { handleFacebookLogin(it) },
+            onCancel = { showSnackbar("Login cancelado") },
+            onError = { showSnackbar("Error: ${it.message}") }
         )
-    }
-
-    // ----------------------- Listeners -----------------------
-
-    private fun setupListeners() {
-        binding.btnLogin.setOnClickListener {
-            val email = binding.etEmail.text?.toString()?.trim()
-            if (email.isNullOrEmpty()) {
-                showSnackbar("Por favor, ingresa un correo válido")
-            } else {
-                // TODO: Enviar a ViewModel para procesar login con email
-            }
-        }
-
-        binding.btnGoogleSignIn.setOnClickListener {
-            val intent = googleSignInClient.signInIntent
-            googleSignInLauncher.launch(intent)
-        }
-
-        binding.tvForgotPassword.setOnClickListener {
-            findNavController().navigate(R.id.action_loginFragment_to_forgotPasswordFragment)
-        }
-
-        binding.ivBack.setOnClickListener {
-            findNavController().popBackStack()
-        }
-    }
-
-    // ----------------------- ViewModel & Resultados -----------------------
-
-    private fun observeViewModel() {
-        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
-            loginViewModel.uiState.collect { state ->
-                when {
-                    state.isLoading -> {
-                        // mostrar loader si quieres
-                    }
-                    state.isSuccess -> {
-                        // findNavController().navigate(R.id.action_loginFragment_to_homeFragment)
-                    }
-                    !state.errorMessage.isNullOrEmpty() -> {
-                        showSnackbar(state.errorMessage)
-                    }
-                }
-            }
-        }
     }
 
     private fun handleFacebookLogin(result: LoginResult) {
         lifecycleScope.launch {
             try {
                 val token = facebookSignInDataSource.handleFacebookAccessToken(result)
-                loginViewModel.loginWithFacebook(token)
+                viewModel.loginWithFacebook(token)
             } catch (e: Exception) {
                 showSnackbar("Error al obtener token de Facebook")
             }
@@ -164,7 +146,7 @@ class LoginFragment : Fragment() {
             val account = task.getResult(ApiException::class.java)
             val idToken = account?.idToken
             if (idToken != null) {
-                loginViewModel.loginWithGoogle(idToken)
+                viewModel.loginWithGoogle(idToken)
             } else {
                 showSnackbar("ID token no disponible")
             }
@@ -173,9 +155,17 @@ class LoginFragment : Fragment() {
         }
     }
 
-    // ----------------------- Utilidades -----------------------
-
     private fun showSnackbar(message: String) {
         Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        callbackManager.onActivityResult(requestCode, resultCode, data)
     }
 }
