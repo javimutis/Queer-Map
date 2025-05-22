@@ -43,4 +43,8 @@ class FirebaseAuthDataSource(
     override suspend fun firebaseAuthWithGoogle(idToken: String): Result<Boolean> {
         TODO("Not yet implemented")
     }
+
+    override suspend fun firebaseAuthWithFacebook(accessToken: String): Result<Boolean> {
+        TODO("Not yet implemented")
+    }
 }

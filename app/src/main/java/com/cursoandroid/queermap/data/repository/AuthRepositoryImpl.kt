@@ -2,6 +2,7 @@ package com.cursoandroid.queermap.data.repository
 
 import com.cursoandroid.queermap.domain.model.User
 import com.cursoandroid.queermap.domain.repository.AuthRepository
+import com.google.firebase.auth.FacebookAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.DocumentSnapshot
@@ -35,5 +36,16 @@ class AuthRepositoryImpl(
             Result.failure(e)
         }
     }
+
+    override suspend fun firebaseAuthWithFacebook(token: String): Result<Boolean> {
+        return try {
+            val credential = FacebookAuthProvider.getCredential(token.toString())
+            val authResult = auth.signInWithCredential(credential).await()
+            Result.success(true)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
 }
 

@@ -9,4 +9,6 @@ interface AuthRepository {
     suspend fun sendPasswordResetEmail(email: String): Result<Unit>
 
     suspend fun firebaseAuthWithGoogle(idToken: String): Result<Boolean>
+    suspend fun firebaseAuthWithFacebook(token: String): Result<Boolean>
+
 }

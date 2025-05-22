@@ -13,12 +13,15 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.cursoandroid.queermap.R
+import com.cursoandroid.queermap.data.source.remote.FacebookSignInDataSource
 import com.cursoandroid.queermap.databinding.FragmentLoginBinding
+import com.facebook.CallbackManager
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.common.api.ApiException
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -32,6 +35,11 @@ class LoginFragment : Fragment() {
 
     @Inject
     lateinit var googleSignInClient: GoogleSignInClient
+
+    @Inject
+    lateinit var facebookSignInDataSource: FacebookSignInDataSource
+
+    private lateinit var callbackManager: CallbackManager
 
 
     override fun onCreateView(
@@ -48,8 +56,38 @@ class LoginFragment : Fragment() {
         setupGoogleSignInLauncher()
         setupListeners()
         observeViewModel()
+        setupFacebookLogin()
 
     }
+
+
+    private fun setupFacebookLogin() {
+        callbackManager = facebookSignInDataSource.getCallbackManager()
+
+        binding.btnFacebookLogin.setOnClickListener {
+            facebookSignInDataSource.login(requireActivity())
+        }
+
+        facebookSignInDataSource.registerCallback(
+            onSuccess = { result ->
+                lifecycleScope.launch {
+                    try {
+                        val token = facebookSignInDataSource.handleFacebookAccessToken(result)
+                        loginViewModel.loginWithFacebook(token)
+                    } catch (e: Exception) {
+                        showSnackbar("Error al obtener token de Facebook")
+                    }
+                }
+            },
+            onCancel = {
+                showSnackbar("Inicio de sesión de Facebook cancelado")
+            },
+            onError = {
+                showSnackbar("Error de Facebook Login: ${it.message}")
+            }
+        )
+    }
+
 
     private fun observeViewModel() {
         lifecycleScope.launchWhenStarted {
@@ -98,8 +136,8 @@ class LoginFragment : Fragment() {
             findNavController().popBackStack()
         }
 
-
     }
+
 
     private fun onGoogleSignInButtonClicked() {
         val signInIntent = googleSignInClient.signInIntent
@@ -124,6 +162,12 @@ class LoginFragment : Fragment() {
     private fun showSnackbar(message: String) {
         Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
     }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        callbackManager.onActivityResult(requestCode, resultCode, data)
+    }
+
 
     override fun onDestroyView() {
         super.onDestroyView()

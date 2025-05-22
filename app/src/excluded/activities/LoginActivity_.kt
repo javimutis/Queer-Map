@@ -103,20 +103,20 @@ class LoginActivity_ : AppCompatActivity(), FacebookCallback<LoginResult> {
     }
 
     // Inicializa el inicio de sesión de Google
-    private fun initializeGoogleSignIn() {
-        val googleSignInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(getString(R.string.default_web_client_id))
-            .requestEmail()
-            .build()
-
-        googleSignInClient = GoogleSignIn.getClient(this, googleSignInOptions)
-
-        val googleSignInButton: ImageButton = findViewById(R.id.googleSignInButton)
-        Picasso.get().load(R.drawable.google_icon).into(googleSignInButton)
-        googleSignInButton.setOnClickListener {
-            onGoogleSignInButtonClicked()
-        }
-    }
+//    private fun initializeGoogleSignIn() {
+//        val googleSignInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+//            .requestIdToken(getString(R.string.default_web_client_id))
+//            .requestEmail()
+//            .build()
+//
+//        googleSignInClient = GoogleSignIn.getClient(this, googleSignInOptions)
+//
+//        val googleSignInButton: ImageButton = findViewById(R.id.googleSignInButton)
+//        Picasso.get().load(R.drawable.google_icon).into(googleSignInButton)
+//        googleSignInButton.setOnClickListener {
+//            onGoogleSignInButtonClicked()
+//        }
+//    }
 
     // Inicializa el inicio de sesión de Facebook
     private fun initializeFacebookLogin() {
@@ -290,64 +290,64 @@ class LoginActivity_ : AppCompatActivity(), FacebookCallback<LoginResult> {
     }
 
     // Acción cuando se hace clic en el botón de inicio de sesión de Google
-    private fun onGoogleSignInButtonClicked() {
-        val signInIntent = googleSignInClient.signInIntent
-        showGoogleSignInIntent(signInIntent)
-    }
+//    private fun onGoogleSignInButtonClicked() {
+//        val signInIntent = googleSignInClient.signInIntent
+//        showGoogleSignInIntent(signInIntent)
+//    }
+//
+//    // Muestra el intento de inicio de sesión de Google
+//    private fun showGoogleSignInIntent(signInIntent: Intent) {
+//        startActivityForResult(signInIntent, RC_GOOGLE_SIGN_IN)
+//    }
 
-    // Muestra el intento de inicio de sesión de Google
-    private fun showGoogleSignInIntent(signInIntent: Intent) {
-        startActivityForResult(signInIntent, RC_GOOGLE_SIGN_IN)
-    }
-
-    // Maneja el resultado del inicio de sesión de Google
-    private fun handleGoogleSignInResult(data: Intent?) {
-        val task = GoogleSignIn.getSignedInAccountFromIntent(data)
-        try {
-            val account = task?.getResult(ApiException::class.java)
-            val idToken = account?.idToken
-            if (idToken != null) {
-                firebaseAuthWithGoogle(idToken)
-            }
-        } catch (e: ApiException) {
-            showGoogleSignInError()
-        }
-    }
-
-    // Acción cuando se hace clic en el inicio de sesión de Facebook
-    private fun onFacebookLoginClicked() {
-        LoginManager.getInstance().logInWithReadPermissions(
-            this as Activity, listOf("public_profile", "email")
-        )
-    }
-
-    // Acción cuando el inicio de sesión de Facebook es exitoso
-    private fun onFacebookLoginSuccess() {
-        showReadTermsScreen()
-    }
-
-    // Acción cuando se cancela el inicio de sesión de Facebook
-    private fun onFacebookLoginCancel() {
-        Toast.makeText(this as Context, "Facebook login canceled.", Toast.LENGTH_SHORT).show()
-    }
-
-    // Acción cuando ocurre un error en el inicio de sesión de Facebook
-    private fun onFacebookLoginError() {
-        showLoginError()
-    }
-
-    // Autentica con Google en Firebase
-    private fun firebaseAuthWithGoogle(idToken: String) {
-        val credential = GoogleAuthProvider.getCredential(idToken, null)
-        auth.signInWithCredential(credential)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    showReadTermsScreen()
-                } else {
-                    showGoogleSignInErrorMessage()
-                }
-            }
-    }
+//    // Maneja el resultado del inicio de sesión de Google
+//    private fun handleGoogleSignInResult(data: Intent?) {
+//        val task = GoogleSignIn.getSignedInAccountFromIntent(data)
+//        try {
+//            val account = task?.getResult(ApiException::class.java)
+//            val idToken = account?.idToken
+//            if (idToken != null) {
+//                firebaseAuthWithGoogle(idToken)
+//            }
+//        } catch (e: ApiException) {
+//            showGoogleSignInError()
+//        }
+//    }
+//
+//    // Acción cuando se hace clic en el inicio de sesión de Facebook
+//    private fun onFacebookLoginClicked() {
+//        LoginManager.getInstance().logInWithReadPermissions(
+//            this as Activity, listOf("public_profile", "email")
+//        )
+//    }
+//
+//    // Acción cuando el inicio de sesión de Facebook es exitoso
+//    private fun onFacebookLoginSuccess() {
+//        showReadTermsScreen()
+//    }
+//
+//    // Acción cuando se cancela el inicio de sesión de Facebook
+//    private fun onFacebookLoginCancel() {
+//        Toast.makeText(this as Context, "Facebook login canceled.", Toast.LENGTH_SHORT).show()
+//    }
+//
+//    // Acción cuando ocurre un error en el inicio de sesión de Facebook
+//    private fun onFacebookLoginError() {
+//        showLoginError()
+//    }
+//
+//    // Autentica con Google en Firebase
+//    private fun firebaseAuthWithGoogle(idToken: String) {
+//        val credential = GoogleAuthProvider.getCredential(idToken, null)
+//        auth.signInWithCredential(credential)
+//            .addOnCompleteListener { task ->
+//                if (task.isSuccessful) {
+//                    showReadTermsScreen()
+//                } else {
+//                    showGoogleSignInErrorMessage()
+//                }
+//            }
+//    }
 
     // Envía un correo electrónico de restablecimiento de contraseña
 //    private fun sendPasswordResetEmail(email: String) {
@@ -407,14 +407,14 @@ class LoginActivity_ : AppCompatActivity(), FacebookCallback<LoginResult> {
 //    }
 
     // Muestra un mensaje de error de inicio de sesión de Google
-    private fun showGoogleSignInError() {
-        Toast.makeText(this, "Google sign in failed", Toast.LENGTH_SHORT).show()
-    }
-
-    // Muestra un mensaje de error de inicio de sesión de Google
-    private fun showGoogleSignInErrorMessage() {
-        Toast.makeText(this, "Google sign in error", Toast.LENGTH_SHORT).show()
-    }
+//    private fun showGoogleSignInError() {
+//        Toast.makeText(this, "Google sign in failed", Toast.LENGTH_SHORT).show()
+//    }
+//
+//    // Muestra un mensaje de error de inicio de sesión de Google
+//    private fun showGoogleSignInErrorMessage() {
+//        Toast.makeText(this, "Google sign in error", Toast.LENGTH_SHORT).show()
+//    }
 
     // Muestra un mensaje de error de inicio de sesión
     private fun showLoginError() {
