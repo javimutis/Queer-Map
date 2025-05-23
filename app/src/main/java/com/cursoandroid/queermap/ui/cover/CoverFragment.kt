@@ -21,26 +21,40 @@ class CoverFragment : Fragment() {
 
     private var _binding: FragmentCoverBinding? = null
     private val binding get() = _binding!!
+
     private val viewModel: CoverViewModel by viewModels()
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    // Ciclo de vida del fragmento
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         _binding = FragmentCoverBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        applyInsets()
+        setupListeners()
+        observeUiState()
+    }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
+    // Configuración inicial
+    private fun applyInsets() {
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             view.setPadding(0, 0, 0, systemBars.bottom)
             insets
         }
-
-        setupListeners()
-        observeUiState()
     }
 
+    // Manejo de interacciones de UI
     private fun setupListeners() {
         binding.btnCoverLogin.setOnClickListener {
             viewModel.onLoginClicked()
@@ -51,26 +65,27 @@ class CoverFragment : Fragment() {
         }
     }
 
+    // Observación de estado
     private fun observeUiState() {
-        lifecycleScope.launchWhenStarted {
+        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
             viewModel.uiState.collectLatest { state ->
                 if (state.showTitle) showTitleAnimation()
                 if (state.navigateToLogin) {
-                    findNavController().navigate(R.id.action_cover_to_login)
+                    navigateToLogin()
                     viewModel.onNavigated()
                 }
             }
         }
     }
 
+    private fun navigateToLogin() {
+        findNavController().navigate(R.id.action_cover_to_login)
+    }
+
+    // Utilidades
     private fun showTitleAnimation() {
         val fadeIn = AnimationUtils.loadAnimation(requireContext(), android.R.anim.fade_in)
         binding.tvTitle.visibility = View.VISIBLE
         binding.tvTitle.startAnimation(fadeIn)
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 }

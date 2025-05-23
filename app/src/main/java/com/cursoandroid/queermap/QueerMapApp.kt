@@ -10,6 +10,10 @@ class QueerMapApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        initializeFacebookSdk()
+    }
+
+    private fun initializeFacebookSdk() {
         FacebookSdk.sdkInitialize(applicationContext)
         AppEventsLogger.activateApp(this)
     }

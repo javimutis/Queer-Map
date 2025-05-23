@@ -42,6 +42,7 @@ class LoginFragment : Fragment() {
     private lateinit var googleSignInLauncher: androidx.activity.result.ActivityResultLauncher<Intent>
     private lateinit var callbackManager: CallbackManager
 
+    // Ciclo de vida del fragmento
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -61,21 +62,59 @@ class LoginFragment : Fragment() {
         observeEvents()
     }
 
-    private fun checkLoginStatus() {
-        val accessToken = AccessToken.getCurrentAccessToken()
-        val isLoggedIn = accessToken != null && !accessToken.isExpired
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
 
-        if (isLoggedIn) {
-            // El usuario ya está conectado, puedes navegar a la pantalla principal
-            findNavController().navigate(R.id.action_loginFragment_to_coverFragment)
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        callbackManager.onActivityResult(requestCode, resultCode, data)
+    }
+
+    // Configuración e inicialización
+    private fun initGoogleSignInLauncher() {
+        googleSignInLauncher = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                handleGoogleSignInResult(result.data)
+            } else {
+                showSnackbar("Inicio de sesión cancelado")
+            }
         }
     }
+
+    private fun initFacebookLogin() {
+        callbackManager = CallbackManager.Factory.create()
+        binding.btnFacebookLogin.setOnClickListener {
+            LoginManager.getInstance().logInWithReadPermissions(this, listOf("email", "public_profile"))
+        }
+        LoginManager.getInstance().registerCallback(callbackManager,
+            object : FacebookCallback<LoginResult> {
+                override fun onSuccess(loginResult: LoginResult) {
+                    handleFacebookLogin(loginResult)
+                }
+
+                override fun onCancel() {
+                    showSnackbar("Login cancelado")
+                }
+
+                override fun onError(exception: FacebookException) {
+                    showSnackbar("Error: ${exception.message}")
+                }
+            })
+    }
+
+    // Manejo de interacciones de UI
     private fun setupListeners() {
         binding.btnLogin.setOnClickListener {
             val email = binding.etEmail.text.toString()
             val password = binding.etPassword.text.toString()
-            if (email.isBlank() || password.isBlank()) {
-                showSnackbar("Email y contraseña requeridos")
+            if (!isValidEmail(email)) {
+                showSnackbar("Por favor ingresa un email válido")
+            } else if (!isValidPassword(password)) {
+                showSnackbar("La contraseña debe tener al menos 6 caracteres")
             } else {
                 viewModel.loginWithEmail(email, password)
             }
@@ -94,10 +133,30 @@ class LoginFragment : Fragment() {
         }
     }
 
+    // Observación de estado y eventos
     private fun observeState() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.uiState.collect { state ->
-                // Aquí puedes manejar loaders si quieres
+                if (state.isLoading) {
+                    binding.progressBar.visibility = View.VISIBLE
+                } else {
+                    binding.progressBar.visibility = View.GONE
+                }
+                if (state.isEmailInvalid) {
+                    showSnackbar("Por favor ingresa un email válido")
+                }
+                if (state.isPasswordInvalid) {
+                    showSnackbar("La contraseña debe tener al menos 6 caracteres")
+                }
+                if (state.errorMessage != null) {
+                    showSnackbar(state.errorMessage)
+                }
+                state.email?.let {
+                    binding.etEmail.setText(it)
+                }
+                state.password?.let {
+                    binding.etPassword.setText(it)
+                }
             }
         }
     }
@@ -118,39 +177,13 @@ class LoginFragment : Fragment() {
         }
     }
 
-    private fun initGoogleSignInLauncher() {
-        googleSignInLauncher = registerForActivityResult(
-            ActivityResultContracts.StartActivityForResult()
-        ) { result ->
-            if (result.resultCode == Activity.RESULT_OK) {
-                handleGoogleSignInResult(result.data)
-            } else {
-                showSnackbar("Inicio de sesión cancelado")
-            }
+    // Lógica de negocio
+    private fun checkLoginStatus() {
+        val accessToken = AccessToken.getCurrentAccessToken()
+        val isLoggedIn = accessToken != null && !accessToken.isExpired
+        if (isLoggedIn) {
+            findNavController().navigate(R.id.action_loginFragment_to_coverFragment)
         }
-    }
-
-    private fun initFacebookLogin() {
-        callbackManager = CallbackManager.Factory.create()
-
-        binding.btnFacebookLogin.setOnClickListener {
-            LoginManager.getInstance().logInWithReadPermissions(this, listOf("email", "public_profile"))
-        }
-
-        LoginManager.getInstance().registerCallback(callbackManager,
-            object : FacebookCallback<LoginResult> {
-                override fun onSuccess(loginResult: LoginResult) {
-                    handleFacebookLogin(loginResult)
-                }
-
-                override fun onCancel() {
-                    showSnackbar("Login cancelado")
-                }
-
-                override fun onError(exception: FacebookException) {
-                    showSnackbar("Error: ${exception.message}")
-                }
-            })
     }
 
     private fun handleFacebookLogin(result: LoginResult) {
@@ -179,21 +212,16 @@ class LoginFragment : Fragment() {
         }
     }
 
+    // Utilidades
     private fun showSnackbar(message: String) {
         Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
     }
-    private fun onLoginSuccess(email: String, password: String) {
-        viewModel.saveUserCredentials(email, password)
-        findNavController().navigate(R.id.action_loginFragment_to_coverFragment)
+
+    private fun isValidEmail(email: String): Boolean {
+        return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        callbackManager.onActivityResult(requestCode, resultCode, data)
+    private fun isValidPassword(password: String): Boolean {
+        return password.length >= 6
     }
 }

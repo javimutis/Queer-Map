@@ -19,11 +19,23 @@ class ForgotPasswordFragment : Fragment(R.layout.fragment_forgot_password) {
 
     private var _binding: FragmentForgotPasswordBinding? = null
     private val binding get() = _binding!!
+
     private val viewModel: ForgotPasswordViewModel by viewModels()
 
+    // Ciclo de vida del fragmento
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         _binding = FragmentForgotPasswordBinding.bind(view)
+        setupListeners()
+        observeUiState()
+    }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
+    // Manejo de interacciones de UI
+    private fun setupListeners() {
         binding.btnResetPassword.setOnClickListener {
             val email = binding.etEmail.text.toString().trim()
             if (ForgotPasswordValidator.isValidEmail(email)) {
@@ -36,10 +48,9 @@ class ForgotPasswordFragment : Fragment(R.layout.fragment_forgot_password) {
         binding.btnCancel.setOnClickListener {
             findNavController().popBackStack()
         }
-
-        observeUiState()
     }
 
+    // Observación de estado y eventos
     private fun observeUiState() {
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -60,12 +71,8 @@ class ForgotPasswordFragment : Fragment(R.layout.fragment_forgot_password) {
         }
     }
 
+    // Utilidades
     private fun showSnackbar(message: String) {
         Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 }

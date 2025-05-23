@@ -13,6 +13,10 @@ class WelcomeViewModel : ViewModel() {
     val uiState: StateFlow<Boolean> = _uiState
 
     init {
+        triggerNavigation()
+    }
+
+    private fun triggerNavigation() {
         viewModelScope.launch {
             delay(2000)
             _uiState.value = true

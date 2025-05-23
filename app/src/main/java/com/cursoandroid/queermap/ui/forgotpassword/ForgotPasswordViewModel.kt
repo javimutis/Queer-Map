@@ -20,10 +20,10 @@ class ForgotPasswordViewModel @Inject constructor(
     val uiState: StateFlow<ForgotPasswordUiState> = _uiState
 
     fun sendPasswordReset(email: String) {
-        _uiState.value = _uiState.value.copy(isLoading = true)
+        updateUiState(isLoading = true)
         viewModelScope.launch {
             val result = sendResetPasswordUseCase(email)
-            _uiState.value = if (result.isSuccess) {
+            val newState = if (result.isSuccess) {
                 ForgotPasswordUiState(isSuccess = true, message = "Correo enviado")
             } else {
                 val errorMessage = when (val exception = result.exceptionOrNull()) {
@@ -33,7 +33,20 @@ class ForgotPasswordViewModel @Inject constructor(
                 }
                 ForgotPasswordUiState(message = errorMessage)
             }
+            _uiState.value = newState.copy(isLoading = false)
         }
+    }
+
+    private fun updateUiState(
+        isLoading: Boolean = false,
+        message: String? = null,
+        isSuccess: Boolean = false
+    ) {
+        _uiState.value = _uiState.value.copy(
+            isLoading = isLoading,
+            message = message,
+            isSuccess = isSuccess
+        )
     }
 
     fun clearMessage() {

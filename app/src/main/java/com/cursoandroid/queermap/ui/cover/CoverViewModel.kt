@@ -18,6 +18,10 @@ class CoverViewModel : ViewModel() {
     val uiState: StateFlow<CoverUiState> = _uiState
 
     init {
+        showTitleWithDelay()
+    }
+
+    private fun showTitleWithDelay() {
         viewModelScope.launch {
             delay(1300)
             _uiState.value = _uiState.value.copy(showTitle = true)
