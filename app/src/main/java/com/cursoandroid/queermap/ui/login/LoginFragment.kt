@@ -14,7 +14,11 @@ import androidx.navigation.fragment.findNavController
 import com.cursoandroid.queermap.R
 import com.cursoandroid.queermap.data.source.remote.FacebookSignInDataSource
 import com.cursoandroid.queermap.databinding.FragmentLoginBinding
+import com.facebook.AccessToken
 import com.facebook.CallbackManager
+import com.facebook.FacebookCallback
+import com.facebook.FacebookException
+import com.facebook.login.LoginManager
 import com.facebook.login.LoginResult
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -48,6 +52,7 @@ class LoginFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        checkLoginStatus()
         initGoogleSignInLauncher()
         initFacebookLogin()
         setupListeners()
@@ -55,6 +60,15 @@ class LoginFragment : Fragment() {
         observeEvents()
     }
 
+    private fun checkLoginStatus() {
+        val accessToken = AccessToken.getCurrentAccessToken()
+        val isLoggedIn = accessToken != null && !accessToken.isExpired
+
+        if (isLoggedIn) {
+            // El usuario ya está conectado, puedes navegar a la pantalla principal
+            findNavController().navigate(R.id.action_loginFragment_to_coverFragment)
+        }
+    }
     private fun setupListeners() {
         binding.btnLogin.setOnClickListener {
             val email = binding.etEmail.text.toString()
@@ -116,17 +130,26 @@ class LoginFragment : Fragment() {
     }
 
     private fun initFacebookLogin() {
-        callbackManager = facebookSignInDataSource.getCallbackManager()
+        callbackManager = CallbackManager.Factory.create()
 
         binding.btnFacebookLogin.setOnClickListener {
-            facebookSignInDataSource.login(requireActivity())
+            LoginManager.getInstance().logInWithReadPermissions(this, listOf("email", "public_profile"))
         }
 
-        facebookSignInDataSource.registerCallback(
-            onSuccess = { handleFacebookLogin(it) },
-            onCancel = { showSnackbar("Login cancelado") },
-            onError = { showSnackbar("Error: ${it.message}") }
-        )
+        LoginManager.getInstance().registerCallback(callbackManager,
+            object : FacebookCallback<LoginResult> {
+                override fun onSuccess(loginResult: LoginResult) {
+                    handleFacebookLogin(loginResult)
+                }
+
+                override fun onCancel() {
+                    showSnackbar("Login cancelado")
+                }
+
+                override fun onError(exception: FacebookException) {
+                    showSnackbar("Error: ${exception.message}")
+                }
+            })
     }
 
     private fun handleFacebookLogin(result: LoginResult) {

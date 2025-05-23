@@ -119,15 +119,15 @@ class LoginActivity_ : AppCompatActivity(), FacebookCallback<LoginResult> {
 //    }
 
     // Inicializa el inicio de sesión de Facebook
-    private fun initializeFacebookLogin() {
-        callbackManager = CallbackManager.Factory.create()
-
-        val facebookLoginButton: ImageButton = findViewById(R.id.facebookLoginButton)
-        Picasso.get().load(R.drawable.facebook_icon).into(facebookLoginButton)
-        facebookLoginButton.setOnClickListener {
-            onFacebookLoginClicked()
-        }
-    }
+//    private fun initializeFacebookLogin() {
+//        callbackManager = CallbackManager.Factory.create()
+//
+//        val facebookLoginButton: ImageButton = findViewById(R.id.facebookLoginButton)
+//        Picasso.get().load(R.drawable.facebook_icon).into(facebookLoginButton)
+//        facebookLoginButton.setOnClickListener {
+//            onFacebookLoginClicked()
+//        }
+//    }
 
     // Inicializa el diálogo de restablecimiento de contraseña
 //    private fun initializeForgotPasswordDialog() {
@@ -266,28 +266,28 @@ class LoginActivity_ : AppCompatActivity(), FacebookCallback<LoginResult> {
 //                }
 //        }
 //    }
+//
+//    override fun onSuccess(loginResult: LoginResult) {
+//        onFacebookLoginSuccess()
+//    }
+//
+//    override fun onCancel() {
+//        onFacebookLoginCancel()
+//    }
+//
+//    override fun onError(error: FacebookException) {
+//        onFacebookLoginError()
+//    }
 
-    override fun onSuccess(loginResult: LoginResult) {
-        onFacebookLoginSuccess()
-    }
-
-    override fun onCancel() {
-        onFacebookLoginCancel()
-    }
-
-    override fun onError(error: FacebookException) {
-        onFacebookLoginError()
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        callbackManager.onActivityResult(requestCode, resultCode, data)
-
-        if (requestCode == RC_GOOGLE_SIGN_IN) {
-            handleGoogleSignInResult(data)
-        }
-    }
+//    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+//        super.onActivityResult(requestCode, resultCode, data)
+//
+//        callbackManager.onActivityResult(requestCode, resultCode, data)
+//
+//        if (requestCode == RC_GOOGLE_SIGN_IN) {
+//            handleGoogleSignInResult(data)
+//        }
+//    }
 
     // Acción cuando se hace clic en el botón de inicio de sesión de Google
 //    private fun onGoogleSignInButtonClicked() {
