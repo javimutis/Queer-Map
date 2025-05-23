@@ -2,7 +2,7 @@ package com.cursoandroid.queermap.ui.forgotpassword
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.cursoandroid.queermap.domain.usecase.SendResetPasswordUseCase
+import com.cursoandroid.queermap.domain.usecase.auth.SendResetPasswordUseCase
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import dagger.hilt.android.lifecycle.HiltViewModel

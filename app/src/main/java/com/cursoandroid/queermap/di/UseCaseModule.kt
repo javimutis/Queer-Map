@@ -1,10 +1,10 @@
 package com.cursoandroid.queermap.di
 
 import com.cursoandroid.queermap.domain.repository.AuthRepository
-import com.cursoandroid.queermap.domain.usecase.LoginWithEmailUseCase
-import com.cursoandroid.queermap.domain.usecase.LoginWithFacebookUseCase
-import com.cursoandroid.queermap.domain.usecase.LoginWithGoogleUseCase
-import com.cursoandroid.queermap.domain.usecase.SendResetPasswordUseCase
+import com.cursoandroid.queermap.domain.usecase.auth.LoginWithEmailUseCase
+import com.cursoandroid.queermap.domain.usecase.auth.LoginWithFacebookUseCase
+import com.cursoandroid.queermap.domain.usecase.auth.LoginWithGoogleUseCase
+import com.cursoandroid.queermap.domain.usecase.auth.SendResetPasswordUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

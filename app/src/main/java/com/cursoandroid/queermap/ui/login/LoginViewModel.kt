@@ -2,9 +2,10 @@ package com.cursoandroid.queermap.ui.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.cursoandroid.queermap.domain.usecase.LoginWithEmailUseCase
-import com.cursoandroid.queermap.domain.usecase.LoginWithFacebookUseCase
-import com.cursoandroid.queermap.domain.usecase.LoginWithGoogleUseCase
+import com.cursoandroid.queermap.domain.repository.AuthRepository
+import com.cursoandroid.queermap.domain.usecase.auth.LoginWithEmailUseCase
+import com.cursoandroid.queermap.domain.usecase.auth.LoginWithFacebookUseCase
+import com.cursoandroid.queermap.domain.usecase.auth.LoginWithGoogleUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -14,7 +15,8 @@ import javax.inject.Inject
 class LoginViewModel @Inject constructor(
     private val loginWithEmailUseCase: LoginWithEmailUseCase,
     private val loginWithFacebookUseCase: LoginWithFacebookUseCase,
-    private val loginWithGoogleUseCase: LoginWithGoogleUseCase
+    private val loginWithGoogleUseCase: LoginWithGoogleUseCase,
+    private val authRepository: AuthRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LoginUiState())
@@ -80,5 +82,17 @@ class LoginViewModel @Inject constructor(
 
     fun onBackPressed() {
         viewModelScope.launch { _event.emit(LoginEvent.NavigateBack) }
+    }
+    fun saveUserCredentials(email: String, password: String) {
+        viewModelScope.launch {
+            authRepository.saveCredentials(email, password)
+        }
+    }
+
+    fun loadUserCredentials() {
+        viewModelScope.launch {
+            val (email, password) = authRepository.loadSavedCredentials()
+            // Manejar las credenciales cargadas para actualizar UI o estados
+        }
     }
 }

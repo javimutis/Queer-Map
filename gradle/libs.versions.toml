@@ -23,6 +23,11 @@ activity = "1.8.0"
 constraintlayout = "2.2.1"
 core-splashscreen = "1.0.1"
 google-auth = "20.7.0"
+mockk = "1.13.5"
+coreTesting = "2.2.0"
+junitVersion = "1.1.5"
+coroutines = "1.7.3"
+espressoCore = "3.5.1"
 
 
 
@@ -68,6 +73,15 @@ androidx-navigation-ui = { module = "androidx.navigation:navigation-ui-ktx", ver
 junit = { module = "junit:junit", version.ref = "junit" }
 ext-junit = { module = "androidx.test.ext:junit", version.ref = "ext-junit" }
 espresso = { module = "androidx.test.espresso:espresso-core", version.ref = "espresso" }
+
+
+#Testing
+androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
+androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
+coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
+arch-core-testing = { group = "androidx.arch.core", name = "core-testing", version.ref = "coreTesting" }
+
 
 hilt-core = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
 hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hilt" }

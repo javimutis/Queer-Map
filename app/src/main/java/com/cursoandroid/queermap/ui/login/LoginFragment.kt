@@ -52,6 +52,7 @@ class LoginFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        viewModel.loadUserCredentials()
         checkLoginStatus()
         initGoogleSignInLauncher()
         initFacebookLogin()
@@ -180,6 +181,10 @@ class LoginFragment : Fragment() {
 
     private fun showSnackbar(message: String) {
         Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
+    }
+    private fun onLoginSuccess(email: String, password: String) {
+        viewModel.saveUserCredentials(email, password)
+        findNavController().navigate(R.id.action_loginFragment_to_coverFragment)
     }
 
     override fun onDestroyView() {
