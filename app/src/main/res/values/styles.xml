@@ -30,6 +30,23 @@
     </style>
 
 
+    <style name="FormLabel">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:fontFamily">@font/raleway_medium</item>
+        <item name="android:textColor">@color/title_color</item>
+        <item name="android:textSize">@dimen/text_sp16</item>
+    </style>
+
+    <style name="FormInput">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">@drawable/neumorphism_edit_text</item>
+        <item name="android:fontFamily">@font/raleway_italic</item>
+        <item name="android:textColor">@color/text_color</item>
+        <item name="android:textColorHint">@color/text_color</item>
+        <item name="android:textSize">@dimen/text_sp16</item>
+    </style>
 
 </resources>
 

@@ -35,10 +35,16 @@
             app:popExitAnim="@anim/fade_out" />
 
 
-        <!--        <action-->
-<!--            android:id="@+id/action_cover_to_signin"-->
-<!--            app:destination="@id/signinFragment" />-->
+        <action
+            android:id="@+id/action_cover_to_signin"
+            app:destination="@id/signUpFragment"
+            app:enterAnim="@anim/fade_in"
+            app:exitAnim="@anim/fade_out"
+            app:popEnterAnim="@anim/fade_in"
+            app:popExitAnim="@anim/fade_out" />
+
     </fragment>
+
 
     <fragment
         android:id="@+id/loginFragment"
@@ -53,24 +59,38 @@
             app:exitAnim="@anim/fade_out"
             app:popEnterAnim="@anim/fade_in"
             app:popExitAnim="@anim/fade_out" />
- <action
+        <action
             android:id="@+id/action_loginFragment_to_coverFragment"
             app:destination="@id/coverFragment"
             app:enterAnim="@anim/fade_in"
             app:exitAnim="@anim/fade_out"
             app:popEnterAnim="@anim/fade_in"
             app:popExitAnim="@anim/fade_out" />
-
-
     </fragment>
-<!--        <action-->
-<!--            android:id="@+id/action_loginFragment_to_readTermsFragment"-->
-<!--            app:destination="@id/readTermsFragment" />-->
 
-<!--    <fragment-->
-<!--        android:id="@+id/readTermsFragment"-->
-<!--        android:name="com.cursoandroid.queermap.ui.terms.ReadTermsFragment"-->
-<!--        android:label="Términos" />-->
+    <fragment
+        android:id="@+id/signUpFragment"
+        android:name="com.cursoandroid.queermap.ui.signup.SignUpFragment"
+        android:label="SignUp"
+        tools:layout="@layout/fragment_signup">
+
+    <action
+        android:id="@+id/action_signupFragment_to_coverFragment"
+        app:destination="@id/coverFragment"
+        app:enterAnim="@anim/fade_in"
+        app:exitAnim="@anim/fade_out"
+        app:popEnterAnim="@anim/fade_in"
+        app:popExitAnim="@anim/fade_out" />
+    </fragment>
+
+    <!--        <action-->
+    <!--            android:id="@+id/action_loginFragment_to_readTermsFragment"-->
+    <!--            app:destination="@id/readTermsFragment" />-->
+
+    <!--    <fragment-->
+    <!--        android:id="@+id/readTermsFragment"-->
+    <!--        android:name="com.cursoandroid.queermap.ui.terms.ReadTermsFragment"-->
+    <!--        android:label="Términos" />-->
 
     <fragment
         android:id="@+id/forgotPasswordFragment"

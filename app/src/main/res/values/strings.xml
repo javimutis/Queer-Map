@@ -19,8 +19,6 @@
     <string name="sign_up">Regístrate</string>
     <string name="reset_password">Recuperar contraseña</string>
     <string name="cancel">Cancelar</string>
-
-    <!-- Content Description -->
     <string name="google">Google</string>
     <string name="facebook">Facebook</string>
 
@@ -34,7 +32,8 @@
     <string name="terms_text">Tu espacio seguro en una app:\n\n ‣ Sé auténtic@: Utiliza tu identidad real en la aplicación. No uses identidades falsas.\n\n ‣ Celebramos la diversidad y el respeto hacia todos los miembros de la comunidad LGBTIQ+.\n\n ‣ Reporta cualquier actividad inapropiada para mantener nuestro entorno seguro y acogedor.\n\n ‣ Privacidad y confianza: No compartas ni solicites información personal sensible sin el consentimiento explícito de la otra persona.\n\nJuntes, creamos una comunidad inclusiva y segura.\n\nEquipo Queermap</string>
     <string name="google_maps_key">AIzaSyAxYFKAt5D18MCNEBf2RUXfrMmYGha_lkM</string>
     <string name="pexels_key">lncMUMsOuA3gsNfWRSxMG9nDBUQ8GD4987XLf0MD4XjATMdS8w1K6lps</string>
-    <!-- TODO: Remove or change this placeholder text -->
+
+
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="app_logo">logo app</string>
     <string name="google_login">Iniciar sesión con Google</string>
@@ -42,10 +41,24 @@
     <string name="toggle_password_visibility">Mostrar u ocultar contraseña</string>
     <string name="hint_email">queermap@gmail.com</string>
     <string name="hint_mail">queermap@gmail.com</string>
+    <string name="back_button_description">volver atrás</string>
 
-
-
-
+    <!-- SignUpFragment -->
+    <string name="register_title">Registro</string>
+    <string name="username">Nombre de usuario</string>
+    <string name="username_hint">Como quieres que te llamemos?</string>
+    <string name="full_name">Nombre Completo</string>
+    <string name="full_name_hint">Ingresa tu nombre completo</string>
+    <string name="show_password">Mostrar contraseña</string>
+    <string name="repeat_password">Repite tu contraseña</string>
+    <string name="date_of_birth">Fecha de nacimiento</string>
+    <string name="question_mark">Ícono de pregunta</string>
+    <string name="calendar">Calendario</string>
+    <string name="signup">Regístrate</string>
+    <string name="signup_google">Iniciar sesión con Google</string>
+    <string name="signup_fb">Iniciar sesión con Facebook</string>
+    <string name="signup_with">O regístrate usando:</string>
+    <string name="dd_mm_yyyy">dd/MM/yyyy</string>
 
 
 </resources>

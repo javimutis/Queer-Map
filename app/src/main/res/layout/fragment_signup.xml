@@ -1,0 +1,382 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/fragment_signup"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_color"
+    tools:context=".ui.signup.SignUpFragment">
+
+    <!-- Scrollable Content -->
+    <ScrollView
+        android:id="@+id/svContent"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <!-- Inner ConstraintLayout -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/clContent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="32dp">
+            <!-- Header -->
+            <ImageView
+                android:id="@+id/ivBack"
+                android:layout_width="@dimen/layout_dp35"
+                android:layout_height="@dimen/layout_dp35"
+                android:layout_marginStart="@dimen/margin_start_dp16"
+                android:layout_marginTop="@dimen/margin_top_dp16"
+                android:contentDescription="@string/back_button_description"
+                android:src="@drawable/ic_arrow_back"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/tvTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="26dp"
+                android:fontFamily="@font/raleway_medium_italic"
+                android:letterSpacing="0.05"
+                android:text="@string/register_title"
+                android:textColor="@color/title_color"
+                android:textSize="35sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+
+            <!-- Nombre de usuario -->
+            <TextView
+                android:id="@+id/tvUserName"
+                style="@style/FormLabel"
+                android:layout_marginStart="@dimen/margin_start_dp32"
+                android:layout_marginTop="24dp"
+                android:text="@string/username"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/tvTitle" />
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etUser"
+                style="@style/FormInput"
+                android:layout_marginStart="@dimen/margin_start_dp32"
+                android:layout_marginEnd="@dimen/margin_end_dp32"
+                android:hint="@string/username_hint"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvUserName" />
+
+            <!-- Nombre completo -->
+            <TextView
+                android:id="@+id/tvFullName"
+                style="@style/FormLabel"
+                android:layout_marginStart="@dimen/margin_start_dp32"
+                android:layout_marginTop="12dp"
+                android:text="@string/full_name"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/etUser" />
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etName"
+                style="@style/FormInput"
+                android:layout_marginStart="@dimen/margin_start_dp32"
+                android:layout_marginEnd="@dimen/margin_end_dp32"
+                android:hint="@string/full_name_hint"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvFullName" />
+
+            <!-- Contraseña -->
+            <TextView
+                android:id="@+id/tvPassword"
+                style="@style/FormLabel"
+                android:layout_marginStart="@dimen/margin_start_dp32"
+                android:layout_marginTop="12dp"
+                android:text="@string/password"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/etName" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/clPassword"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="@dimen/margin_start_dp32"
+                android:layout_marginEnd="@dimen/margin_end_dp32"
+                android:background="@drawable/neumorphism_edit_text"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvPassword">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etPassword"
+                    style="@style/FormInput"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:hint="@string/password_hint"
+                    android:inputType="textPassword"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/ivEyeIcon"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <ImageView
+                    android:id="@+id/ivEyeIcon"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginEnd="8dp"
+                    android:contentDescription="@string/show_password"
+                    android:src="@drawable/open_eye"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <!-- Repetir contraseña -->
+            <TextView
+                android:id="@+id/tvRepeatPassword"
+                style="@style/FormLabel"
+                android:layout_marginStart="@dimen/margin_start_dp32"
+                android:layout_marginTop="12dp"
+                android:text="@string/repeat_password"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/clPassword" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/clRepeatPassword"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="@dimen/margin_start_dp32"
+                android:layout_marginEnd="@dimen/margin_end_dp32"
+                android:background="@drawable/neumorphism_edit_text"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvRepeatPassword">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etRepeatPassword"
+                    style="@style/FormInput"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:hint="@string/password_hint"
+                    android:inputType="textPassword"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/ivRepeatEyeIcon"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <ImageView
+                    android:id="@+id/ivRepeatEyeIcon"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginEnd="8dp"
+                    android:contentDescription="@string/show_password"
+                    android:src="@drawable/open_eye"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <!-- Email -->
+            <TextView
+                android:id="@+id/tvEmail"
+                style="@style/FormLabel"
+                android:layout_marginStart="@dimen/margin_start_dp32"
+                android:layout_marginTop="12dp"
+                android:text="@string/insert_mail"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/clRepeatPassword" />
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etEmail"
+                style="@style/FormInput"
+                android:layout_marginStart="@dimen/margin_start_dp32"
+                android:layout_marginTop="4dp"
+                android:layout_marginEnd="@dimen/margin_end_dp32"
+                android:hint="@string/email_hint"
+                android:inputType="textEmailAddress"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvEmail" />
+
+            <!-- Fecha de nacimiento (Título + ícono) -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/clBirthdayTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/margin_start_dp32"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="@dimen/margin_end_dp32"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/etEmail">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/tietBirthdayDate"
+                    android:layout_width="0dp"
+                    android:layout_height="36dp"
+                    android:layout_marginTop="-5dp"
+                    android:backgroundTint="#02FFFFFF"
+                    android:fontFamily="@font/raleway_medium"
+                    android:text="@string/date_of_birth"
+                    android:textColor="@color/title_color"
+                    android:textSize="@dimen/text_sp16"
+                    android:visibility="visible"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/ivBirthdayPopUp"
+                    app:layout_constraintHorizontal_weight="9"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <ImageView
+                    android:id="@+id/ivBirthdayPopUp"
+                    android:layout_width="30dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/margin_top_dp10"
+                    android:layout_marginEnd="9dp"
+                    android:contentDescription="@string/question_mark"
+                    android:src="@drawable/question_mark_icon"
+                    app:layout_constraintBottom_toBottomOf="@id/tietBirthdayDate"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="@id/tietBirthdayDate" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <!-- Campo Fecha de Nacimiento + ícono calendario -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/clBirthdayRegister"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="@dimen/margin_start_dp32"
+                android:layout_marginTop="@dimen/margin_top_dp10"
+                android:layout_marginEnd="@dimen/margin_end_dp32"
+                android:background="@drawable/neumorphism_edit_text"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/clBirthdayTitle">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/tietBirthday"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_marginTop="-5dp"
+                    android:backgroundTint="#02FFFFFF"
+                    android:fontFamily="@font/raleway_italic"
+                    android:hint="@string/dd_mm_yyyy"
+                    android:textColor="@color/text_color"
+                    android:textColorHint="@color/text_color"
+                    android:textSize="@dimen/text_sp16"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/ivCalendar"
+                    app:layout_constraintHorizontal_weight="9"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:ignore="TouchTargetSizeCheck" />
+
+                <ImageView
+                    android:id="@+id/ivCalendar"
+                    android:layout_width="30dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginEnd="3dp"
+                    android:contentDescription="@string/calendar"
+                    android:src="@drawable/calendar"
+                    app:layout_constraintBottom_toBottomOf="@id/tietBirthday"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="@id/tietBirthday" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+            <!-- Botón de Registro -->
+            <Button
+                android:id="@+id/btnRegister"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/margin_start_dp32"
+                android:layout_marginTop="20dp"
+                android:layout_marginEnd="@dimen/margin_end_dp32"
+                android:background="@drawable/neumorphism_button"
+                android:fontFamily="@font/raleway_medium_italic"
+                android:onClick="goToReadTermsActivity"
+                android:text="@string/signup"
+                android:textColor="@color/button_text"
+                android:textSize="@dimen/text_sp20"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/clBirthdayRegister" />
+
+            <!-- Texto "O regístrate usando" -->
+            <TextView
+                android:id="@+id/tvConnectWith"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:fontFamily="@font/raleway_medium_italic"
+                android:text="@string/signup_with"
+                android:textAlignment="center"
+                android:textColor="@color/title_color"
+                android:textSize="18sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/btnRegister" />
+
+            <!-- Botones sociales -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/clSocialButtons"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/margin_top_dp10"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvConnectWith">
+
+                <ImageButton
+                    android:id="@+id/ivGoogleSignIn"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="@dimen/margin_start_dp10"
+                    android:layout_marginEnd="-80dp"
+                    android:background="@drawable/google_icon"
+                    android:contentDescription="@string/signup_google"
+                    android:scaleType="fitCenter"
+                    app:layout_constraintEnd_toStartOf="@id/ivFacebookLSignIn"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:ignore="TouchTargetSizeCheck" />
+
+                <ImageButton
+                    android:id="@+id/ivFacebookLSignIn"
+                    android:layout_width="34dp"
+                    android:layout_height="29dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginEnd="10dp"
+                    android:background="@drawable/facebook_icon"
+                    android:contentDescription="@string/signup_fb"
+                    android:scaleType="fitCenter"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/ivGoogleSignIn"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:ignore="TouchTargetSizeCheck" />
+
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <ProgressBar
+                android:id="@+id/progressBar"
+                style="?android:attr/progressBarStyleLarge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>
+

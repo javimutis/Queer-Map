@@ -1,7 +1,10 @@
 [versions]
+# Versiones del SDK y herramientas
 kotlin = "1.9.22"
 agp = "8.3.1"
 hilt = "2.50"
+
+# Versiones de bibliotecas
 firebase-bom = "32.7.0"
 retrofit = "2.9.0"
 gson = "2.10.1"
@@ -12,35 +15,50 @@ core-ktx = "1.13.1"
 appcompat = "1.6.1"
 cardview = "1.0.0"
 picasso = "2.8"
+
+# Servicios de Google y secretos
 google-services = "4.4.1"
 secrets = "2.0.1"
+google-auth = "20.7.0"
+
+# Facebook
 facebook-login = "16.3.0"
+
+# Pruebas
 junit = "4.13.2"
+kotest = "5.6.2"
 ext-junit = "1.1.5"
 espresso = "3.5.1"
-navigation = "2.7.5"
-activity = "1.8.0"
-constraintlayout = "2.2.1"
-core-splashscreen = "1.0.1"
-google-auth = "20.7.0"
 mockk = "1.13.5"
 coreTesting = "2.2.0"
 junitVersion = "1.1.5"
 coroutines = "1.7.3"
 espressoCore = "3.5.1"
+fragment = "1.6.1"
+runner = "1.5.2"
+rules = "1.5.0"
 
+# Navegación
+navigation = "2.7.5"
 
+# AndroidX
+activity = "1.8.0"
+constraintlayout = "2.2.1"
+core-splashscreen = "1.0.1"
 
 [plugins]
+# Plugins de construcción
 android-application = { id = "com.android.application", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+
+# Plugins específicos
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 google-services = { id = "com.google.gms.google-services", version.ref = "google-services" }
 secrets = { id = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin", version.ref = "secrets" }
 
-
 [libraries]
+# Firebase
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebase-bom" }
 firebase-analytics = { module = "com.google.firebase:firebase-analytics-ktx" }
 firebase-auth = { module = "com.google.firebase:firebase-auth-ktx" }
@@ -48,42 +66,57 @@ firebase-db = { module = "com.google.firebase:firebase-database-ktx" }
 firebase-firestore = { module = "com.google.firebase:firebase-firestore-ktx" }
 firebase-coroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3"
 
+# Google Maps y Places
 maps = { module = "com.google.android.gms:play-services-maps", version.ref = "maps" }
 places = { module = "com.google.android.libraries.places:places", version.ref = "places" }
+
+# Autenticación
 auth = { module = "com.google.android.gms:play-services-auth", version = "21.0.0" }
 facebook-login = { module = "com.facebook.android:facebook-login", version.ref = "facebook-login" }
 google-auth = "com.google.android.gms:play-services-auth:${versions.google-auth}"
 
+# Retrofit y GSON
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 
+# Otros
 picasso = { module = "com.squareup.picasso:picasso", version.ref = "picasso" }
 material = { module = "com.google.android.material:material", version.ref = "material" }
-
 core-ktx = { module = "androidx.core:core-ktx", version.ref = "core-ktx" }
 appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
 cardview = { module = "androidx.cardview:cardview", version.ref = "cardview" }
 
+# Splash Screen
 core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "core-splashscreen" }
+
 # Navigation
 androidx-navigation-fragment = { module = "androidx.navigation:navigation-fragment-ktx", version.ref = "navigation" }
 androidx-navigation-ui = { module = "androidx.navigation:navigation-ui-ktx", version.ref = "navigation" }
 
+# Pruebas
 junit = { module = "junit:junit", version.ref = "junit" }
 ext-junit = { module = "androidx.test.ext:junit", version.ref = "ext-junit" }
 espresso = { module = "androidx.test.espresso:espresso-core", version.ref = "espresso" }
+kotest-assertions = { group = "io.kotest", name = "kotest-assertions-core", version.ref = "kotest" }
 
-
-#Testing
+# Testing
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
 arch-core-testing = { group = "androidx.arch.core", name = "core-testing", version.ref = "coreTesting" }
-
-
+androidx-espresso-intents = { group = "androidx.test.espresso", name = "espresso-intents", version.ref = "espresso" }
+androidx-espresso-contrib = { group = "androidx.test.espresso", name = "espresso-contrib", version.ref = "espresso" }
+androidx-fragment-testing = { group = "androidx.fragment", name = "fragment-testing", version.ref = "fragment" }
+androidx-test-runner = { group = "androidx.test", name = "runner", version.ref = "runner" }
+androidx-test-rules = { group = "androidx.test", name = "rules", version.ref = "rules" }
+hilt-android-testing = { module = "com.google.dagger:hilt-android-testing", version.ref = "hilt" }
+# Hilt
 hilt-core = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
 hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hilt" }
+
+# AndroidX Activity y ConstraintLayout
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+
