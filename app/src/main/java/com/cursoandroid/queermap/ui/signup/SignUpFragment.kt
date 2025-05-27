@@ -1,7 +1,6 @@
 package com.cursoandroid.queermap.ui.signup
 
 import android.app.DatePickerDialog
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -13,12 +12,15 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.cursoandroid.queermap.R
 import com.cursoandroid.queermap.databinding.FragmentSignupBinding
+import com.google.android.material.datepicker.CalendarConstraints
+import com.google.android.material.datepicker.DateValidatorPointBackward
+import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.snackbar.Snackbar
-import com.google.android.material.textfield.TextInputEditText
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Date
 import java.util.Locale
 
 @AndroidEntryPoint
@@ -50,20 +52,24 @@ class SignUpFragment : Fragment() {
     }
 
     private fun setupListeners() {
-        binding.etEmail.addTextChangedListener {
-            viewModel.onEvent(SignUpEvent.OnEmailChanged(it.toString()))
+        binding.etEmail.addTextChangedListener { editable ->
+            viewModel.onEvent(SignUpEvent.OnEmailChanged(editable.toString()))
         }
 
-        binding.etPassword.addTextChangedListener {
-            viewModel.onEvent(SignUpEvent.OnPasswordChanged(it.toString()))
+        binding.etPassword.addTextChangedListener { editable ->
+            viewModel.onEvent(SignUpEvent.OnPasswordChanged(editable.toString()))
         }
 
-        binding.etRepeatPassword.addTextChangedListener {
-            viewModel.onEvent(SignUpEvent.OnConfirmPasswordChanged(it.toString()))
+        binding.etRepeatPassword.addTextChangedListener { editable ->
+            viewModel.onEvent(SignUpEvent.OnConfirmPasswordChanged(editable.toString()))
         }
 
-        binding.etUser.addTextChangedListener {
-            viewModel.onEvent(SignUpEvent.OnUserChanged(it.toString()))
+        binding.etUser.addTextChangedListener { editable ->
+            viewModel.onEvent(SignUpEvent.OnUserChanged(editable.toString()))
+        }
+
+        binding.etName.addTextChangedListener { editable ->
+            viewModel.onEvent(SignUpEvent.OnFullNameChanged(editable.toString()))
         }
 
         binding.btnRegister.setOnClickListener {
@@ -73,6 +79,10 @@ class SignUpFragment : Fragment() {
         binding.ivBack.setOnClickListener {
             viewModel.onBackPressed()
         }
+        binding.ivCalendar.setOnClickListener { showModernDatePicker() }
+        binding.tietBirthday.isFocusable = false
+        binding.tietBirthday.isClickable = true
+        binding.tietBirthday.setOnClickListener { showModernDatePicker() }
     }
 
     private fun observeState() {
@@ -81,14 +91,51 @@ class SignUpFragment : Fragment() {
                 binding.progressBar.visibility =
                     if (state.isLoading) View.VISIBLE else View.GONE
 
-                if (state.isEmailInvalid) showSnackbar("Por favor ingresa un email válido")
-                if (state.isPasswordInvalid) showSnackbar("La contraseña debe tener al menos 6 caracteres")
-                if (state.doPasswordsMismatch) showSnackbar("Las contraseñas no coinciden")
-                state.user?.let { binding.etUser.setText(it) }
+                if (state.isEmailInvalid) {
+                    showSnackbar("Por favor ingresa un email válido")
+                } else if (state.isPasswordInvalid) {
+                    showSnackbar("La contraseña debe tener al menos 6 caracteres")
+                } else if (state.doPasswordsMismatch) {
+                    showSnackbar("Las contraseñas no coinciden")
+                } else if (state.errorMessage != null) {
+                    showSnackbar(state.errorMessage)
+                }
 
-                state.email?.let { binding.etEmail.setText(it) }
-                state.password?.let { binding.etPassword.setText(it) }
-                state.confirmPassword?.let { binding.etRepeatPassword.setText(it) }
+                state.user?.let { newText ->
+                    if (binding.etUser.text.toString() != newText) {
+                        binding.etUser.setText(newText)
+                        binding.etUser.setSelection(newText.length)
+                    }
+                }
+                state.email?.let { newText ->
+                    if (binding.etEmail.text.toString() != newText) {
+                        binding.etEmail.setText(newText)
+                        binding.etEmail.setSelection(newText.length)
+                    }
+                }
+                state.password?.let { newText ->
+                    if (binding.etPassword.text.toString() != newText) {
+                        binding.etPassword.setText(newText)
+                        binding.etPassword.setSelection(newText.length)
+                    }
+                }
+                state.confirmPassword?.let { newText ->
+                    if (binding.etRepeatPassword.text.toString() != newText) {
+                        binding.etRepeatPassword.setText(newText)
+                        binding.etRepeatPassword.setSelection(newText.length)
+                    }
+                }
+                state.fullName?.let { newText ->
+                    if (binding.etName.text.toString() != newText) {
+                        binding.etName.setText(newText)
+                        binding.etName.setSelection(newText.length)
+                    }
+                }
+                state.birthday?.let { newText ->
+                    if (binding.tietBirthday.text.toString() != newText) {
+                        binding.tietBirthday.setText(newText)
+                    }
+                }
             }
         }
     }
@@ -98,7 +145,10 @@ class SignUpFragment : Fragment() {
             viewModel.event.collect { event ->
                 when (event) {
                     is SignUpEvent.NavigateBack -> findNavController().popBackStack()
-                    is SignUpEvent.NavigateToHome -> findNavController().navigate(R.id.action_signupFragment_to_coverFragment)
+                    is SignUpEvent.NavigateToHome -> {
+                        findNavController().navigate(R.id.action_signupFragment_to_coverFragment)
+                    }
+
                     is SignUpEvent.ShowMessage -> showSnackbar(event.message)
                     else -> Unit
                 }
@@ -110,24 +160,38 @@ class SignUpFragment : Fragment() {
         Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
     }
 
-    private fun setupDatePicker(context: Context, birthdayEditText: TextInputEditText) {
-        val calendar = Calendar.getInstance()
-        val dateSetListener = DatePickerDialog.OnDateSetListener { _, year, month, day ->
-            val selectedDate = Calendar.getInstance().apply {
-                set(year, month, day)
+    private fun showModernDatePicker() {
+        val builder = MaterialDatePicker.Builder.datePicker()
+            .setTitleText("Selecciona tu fecha de nacimiento")
+            .setTheme(R.style.ThemeOverlay_QueerMap_MaterialDatePicker)
+
+        // Fecha preseleccionada
+        val currentBirthDateText = binding.tietBirthday.text.toString()
+        if (currentBirthDateText.isNotEmpty()) {
+            try {
+                val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                val date = sdf.parse(currentBirthDateText)
+                if (date != null) builder.setSelection(date.time)
+            } catch (e: Exception) {
             }
-            val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-            birthdayEditText.setText(sdf.format(selectedDate.time))
         }
 
-        birthdayEditText.setOnClickListener {
-            DatePickerDialog(
-                context,
-                dateSetListener,
-                calendar.get(Calendar.YEAR),
-                calendar.get(Calendar.MONTH),
-                calendar.get(Calendar.DAY_OF_MONTH)
-            ).show()
+        val constraints = CalendarConstraints.Builder()
+            .setValidator(DateValidatorPointBackward.now())
+            .build()
+
+        builder.setCalendarConstraints(constraints)
+
+        val picker = builder.build()
+
+        picker.addOnPositiveButtonClickListener { selection ->
+            val date = Date(selection)
+            val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+            val formattedDate = sdf.format(date)
+            binding.tietBirthday.setText(formattedDate)
+            viewModel.onEvent(SignUpEvent.OnBirthdayChanged(formattedDate))
         }
+
+        picker.show(parentFragmentManager, picker.toString())
     }
 }

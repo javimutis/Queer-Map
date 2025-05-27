@@ -50,9 +50,21 @@ class SignUpViewModel @Inject constructor() : ViewModel() {
                 onSignupClicked()
             }
 
-            SignUpEvent.NavigateBack -> TODO()
-            SignUpEvent.NavigateToHome -> TODO()
-            is SignUpEvent.ShowMessage -> TODO()
+            SignUpEvent.NavigateBack -> {
+            }
+
+            SignUpEvent.NavigateToHome -> {
+            }
+
+            is SignUpEvent.ShowMessage -> {
+            }
+
+            is SignUpEvent.OnFullNameChanged -> {
+                _uiState.update { it.copy(fullName = event.fullName) }
+            }
+            is SignUpEvent.OnBirthdayChanged -> {
+                _uiState.update { it.copy(birthday = event.birthday) }
+            }
         }
     }
 
@@ -61,19 +73,26 @@ class SignUpViewModel @Inject constructor() : ViewModel() {
             val email = _uiState.value.email ?: ""
             val password = _uiState.value.password ?: ""
             val confirmPassword = _uiState.value.confirmPassword ?: ""
+            val fullName = _uiState.value.fullName ?: ""
+            val user = _uiState.value.user ?: ""
+            val birthday = _uiState.value.birthday ?: ""
 
-            if (!isValidEmail(email)) {
+            if (!SignUpValidator.isValidEmail(email)) {
                 _uiState.update { it.copy(isEmailInvalid = true) }
                 return@launch
             }
 
-            if (!isValidPassword(password)) {
+            if (!SignUpValidator.isValidPassword(password)) { // O isStrongPassword si prefieres
                 _uiState.update { it.copy(isPasswordInvalid = true) }
                 return@launch
             }
 
             if (password != confirmPassword) {
                 _uiState.update { it.copy(doPasswordsMismatch = true) }
+                return@launch
+            }
+            if (!SignUpValidator.isValidBirthday(birthday)) {
+                _uiState.update { it.copy(isBirthdayInvalid = true) }
                 return@launch
             }
 
@@ -91,3 +110,4 @@ class SignUpViewModel @Inject constructor() : ViewModel() {
         }
     }
 }
+
