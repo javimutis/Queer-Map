@@ -1,7 +1,5 @@
 package com.cursoandroid.queermap.ui.signup
 
-import android.util.Patterns
-
 object SignUpValidator {
 
 

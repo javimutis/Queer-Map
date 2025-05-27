@@ -102,13 +102,21 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/etName" />
 
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/clPassword"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilPassword"
                 android:layout_width="0dp"
-                android:layout_height="40dp"
+                android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/margin_start_dp32"
                 android:layout_marginEnd="@dimen/margin_end_dp32"
-                android:background="@drawable/neumorphism_edit_text"
+                app:boxBackgroundColor="@android:color/white"
+                app:boxBackgroundMode="outline"
+                app:boxCornerRadiusBottomEnd="12dp"
+                app:boxCornerRadiusBottomStart="12dp"
+                app:boxCornerRadiusTopEnd="12dp"
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxStrokeColor="@color/popup_background"
+                app:endIconMode="password_toggle"
+                app:endIconTint="@color/text_color"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tvPassword">
@@ -116,26 +124,18 @@
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etPassword"
                     style="@style/FormInput"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:fontFamily="@font/raleway_light_italic"
+                    android:gravity="center_vertical"
                     android:hint="@string/password_hint"
                     android:inputType="textPassword"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toStartOf="@id/ivEyeIcon"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:textColor="@color/text_color"
+                    android:textColorHint="@color/hint_color_selector" />
 
-                <ImageView
-                    android:id="@+id/ivEyeIcon"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:layout_marginTop="5dp"
-                    android:layout_marginEnd="8dp"
-                    android:contentDescription="@string/show_password"
-                    android:src="@drawable/open_eye"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
+            </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Repetir contraseña -->
             <TextView
@@ -145,15 +145,23 @@
                 android:layout_marginTop="12dp"
                 android:text="@string/repeat_password"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/clPassword" />
+                app:layout_constraintTop_toBottomOf="@id/tilPassword" />
 
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/clRepeatPassword"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilRepeatPassword"
                 android:layout_width="0dp"
-                android:layout_height="40dp"
+                android:layout_height="48dp"
                 android:layout_marginStart="@dimen/margin_start_dp32"
                 android:layout_marginEnd="@dimen/margin_end_dp32"
-                android:background="@drawable/neumorphism_edit_text"
+                app:boxBackgroundColor="@android:color/white"
+                app:boxBackgroundMode="outline"
+                app:boxCornerRadiusBottomEnd="12dp"
+                app:boxCornerRadiusBottomStart="12dp"
+                app:boxCornerRadiusTopEnd="12dp"
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxStrokeColor="@color/popup_background"
+                app:endIconMode="password_toggle"
+                app:endIconTint="@color/text_color"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tvRepeatPassword">
@@ -161,26 +169,18 @@
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etRepeatPassword"
                     style="@style/FormInput"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:fontFamily="@font/raleway_light_italic"
+                    android:gravity="center_vertical"
                     android:hint="@string/password_hint"
                     android:inputType="textPassword"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toStartOf="@id/ivRepeatEyeIcon"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:textColor="@color/text_color"
+                    android:textColorHint="@color/hint_color_selector" />
 
-                <ImageView
-                    android:id="@+id/ivRepeatEyeIcon"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:layout_marginTop="5dp"
-                    android:layout_marginEnd="8dp"
-                    android:contentDescription="@string/show_password"
-                    android:src="@drawable/open_eye"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
+            </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Email -->
             <TextView
@@ -190,7 +190,7 @@
                 android:layout_marginTop="12dp"
                 android:text="@string/insert_mail"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/clRepeatPassword" />
+                app:layout_constraintTop_toBottomOf="@id/tilRepeatPassword" />
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etEmail"

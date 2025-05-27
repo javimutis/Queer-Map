@@ -3,11 +3,9 @@ package com.cursoandroid.queermap.ui.signup
 import android.app.DatePickerDialog
 import android.content.Context
 import android.os.Bundle
-import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -19,8 +17,8 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import java.util.Calendar
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Locale
 
 @AndroidEntryPoint
@@ -64,8 +62,8 @@ class SignUpFragment : Fragment() {
             viewModel.onEvent(SignUpEvent.OnConfirmPasswordChanged(it.toString()))
         }
 
-        binding.etName.addTextChangedListener {
-            viewModel.onEvent(SignUpEvent.OnNameChanged(it.toString()))
+        binding.etUser.addTextChangedListener {
+            viewModel.onEvent(SignUpEvent.OnUserChanged(it.toString()))
         }
 
         binding.btnRegister.setOnClickListener {
@@ -110,18 +108,6 @@ class SignUpFragment : Fragment() {
 
     private fun showSnackbar(message: String) {
         Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
-    }
-
-    private fun togglePasswordVisibility(editText: TextInputEditText, eyeIcon: ImageView) {
-        val isPasswordVisible = editText.inputType == InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-        if (isPasswordVisible) {
-            editText.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
-            eyeIcon.setImageResource(R.drawable.closed_eye)
-        } else {
-            editText.inputType = InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-            eyeIcon.setImageResource(R.drawable.open_eye)
-        }
-        editText.setSelection(editText.text?.length ?: 0)
     }
 
     private fun setupDatePicker(context: Context, birthdayEditText: TextInputEditText) {

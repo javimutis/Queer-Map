@@ -6,7 +6,11 @@ import com.cursoandroid.queermap.ui.forgotpassword.ForgotPasswordValidator.isVal
 import com.cursoandroid.queermap.ui.forgotpassword.ForgotPasswordValidator.isValidPassword
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -21,8 +25,8 @@ class SignUpViewModel @Inject constructor() : ViewModel() {
 
     fun onEvent(event: SignUpEvent) {
         when (event) {
-            is SignUpEvent.OnNameChanged -> {
-                _uiState.update { it.copy(name = event.name) }
+            is SignUpEvent.OnUserChanged -> {
+                _uiState.update { it.copy(user = event.user) }
             }
 
             is SignUpEvent.OnEmailChanged -> {
@@ -34,7 +38,12 @@ class SignUpViewModel @Inject constructor() : ViewModel() {
             }
 
             is SignUpEvent.OnConfirmPasswordChanged -> {
-                _uiState.update { it.copy(confirmPassword = event.confirmPassword, doPasswordsMismatch = false) }
+                _uiState.update {
+                    it.copy(
+                        confirmPassword = event.confirmPassword,
+                        doPasswordsMismatch = false
+                    )
+                }
             }
 
             SignUpEvent.OnRegisterClicked -> {
