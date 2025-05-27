@@ -1,9 +1,13 @@
 package com.cursoandroid.queermap.ui.signup
 
+import android.app.DatePickerDialog
+import android.content.Context
 import android.os.Bundle
+import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -12,8 +16,12 @@ import androidx.navigation.fragment.findNavController
 import com.cursoandroid.queermap.R
 import com.cursoandroid.queermap.databinding.FragmentSignupBinding
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.textfield.TextInputEditText
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import java.util.Calendar
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 @AndroidEntryPoint
 class SignUpFragment : Fragment() {
@@ -78,8 +86,7 @@ class SignUpFragment : Fragment() {
                 if (state.isEmailInvalid) showSnackbar("Por favor ingresa un email válido")
                 if (state.isPasswordInvalid) showSnackbar("La contraseña debe tener al menos 6 caracteres")
                 if (state.doPasswordsMismatch) showSnackbar("Las contraseñas no coinciden")
-                state.errorMessage?.let { showSnackbar(it) }
-                state.name?.let { binding.etName.setText(it) }
+                state.user?.let { binding.etUser.setText(it) }
 
                 state.email?.let { binding.etEmail.setText(it) }
                 state.password?.let { binding.etPassword.setText(it) }
@@ -103,5 +110,38 @@ class SignUpFragment : Fragment() {
 
     private fun showSnackbar(message: String) {
         Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
+    }
+
+    private fun togglePasswordVisibility(editText: TextInputEditText, eyeIcon: ImageView) {
+        val isPasswordVisible = editText.inputType == InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+        if (isPasswordVisible) {
+            editText.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+            eyeIcon.setImageResource(R.drawable.closed_eye)
+        } else {
+            editText.inputType = InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+            eyeIcon.setImageResource(R.drawable.open_eye)
+        }
+        editText.setSelection(editText.text?.length ?: 0)
+    }
+
+    private fun setupDatePicker(context: Context, birthdayEditText: TextInputEditText) {
+        val calendar = Calendar.getInstance()
+        val dateSetListener = DatePickerDialog.OnDateSetListener { _, year, month, day ->
+            val selectedDate = Calendar.getInstance().apply {
+                set(year, month, day)
+            }
+            val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+            birthdayEditText.setText(sdf.format(selectedDate.time))
+        }
+
+        birthdayEditText.setOnClickListener {
+            DatePickerDialog(
+                context,
+                dateSetListener,
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
+            ).show()
+        }
     }
 }

@@ -145,11 +145,11 @@ class SigninActivity : AppCompatActivity() {
         val yOffset = location[1] - anchorView.height
         popupWindow.showAtLocation(anchorView, Gravity.NO_GRAVITY, xOffset, yOffset)
     }
-    private fun setupDatePicker() {
-        datePickerButton.setOnClickListener {
-            showDatePickerDialog()
-        }
-    }
+//    private fun setupDatePicker() {
+//        datePickerButton.setOnClickListener {
+//            showDatePickerDialog()
+//        }
+//    }
     private fun setupPasswordVisibilityToggle() {
         eyeIcon.setOnClickListener {
             togglePasswordVisibility()
@@ -160,17 +160,17 @@ class SigninActivity : AppCompatActivity() {
             toggleRepeatPasswordVisibility()
         }
     }
-    private fun togglePasswordVisibility() {        val inputType = passwordEditText.inputType
-
-        if (inputType == InputType.TYPE_TEXT_VARIATION_PASSWORD or InputType.TYPE_CLASS_TEXT) {
-            passwordEditText.inputType =           InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD or InputType.TYPE_CLASS_TEXT
-            eyeIcon.setImageResource(R.drawable.open_eye)
-        } else {
-            passwordEditText.inputType =               InputType.TYPE_TEXT_VARIATION_PASSWORD or InputType.TYPE_CLASS_TEXT
-            eyeIcon.setImageResource(R.drawable.closed_eye)
-        }
-        passwordEditText.setSelection(passwordEditText.text?.length ?: 0)
-    }
+//    private fun togglePasswordVisibility() {        val inputType = passwordEditText.inputType
+//
+//        if (inputType == InputType.TYPE_TEXT_VARIATION_PASSWORD or InputType.TYPE_CLASS_TEXT) {
+//            passwordEditText.inputType =           InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD or InputType.TYPE_CLASS_TEXT
+//            eyeIcon.setImageResource(R.drawable.open_eye)
+//        } else {
+//            passwordEditText.inputType =               InputType.TYPE_TEXT_VARIATION_PASSWORD or InputType.TYPE_CLASS_TEXT
+//            eyeIcon.setImageResource(R.drawable.closed_eye)
+//        }
+//        passwordEditText.setSelection(passwordEditText.text?.length ?: 0)
+//    }
     private fun toggleRepeatPasswordVisibility() {
         val inputType = repeatPasswordEditText.inputType
 
@@ -270,29 +270,29 @@ class SigninActivity : AppCompatActivity() {
         startActivity(intent)
         finish()
     }
-    fun showDatePickerDialog() {
-        val calendar = Calendar.getInstance()
-        val year = calendar.get(Calendar.YEAR)
-        val month = calendar.get(Calendar.MONTH)
-        val day = calendar.get(Calendar.DAY_OF_MONTH)
-
-        val datePickerDialog = DatePickerDialog(
-            this,
-            R.style.DatePickerDialogStyle,
-            DatePickerDialog.OnDateSetListener { _: DatePicker, selectedYear: Int, monthOfYear: Int, dayOfMonth: Int ->
-                val selectedDate = Calendar.getInstance()
-                selectedDate.set(selectedYear, monthOfYear, dayOfMonth)
-                val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                val date = dateFormat.format(selectedDate.time)
-                birthdayEditText.setText(date)
-            },
-            year,
-            month,
-            day
-        )
-
-        datePickerDialog.show()
-    }
+//    fun showDatePickerDialog() {
+//        val calendar = Calendar.getInstance()
+//        val year = calendar.get(Calendar.YEAR)
+//        val month = calendar.get(Calendar.MONTH)
+//        val day = calendar.get(Calendar.DAY_OF_MONTH)
+//
+//        val datePickerDialog = DatePickerDialog(
+//            this,
+//            R.style.DatePickerDialogStyle,
+//            DatePickerDialog.OnDateSetListener { _: DatePicker, selectedYear: Int, monthOfYear: Int, dayOfMonth: Int ->
+//                val selectedDate = Calendar.getInstance()
+//                selectedDate.set(selectedYear, monthOfYear, dayOfMonth)
+//                val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+//                val date = dateFormat.format(selectedDate.time)
+//                birthdayEditText.setText(date)
+//            },
+//            year,
+//            month,
+//            day
+//        )
+//
+//        datePickerDialog.show()
+//    }
 
     fun handleFacebookAccessToken(token: AccessToken) {
         val credential = FacebookAuthProvider.getCredential(token.token)
