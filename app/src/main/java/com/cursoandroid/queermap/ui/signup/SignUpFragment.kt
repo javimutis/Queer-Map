@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -43,11 +44,24 @@ class SignUpFragment : Fragment() {
     }
 
     private fun setupListeners() {
+        binding.etEmail.addTextChangedListener {
+            viewModel.onEvent(SignUpEvent.OnEmailChanged(it.toString()))
+        }
+
+        binding.etPassword.addTextChangedListener {
+            viewModel.onEvent(SignUpEvent.OnPasswordChanged(it.toString()))
+        }
+
+        binding.etRepeatPassword.addTextChangedListener {
+            viewModel.onEvent(SignUpEvent.OnConfirmPasswordChanged(it.toString()))
+        }
+
+        binding.etName.addTextChangedListener {
+            viewModel.onEvent(SignUpEvent.OnNameChanged(it.toString()))
+        }
+
         binding.btnRegister.setOnClickListener {
-            val email = binding.etEmail.text.toString()
-            val password = binding.etPassword.text.toString()
-            val confirmPassword = binding.etRepeatPassword.text.toString()
-            viewModel.onSignupClicked(email, password, confirmPassword)
+            viewModel.onEvent(SignUpEvent.OnRegisterClicked)
         }
 
         binding.ivBack.setOnClickListener {
@@ -58,12 +72,14 @@ class SignUpFragment : Fragment() {
     private fun observeState() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.uiState.collect { state ->
-                binding.progressBar.visibility = if (state.isLoading) View.VISIBLE else View.GONE
+                binding.progressBar.visibility =
+                    if (state.isLoading) View.VISIBLE else View.GONE
 
                 if (state.isEmailInvalid) showSnackbar("Por favor ingresa un email válido")
                 if (state.isPasswordInvalid) showSnackbar("La contraseña debe tener al menos 6 caracteres")
                 if (state.doPasswordsMismatch) showSnackbar("Las contraseñas no coinciden")
                 state.errorMessage?.let { showSnackbar(it) }
+                state.name?.let { binding.etName.setText(it) }
 
                 state.email?.let { binding.etEmail.setText(it) }
                 state.password?.let { binding.etPassword.setText(it) }
@@ -79,6 +95,7 @@ class SignUpFragment : Fragment() {
                     is SignUpEvent.NavigateBack -> findNavController().popBackStack()
                     is SignUpEvent.NavigateToHome -> findNavController().navigate(R.id.action_signupFragment_to_coverFragment)
                     is SignUpEvent.ShowMessage -> showSnackbar(event.message)
+                    else -> Unit
                 }
             }
         }

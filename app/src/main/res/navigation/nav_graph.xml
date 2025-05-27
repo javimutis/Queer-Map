@@ -36,7 +36,7 @@
 
 
         <action
-            android:id="@+id/action_cover_to_signin"
+            android:id="@+id/action_cover_to_signup"
             app:destination="@id/signUpFragment"
             app:enterAnim="@anim/fade_in"
             app:exitAnim="@anim/fade_out"

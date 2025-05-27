@@ -61,7 +61,7 @@ class CoverFragment : Fragment() {
         }
 
         binding.btnCoverSignIn.setOnClickListener {
-            // viewModel.onSignInClicked()
+            viewModel.onSignUpClicked()
         }
     }
 
@@ -74,12 +74,21 @@ class CoverFragment : Fragment() {
                     navigateToLogin()
                     viewModel.onNavigated()
                 }
+                if (state.navigateToSignUp) {
+                    navigateToSignUp()
+                    viewModel.onNavigated()
+                }
             }
         }
     }
 
+    //Navegación
     private fun navigateToLogin() {
         findNavController().navigate(R.id.action_cover_to_login)
+    }
+
+    private fun navigateToSignUp() {
+        findNavController().navigate(R.id.action_cover_to_signup)
     }
 
     // Utilidades

@@ -9,8 +9,9 @@ import kotlinx.coroutines.launch
 
 data class CoverUiState(
     val showTitle: Boolean = false,
-    val navigateToLogin: Boolean = false
-)
+    val navigateToLogin: Boolean = false,
+    val navigateToSignUp: Boolean = false)
+
 
 class CoverViewModel : ViewModel() {
 
@@ -30,6 +31,10 @@ class CoverViewModel : ViewModel() {
 
     fun onLoginClicked() {
         _uiState.value = _uiState.value.copy(navigateToLogin = true)
+    }
+
+    fun onSignUpClicked() {
+        _uiState.value = _uiState.value.copy(navigateToSignUp = true)
     }
 
     fun onNavigated() {
