@@ -4,10 +4,15 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.navOptions
 import com.cursoandroid.queermap.R
 import com.cursoandroid.queermap.databinding.FragmentWelcomeBinding
 import dagger.hilt.android.AndroidEntryPoint
@@ -32,6 +37,19 @@ class WelcomeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        WindowCompat.setDecorFitsSystemWindows(requireActivity().window, false)
+
+        val window = requireActivity().window
+        val controller = WindowInsetsControllerCompat(window, window.decorView)
+
+        controller.hide(WindowInsetsCompat.Type.systemBars())
+        controller.systemBarsBehavior =
+            WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        requireActivity().window.decorView.setBackgroundColor(
+            ContextCompat.getColor(requireContext(), R.color.background_color)
+        )
+
         observeUiState()
     }
 
@@ -54,6 +72,14 @@ class WelcomeFragment : Fragment() {
 
     // Navegación
     private fun navigateToCover() {
-        findNavController().navigate(R.id.action_welcome_to_cover)
+        findNavController().navigate(
+            R.id.action_welcome_to_cover,
+            null,
+            navOptions {
+                popUpTo(R.id.welcomeFragment) {
+                    inclusive = true
+                }
+            }
+        )
     }
 }

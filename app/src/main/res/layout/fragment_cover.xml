@@ -3,16 +3,15 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:fitsSystemWindows="true"
     android:layout_height="match_parent">
 
     <!-- Fondo -->
     <ImageView
         android:id="@+id/cover"
         android:layout_width="0dp"
+        android:adjustViewBounds="true"
         android:layout_height="0dp"
         android:scaleType="centerCrop"
-        android:adjustViewBounds="true"
         android:src="@drawable/cover_background"
         android:contentDescription="@string/app_name"
         android:foreground="@drawable/dark_overlay"
