@@ -12,6 +12,7 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:scaleType="centerCrop"
+        android:adjustViewBounds="true"
         android:src="@drawable/cover_background"
         android:contentDescription="@string/app_name"
         android:foreground="@drawable/dark_overlay"

@@ -54,22 +54,27 @@ class SignUpFragment : Fragment() {
     private fun setupListeners() {
         binding.etEmail.addTextChangedListener { editable ->
             viewModel.onEvent(SignUpEvent.OnEmailChanged(editable.toString()))
+                   binding.tilEmail.error = null
         }
 
         binding.etPassword.addTextChangedListener { editable ->
             viewModel.onEvent(SignUpEvent.OnPasswordChanged(editable.toString()))
+            binding.tilPassword.error = null
         }
 
         binding.etRepeatPassword.addTextChangedListener { editable ->
             viewModel.onEvent(SignUpEvent.OnConfirmPasswordChanged(editable.toString()))
+            binding.tilRepeatPassword.error = null
         }
 
         binding.etUser.addTextChangedListener { editable ->
             viewModel.onEvent(SignUpEvent.OnUserChanged(editable.toString()))
+            binding.tilUser.error = null
         }
 
         binding.etName.addTextChangedListener { editable ->
             viewModel.onEvent(SignUpEvent.OnFullNameChanged(editable.toString()))
+            binding.tilName.error = null
         }
 
         binding.btnRegister.setOnClickListener {
@@ -79,10 +84,12 @@ class SignUpFragment : Fragment() {
         binding.ivBack.setOnClickListener {
             viewModel.onBackPressed()
         }
-        binding.ivCalendar.setOnClickListener { showModernDatePicker() }
-        binding.tietBirthday.isFocusable = false
+            binding.tietBirthday.isFocusable = false
         binding.tietBirthday.isClickable = true
-        binding.tietBirthday.setOnClickListener { showModernDatePicker() }
+        binding.tietBirthday.setOnClickListener {
+            showModernDatePicker()
+            binding.tilBirthday.error = null
+        }
     }
 
     private fun observeState() {
@@ -91,13 +98,26 @@ class SignUpFragment : Fragment() {
                 binding.progressBar.visibility =
                     if (state.isLoading) View.VISIBLE else View.GONE
 
+                         binding.tilEmail.error = null
+                binding.tilPassword.error = null
+                binding.tilRepeatPassword.error = null
+                binding.tilUser.error = null
+                binding.tilName.error = null
+                binding.tilBirthday.error = null
+
                 if (state.isEmailInvalid) {
-                    showSnackbar("Por favor ingresa un email válido")
-                } else if (state.isPasswordInvalid) {
-                    showSnackbar("La contraseña debe tener al menos 6 caracteres")
-                } else if (state.doPasswordsMismatch) {
-                    showSnackbar("Las contraseñas no coinciden")
-                } else if (state.errorMessage != null) {
+                    binding.tilEmail.error = "Por favor, ingresa un email válido."
+                }
+                if (state.isPasswordInvalid) {
+                    binding.tilPassword.error = "La contraseña debe tener al menos 8 caracteres."
+                }
+                if (state.doPasswordsMismatch) {
+                    binding.tilRepeatPassword.error = "Las contraseñas no coinciden."
+                }
+                if (state.isBirthdayInvalid) {
+                    binding.tilBirthday.error = "Por favor, ingresa una fecha de nacimiento válida."
+                }
+                        if (state.errorMessage != null) {
                     showSnackbar(state.errorMessage)
                 }
 
@@ -148,9 +168,14 @@ class SignUpFragment : Fragment() {
                     is SignUpEvent.NavigateToHome -> {
                         findNavController().navigate(R.id.action_signupFragment_to_coverFragment)
                     }
-
                     is SignUpEvent.ShowMessage -> showSnackbar(event.message)
-                    else -> Unit
+                    is SignUpEvent.OnBirthdayChanged -> TODO()
+                    is SignUpEvent.OnConfirmPasswordChanged -> TODO()
+                    is SignUpEvent.OnEmailChanged -> TODO()
+                    is SignUpEvent.OnFullNameChanged -> TODO()
+                    is SignUpEvent.OnPasswordChanged -> TODO()
+                    SignUpEvent.OnRegisterClicked -> TODO()
+                    is SignUpEvent.OnUserChanged -> TODO()
                 }
             }
         }
@@ -165,7 +190,7 @@ class SignUpFragment : Fragment() {
             .setTitleText("Selecciona tu fecha de nacimiento")
             .setTheme(R.style.ThemeOverlay_QueerMap_MaterialDatePicker)
 
-        // Fecha preseleccionada
+
         val currentBirthDateText = binding.tietBirthday.text.toString()
         if (currentBirthDateText.isNotEmpty()) {
             try {
@@ -190,6 +215,7 @@ class SignUpFragment : Fragment() {
             val formattedDate = sdf.format(date)
             binding.tietBirthday.setText(formattedDate)
             viewModel.onEvent(SignUpEvent.OnBirthdayChanged(formattedDate))
+            binding.tilBirthday.error = null
         }
 
         picker.show(parentFragmentManager, picker.toString())

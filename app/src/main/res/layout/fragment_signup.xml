@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -6,35 +5,23 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background_color"
-    android:textDirection="ltr"
-    android:layoutDirection="ltr"
-    android:textAlignment="viewStart"
     tools:context=".ui.signup.SignUpFragment">
 
-    <!-- Scrollable Content -->
     <ScrollView
-        android:id="@+id/svContent"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:fillViewport="true"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
 
-        <!-- Inner ConstraintLayout -->
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/clContent"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingBottom="32dp">
-            <!-- Header -->
+            android:layout_height="wrap_content">
+            <!-- Botón de volver -->
             <ImageView
                 android:id="@+id/ivBack"
-                android:layout_width="@dimen/layout_dp35"
-                android:layout_height="@dimen/layout_dp35"
-                android:layout_marginStart="@dimen/margin_start_dp16"
-                android:layout_marginTop="@dimen/margin_top_dp16"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="35dp"
                 android:contentDescription="@string/back_button_description"
                 android:src="@drawable/ic_arrow_back"
                 app:layout_constraintStart_toStartOf="parent"
@@ -44,66 +31,73 @@
                 android:id="@+id/tvTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="26dp"
+                android:layout_marginTop="35dp"
                 android:fontFamily="@font/raleway_medium_italic"
                 android:letterSpacing="0.05"
                 android:text="@string/register_title"
                 android:textColor="@color/title_color"
-                android:textSize="35sp"
+                android:textSize="26sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-
-            <!-- Nombre de usuario -->
             <TextView
                 android:id="@+id/tvUserName"
                 style="@style/FormLabel"
-                android:layout_marginStart="@dimen/margin_start_dp32"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="18dp"
                 android:text="@string/username"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/tvTitle" />
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etUser"
-                style="@style/FormInput"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilUser"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/margin_start_dp32"
                 android:layout_marginEnd="@dimen/margin_end_dp32"
-                android:hint="@string/username_hint"
+                app:errorEnabled="true"
+                app:hintEnabled="false"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tvUserName" />
+                app:layout_constraintTop_toBottomOf="@id/tvUserName">
 
-            <!-- Nombre completo -->
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etUser"
+                    style="@style/FormInput"
+                    android:hint="@string/username_hint" />
+            </com.google.android.material.textfield.TextInputLayout>
+
             <TextView
                 android:id="@+id/tvFullName"
                 style="@style/FormLabel"
-                android:layout_marginStart="@dimen/margin_start_dp32"
-                android:layout_marginTop="12dp"
                 android:text="@string/full_name"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/etUser" />
+                app:layout_constraintTop_toBottomOf="@id/tilUser" />
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etName"
-                style="@style/FormInput"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/margin_start_dp32"
                 android:layout_marginEnd="@dimen/margin_end_dp32"
-                android:hint="@string/full_name_hint"
+                app:errorEnabled="true"
+                app:hintEnabled="false"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tvFullName" />
+                app:layout_constraintTop_toBottomOf="@id/tvFullName">
 
-            <!-- Contraseña -->
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etName"
+                    style="@style/FormInput"
+                    android:hint="@string/full_name_hint" />
+            </com.google.android.material.textfield.TextInputLayout>
+
             <TextView
                 android:id="@+id/tvPassword"
                 style="@style/FormLabel"
-                android:layout_marginStart="@dimen/margin_start_dp32"
-                android:layout_marginTop="12dp"
                 android:text="@string/password"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/etName" />
+                app:layout_constraintTop_toBottomOf="@id/tilName" />
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/tilPassword"
@@ -120,6 +114,8 @@
                 app:boxStrokeColor="@color/popup_background"
                 app:endIconMode="password_toggle"
                 app:endIconTint="@color/text_color"
+                app:errorEnabled="true"
+                app:hintEnabled="false"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tvPassword">
@@ -127,25 +123,14 @@
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etPassword"
                     style="@style/FormInput"
-                    android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    android:fontFamily="@font/raleway_light_italic"
-                    android:gravity="center_vertical"
                     android:hint="@string/password_hint"
-                    android:inputType="textPassword"
-                    android:paddingStart="16dp"
-                    android:paddingEnd="16dp"
-                    android:textColor="@color/text_color"
-                    android:textColorHint="@color/hint_color_selector" />
+                    android:inputType="textPassword" />
 
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Repetir contraseña -->
             <TextView
                 android:id="@+id/tvRepeatPassword"
                 style="@style/FormLabel"
-                android:layout_marginStart="@dimen/margin_start_dp32"
-                android:layout_marginTop="12dp"
                 android:text="@string/repeat_password"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tilPassword" />
@@ -153,7 +138,7 @@
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/tilRepeatPassword"
                 android:layout_width="0dp"
-                android:layout_height="48dp"
+                android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/margin_start_dp32"
                 android:layout_marginEnd="@dimen/margin_end_dp32"
                 app:boxBackgroundColor="@android:color/white"
@@ -165,6 +150,8 @@
                 app:boxStrokeColor="@color/popup_background"
                 app:endIconMode="password_toggle"
                 app:endIconTint="@color/text_color"
+                app:errorEnabled="true"
+                app:hintEnabled="false"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tvRepeatPassword">
@@ -172,58 +159,50 @@
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etRepeatPassword"
                     style="@style/FormInput"
-                    android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:fontFamily="@font/raleway_light_italic"
-                    android:gravity="center_vertical"
                     android:hint="@string/password_hint"
-                    android:inputType="textPassword"
-                    android:paddingStart="16dp"
-                    android:paddingEnd="16dp"
-                    android:textColor="@color/text_color"
-                    android:textColorHint="@color/hint_color_selector" />
+                    android:inputType="textPassword" />
 
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Email -->
             <TextView
                 android:id="@+id/tvEmail"
                 style="@style/FormLabel"
-                android:layout_marginStart="@dimen/margin_start_dp32"
-                android:layout_marginTop="12dp"
                 android:text="@string/insert_mail"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tilRepeatPassword" />
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etEmail"
-                style="@style/FormInput"
-                android:layout_marginStart="@dimen/margin_start_dp32"
-                android:layout_marginTop="4dp"
-                android:layout_marginEnd="@dimen/margin_end_dp32"
-                android:hint="@string/email_hint"
-                android:inputType="textEmailAddress"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tvEmail" />
-
-            <!-- Fecha de nacimiento (Título + ícono) -->
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/clBirthdayTitle"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilEmail"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/margin_start_dp32"
-                android:layout_marginTop="8dp"
+                android:layout_marginEnd="@dimen/margin_end_dp32"
+                app:errorEnabled="true"
+                app:hintEnabled="false"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvEmail">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etEmail"
+                    style="@style/FormInput"
+                    android:hint="@string/email_hint"
+                    android:inputType="textEmailAddress" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/clBirthdayTitle"
+                style="@style/FormLabel"
                 android:layout_marginEnd="@dimen/margin_end_dp32"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/etEmail">
+                app:layout_constraintTop_toBottomOf="@id/tilEmail">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/tietBirthdayDate"
                     android:layout_width="0dp"
-                    android:layout_height="36dp"
-                    android:layout_marginTop="-5dp"
+                    android:layout_height="wrap_content"
                     android:backgroundTint="#02FFFFFF"
                     android:fontFamily="@font/raleway_medium"
                     android:text="@string/date_of_birth"
@@ -249,58 +228,62 @@
                     app:layout_constraintTop_toTopOf="@id/tietBirthdayDate" />
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <!-- Campo Fecha de Nacimiento + ícono calendario -->
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/clBirthdayRegister"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilBirthday"
                 android:layout_width="0dp"
-                android:layout_height="40dp"
+                android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/margin_start_dp32"
-                android:layout_marginTop="@dimen/margin_top_dp10"
                 android:layout_marginEnd="@dimen/margin_end_dp32"
-                android:background="@drawable/neumorphism_edit_text"
+                app:errorEnabled="true"
+                app:hintEnabled="false"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/clBirthdayTitle">
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/tietBirthday"
-                    android:layout_width="0dp"
-                    android:layout_height="40dp"
-                    android:layout_marginTop="-5dp"
-                    android:backgroundTint="#02FFFFFF"
-                    android:fontFamily="@font/raleway_italic"
-                    android:hint="@string/dd_mm_yyyy"
-                    android:textColor="@color/text_color"
-                    android:textColorHint="@color/text_color"
-                    android:textSize="@dimen/text_sp16"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toStartOf="@id/ivCalendar"
-                    app:layout_constraintHorizontal_weight="9"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    tools:ignore="TouchTargetSizeCheck" />
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/clBirthdayRegisterInner"
+                    style="@style/FormInput">
 
-                <ImageView
-                    android:id="@+id/ivCalendar"
-                    android:layout_width="30dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:layout_marginEnd="3dp"
-                    android:contentDescription="@string/calendar"
-                    android:src="@drawable/calendar"
-                    app:layout_constraintBottom_toBottomOf="@id/tietBirthday"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="@id/tietBirthday" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/tietBirthday"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:backgroundTint="#02FFFFFF"
+                        android:clickable="true"
+                        android:focusable="false"
+                        android:fontFamily="@font/raleway_italic"
+                        android:hint="@string/dd_mm_yyyy"
+                        android:textColor="@color/text_color"
+                        android:textColorHint="@color/text_color"
+                        android:textSize="@dimen/text_sp16"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toStartOf="@id/ivCalendar"
+                        app:layout_constraintHorizontal_weight="9"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        tools:ignore="TouchTargetSizeCheck" />
+
+                    <ImageView
+                        android:id="@+id/ivCalendar"
+                        android:layout_width="30dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:layout_marginEnd="3dp"
+                        android:contentDescription="@string/calendar"
+                        android:src="@drawable/calendar"
+                        app:layout_constraintBottom_toBottomOf="@id/tietBirthday"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="@id/tietBirthday" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </com.google.android.material.textfield.TextInputLayout>
 
 
-            <!-- Botón de Registro -->
             <Button
                 android:id="@+id/btnRegister"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/margin_start_dp32"
-                android:layout_marginTop="20dp"
+                android:layout_marginTop="16dp"
                 android:layout_marginEnd="@dimen/margin_end_dp32"
                 android:background="@drawable/neumorphism_button"
                 android:fontFamily="@font/raleway_medium_italic"
@@ -310,14 +293,13 @@
                 android:textSize="@dimen/text_sp20"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/clBirthdayRegister" />
+                app:layout_constraintTop_toBottomOf="@+id/tilBirthday" />
 
-            <!-- Texto "O regístrate usando" -->
             <TextView
                 android:id="@+id/tvConnectWith"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="16dp"
                 android:fontFamily="@font/raleway_medium_italic"
                 android:text="@string/signup_with"
                 android:textAlignment="center"
@@ -327,12 +309,11 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/btnRegister" />
 
-            <!-- Botones sociales -->
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/clSocialButtons"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/margin_top_dp10"
+                android:layout_marginTop="16dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -382,4 +363,3 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>
-

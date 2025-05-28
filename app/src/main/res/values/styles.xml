@@ -31,21 +31,23 @@
         <item name="android:fontFamily">@font/raleway_medium</item>
         <item name="android:textColor">@color/title_color</item>
         <item name="android:textSize">@dimen/text_sp16</item>
+        <item name="android:layout_marginStart">@dimen/margin_start_dp32</item>
+        <item name="android:layout_marginTop">5dp</item>
     </style>
 
     <style name="FormInput">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:background">@drawable/neumorphism_edit_text</item>
-        <item name="android:fontFamily">@font/raleway_italic</item>
+        <item name="android:minHeight">50dp</item>
+        <item name="android:paddingStart">35dp</item>
+        <item name="android:paddingEnd">16dp</item>
+        <item name="android:gravity">center_vertical</item>
         <item name="android:textColor">@color/text_color</item>
-        <item name="android:textColorHint">@color/text_color</item>
-        <item name="android:textSize">@dimen/text_sp16</item>
-        <item name="android:textDirection">ltr</item>
-        <item name="android:gravity">start</item>
-        <item name="android:layoutDirection">ltr</item>
-        <item name="android:textAlignment">viewStart</item>
+        <item name="android:textColorHint">@color/hint_color_selector</item>
+        <item name="android:fontFamily">@font/raleway_light_italic</item>
+        <item name="android:background">@drawable/neumorphism_edit_text</item>
     </style>
+
 
     <style name="ShapeAppearance.QueerMap.Rounded" parent="ShapeAppearance.Material3.SmallComponent">
         <item name="cornerSize">16dp</item>

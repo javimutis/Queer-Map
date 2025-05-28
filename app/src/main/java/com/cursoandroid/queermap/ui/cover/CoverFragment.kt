@@ -47,12 +47,18 @@ class CoverFragment : Fragment() {
 
     // Configuración inicial
     private fun applyInsets() {
-        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(binding.tvTitle) { view, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            view.setPadding(0, 0, 0, systemBars.bottom)
+            view.setPadding(
+                view.paddingLeft,
+                systemBars.top,
+                view.paddingRight,
+                view.paddingBottom
+            )
             insets
         }
     }
+
 
     // Manejo de interacciones de UI
     private fun setupListeners() {
