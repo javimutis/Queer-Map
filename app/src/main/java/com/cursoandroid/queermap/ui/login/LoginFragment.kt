@@ -13,6 +13,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.cursoandroid.queermap.R
 import com.cursoandroid.queermap.data.source.remote.FacebookSignInDataSource
+import com.cursoandroid.queermap.data.source.remote.GoogleSignInDataSource // Import GoogleSignInDataSource
 import com.cursoandroid.queermap.databinding.FragmentLoginBinding
 import com.facebook.AccessToken
 import com.facebook.CallbackManager
@@ -25,7 +26,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.common.api.ApiException
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.collectLatest // Import this
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -37,7 +38,11 @@ class LoginFragment : Fragment() {
 
     private val viewModel: LoginViewModel by viewModels()
 
-    @Inject lateinit var googleSignInClient: GoogleSignInClient
+    // REMOVE direct injection of GoogleSignInClient
+    // @Inject lateinit var googleSignInClient: GoogleSignInClient
+
+    // INJECT GoogleSignInDataSource instead
+    @Inject lateinit var googleSignInDataSource: GoogleSignInDataSource
     @Inject lateinit var facebookSignInDataSource: FacebookSignInDataSource
 
     private lateinit var googleSignInLauncher: androidx.activity.result.ActivityResultLauncher<Intent>
@@ -70,7 +75,6 @@ class LoginFragment : Fragment() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        // Pass the activity result to Facebook SDK for handling login results
         callbackManager.onActivityResult(requestCode, resultCode, data)
     }
 
@@ -89,11 +93,9 @@ class LoginFragment : Fragment() {
 
     private fun initFacebookLogin() {
         callbackManager = CallbackManager.Factory.create()
-        // Register the callback with the FacebookSignInDataSource
         facebookSignInDataSource.registerCallback(callbackManager)
 
         binding.btnFacebookLogin.setOnClickListener {
-            // Initiate Facebook login through the data source
             facebookSignInDataSource.logInWithReadPermissions(this, listOf("email", "public_profile"))
         }
     }
@@ -113,7 +115,8 @@ class LoginFragment : Fragment() {
         }
 
         binding.btnGoogleSignIn.setOnClickListener {
-            googleSignInLauncher.launch(googleSignInClient.signInIntent)
+            // Use googleSignInDataSource to get the intent
+            googleSignInLauncher.launch(googleSignInDataSource.getSignInIntent())
         }
 
         binding.tvForgotPassword.setOnClickListener {
@@ -168,9 +171,7 @@ class LoginFragment : Fragment() {
             }
         }
 
-        // Observe Facebook access token results from the data source
         viewLifecycleOwner.lifecycleScope.launch {
-            // Convert ReceiveChannel to Flow and then collect
             facebookSignInDataSource.accessTokenChannel.collectLatest { result ->
                 result.onSuccess { token ->
                     viewModel.loginWithFacebook(token)
@@ -191,17 +192,19 @@ class LoginFragment : Fragment() {
     }
 
     private fun handleGoogleSignInResult(data: Intent?) {
-        val task = GoogleSignIn.getSignedInAccountFromIntent(data)
-        try {
-            val account = task.getResult(ApiException::class.java)
-            val idToken = account?.idToken
-            if (idToken != null) {
-                viewModel.loginWithGoogle(idToken)
-            } else {
-                showSnackbar("ID token no disponible")
-            }
-        } catch (e: ApiException) {
-            showSnackbar("Error en Sign-In: ${e.message}")
+        // Use googleSignInDataSource to handle the result
+        lifecycleScope.launch {
+            googleSignInDataSource.handleSignInResult(data)
+                .onSuccess { idToken ->
+                    if (idToken != null) {
+                        viewModel.loginWithGoogle(idToken)
+                    } else {
+                        showSnackbar("ID token no disponible")
+                    }
+                }
+                .onFailure { exception ->
+                    showSnackbar("Error en Sign-In: ${exception.message}")
+                }
         }
     }
 
