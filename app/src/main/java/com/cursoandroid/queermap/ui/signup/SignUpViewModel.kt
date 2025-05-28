@@ -2,8 +2,8 @@ package com.cursoandroid.queermap.ui.signup
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.cursoandroid.queermap.domain.model.User // Importar tu modelo de User
-import com.cursoandroid.queermap.domain.usecase.auth.CreateUserUseCase // Importar el UseCase
+import com.cursoandroid.queermap.domain.model.User
+import com.cursoandroid.queermap.domain.usecase.auth.CreateUserUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,15 +29,12 @@ class SignUpViewModel @Inject constructor(
             is SignUpEvent.OnUserChanged -> {
                 _uiState.update { it.copy(user = event.user) }
             }
-
             is SignUpEvent.OnEmailChanged -> {
                 _uiState.update { it.copy(email = event.email, isEmailInvalid = false) }
             }
-
             is SignUpEvent.OnPasswordChanged -> {
                 _uiState.update { it.copy(password = event.password, isPasswordInvalid = false) }
             }
-
             is SignUpEvent.OnConfirmPasswordChanged -> {
                 _uiState.update {
                     it.copy(
@@ -46,57 +43,47 @@ class SignUpViewModel @Inject constructor(
                     )
                 }
             }
-
             is SignUpEvent.OnFullNameChanged -> {
                 _uiState.update { it.copy(fullName = event.fullName) }
             }
-
             is SignUpEvent.OnBirthdayChanged -> {
                 _uiState.update { it.copy(birthday = event.birthday) }
             }
-
             SignUpEvent.OnRegisterClicked -> {
                 onSignupClicked()
             }
-            // Los siguientes eventos no deberían manejarse aquí, sino emitirse desde onSignupClicked
-            // Para la ETAPA 5, los quitaremos de los TODOS y los manejaremos como eventos de navegación
-            SignUpEvent.NavigateBack -> { /* Handled in Fragment observeEvents */
-            }
-
-            SignUpEvent.NavigateToHome -> { /* Handled in Fragment observeEvents */
-            }
-
-            is SignUpEvent.ShowMessage -> { /* Handled in Fragment observeEvents */
-            }
+            SignUpEvent.NavigateBack -> { /* Handled in Fragment observeEvents */ }
+            SignUpEvent.NavigateToHome -> { /* Handled in Fragment observeEvents */ }
+            is SignUpEvent.ShowMessage -> { /* Handled in Fragment observeEvents */ }
         }
     }
 
     private fun onSignupClicked() {
         viewModelScope.launch {
-            val email = _uiState.value.email ?: ""
+            val email = _uiState.value.email
             val password = _uiState.value.password ?: ""
             val confirmPassword = _uiState.value.confirmPassword ?: ""
             val fullName = _uiState.value.fullName ?: ""
             val user = _uiState.value.user ?: ""
             val birthday = _uiState.value.birthday ?: ""
 
-            // Validaciones iniciales
-            if (!SignUpValidator.isValidEmail(email)) {
-                _uiState.update { it.copy(isEmailInvalid = true) }
+            // **IMPORTANTE**: Validar que el email NO sea nulo y que sea válido
+            if (email.isNullOrBlank() || !SignUpValidator.isValidEmail(email)) {
+                _uiState.update { it.copy(isEmailInvalid = true, errorMessage = "Por favor, ingresa un email válido.") }
                 return@launch
             }
 
             if (!SignUpValidator.isValidPassword(password)) {
-                _uiState.update { it.copy(isPasswordInvalid = true) }
+                _uiState.update { it.copy(isPasswordInvalid = true, errorMessage = "La contraseña debe tener al menos 8 caracteres.") }
                 return@launch
             }
 
             if (password != confirmPassword) {
-                _uiState.update { it.copy(doPasswordsMismatch = true) }
+                _uiState.update { it.copy(doPasswordsMismatch = true, errorMessage = "Las contraseñas no coinciden.") }
                 return@launch
             }
             if (!SignUpValidator.isValidBirthday(birthday)) {
-                _uiState.update { it.copy(isBirthdayInvalid = true) }
+                _uiState.update { it.copy(isBirthdayInvalid = true, errorMessage = "Por favor, ingresa una fecha de nacimiento válida.") }
                 return@launch
             }
 
@@ -112,11 +99,13 @@ class SignUpViewModel @Inject constructor(
 
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
+            // Crear el objeto User para pasarlo al UseCase.
+            // Asegúrate de que el email no sea nulo aquí, porque ya lo validaste.
             val newUser = User(
-                id = "",
+                id = null, // El ID se generará en el repositorio (Firebase UID)
                 name = fullName,
                 username = user,
-                email = email,
+                email = email, // Email ya validado y no nulo
                 birthday = birthday
             )
 
@@ -128,15 +117,10 @@ class SignUpViewModel @Inject constructor(
                 }
                 .onFailure { exception ->
                     _uiState.update { it.copy(isLoading = false, errorMessage = exception.message) }
-                    _event.emit(
-                        SignUpEvent.ShowMessage(
-                            exception.message ?: "Error desconocido durante el registro."
-                        )
-                    )
+                    _event.emit(SignUpEvent.ShowMessage(exception.message ?: "Error desconocido durante el registro."))
                 }
         }
     }
-
 
     fun onBackPressed() {
         viewModelScope.launch {

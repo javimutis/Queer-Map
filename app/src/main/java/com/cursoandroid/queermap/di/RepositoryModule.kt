@@ -5,7 +5,6 @@ import com.cursoandroid.queermap.data.repository.AuthRepositoryImpl
 import com.cursoandroid.queermap.data.source.AuthRemoteDataSource
 import com.cursoandroid.queermap.data.source.local.SharedPreferencesDataSource
 import com.cursoandroid.queermap.domain.repository.AuthRepository
-import com.cursoandroid.queermap.domain.usecase.auth.CreateUserUseCase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.Module
@@ -26,7 +25,8 @@ object RepositoryModule {
         sharedPreferencesDataSource: SharedPreferencesDataSource,
         firebaseAuth: FirebaseAuth,
         firestore: FirebaseFirestore
-    ): AuthRepository = AuthRepositoryImpl(remoteDataSource, sharedPreferencesDataSource, firebaseAuth, firestore)
+    ): AuthRepository =
+        AuthRepositoryImpl(remoteDataSource, sharedPreferencesDataSource, firebaseAuth, firestore)
 
     @Provides
     @Singleton

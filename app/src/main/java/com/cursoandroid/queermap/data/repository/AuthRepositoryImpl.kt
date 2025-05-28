@@ -53,14 +53,15 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun registerUser(user: User, password: String): Result<Unit> {
         return try {
-            val result = auth.createUserWithEmailAndPassword(user.email, password).await() // `user.email` no es nullable aquí
+            // Usamos 'user.email!!' porque el ViewModel debe garantizar que no es nulo.
+            val result = auth.createUserWithEmailAndPassword(user.email!!, password).await()
             val firebaseUser = result.user ?: return Result.failure(Exception("User is null after registration."))
             val userId = firebaseUser.uid
             val userMap = mapOf(
                 "id" to userId,
                 "name" to user.name,
                 "username" to user.username,
-                "email" to user.email,
+                "email" to user.email, // Aquí puede ser String? para Firestore, Firestore lo manejará
                 "birthday" to user.birthday
             )
             firestore.collection("users").document(userId).set(userMap).await()

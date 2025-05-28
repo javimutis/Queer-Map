@@ -198,7 +198,7 @@ class SignUpFragment : Fragment() {
                 val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
                 val date = sdf.parse(currentBirthDateText)
                 if (date != null) builder.setSelection(date.time)
-            } catch (e: Exception) {
+            } catch (_: Exception) {
             }
         }
 
