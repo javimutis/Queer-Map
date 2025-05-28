@@ -15,15 +15,14 @@ class FirebaseAuthDataSource @Inject constructor(
     private val firestore: FirebaseFirestore
 ) : AuthRemoteDataSource {
 
-
     override suspend fun loginWithEmailAndPassword(email: String, password: String): Result<User> =
         try {
             val result = auth.signInWithEmailAndPassword(email, password).await()
             val firebaseUser = result.user
             if (firebaseUser != null) {
-                Result.success(User(firebaseUser.uid, firebaseUser.email))
+                Result.success(User(firebaseUser.uid, firebaseUser.displayName, null, firebaseUser.email, null))
             } else {
-                Result.failure(Exception("Usuario no encontrado"))
+                Result.failure(Exception("Usuario no encontrado."))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -43,18 +42,29 @@ class FirebaseAuthDataSource @Inject constructor(
         Result.failure(e)
     }
 
-    override suspend fun firebaseAuthWithGoogle(idToken: String): Result<Boolean> = try {
+    override suspend fun firebaseAuthWithGoogle(idToken: String): Result<User> = try {
         val credential = GoogleAuthProvider.getCredential(idToken, null)
-        auth.signInWithCredential(credential).await()
-        Result.success(true)
+        val authResult = auth.signInWithCredential(credential).await()
+        val firebaseUser = authResult.user
+        if (firebaseUser != null) {
+            Result.success(User(firebaseUser.uid, firebaseUser.displayName, null, firebaseUser.email, null))
+        } else {
+            Result.failure(Exception("Autenticación con Google fallida: Usuario nulo."))
+        }
     } catch (e: Exception) {
         Result.failure(e)
     }
 
-    override suspend fun firebaseAuthWithFacebook(accessToken: String): Result<Boolean> = try {
+    override suspend fun firebaseAuthWithFacebook(accessToken: String): Result<User> = try {
         val credential = FacebookAuthProvider.getCredential(accessToken)
-        auth.signInWithCredential(credential).await()
-        Result.success(true)
+        val authResult = auth.signInWithCredential(credential).await()
+        val firebaseUser = authResult.user
+        if (firebaseUser != null) {
+
+            Result.success(User(firebaseUser.uid, firebaseUser.displayName, null, firebaseUser.email, null))
+        } else {
+            Result.failure(Exception("Autenticación con Facebook fallida: Usuario nulo."))
+        }
     } catch (e: Exception) {
         Result.failure(e)
     }

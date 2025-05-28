@@ -25,6 +25,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.common.api.ApiException
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collectLatest // Import this
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -42,7 +43,7 @@ class LoginFragment : Fragment() {
     private lateinit var googleSignInLauncher: androidx.activity.result.ActivityResultLauncher<Intent>
     private lateinit var callbackManager: CallbackManager
 
-    // Ciclo de vida del fragmento
+    // Lifecycle methods
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -69,10 +70,11 @@ class LoginFragment : Fragment() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+        // Pass the activity result to Facebook SDK for handling login results
         callbackManager.onActivityResult(requestCode, resultCode, data)
     }
 
-    // Configuración e inicialización
+    // Setup and Initialization
     private fun initGoogleSignInLauncher() {
         googleSignInLauncher = registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
@@ -87,26 +89,16 @@ class LoginFragment : Fragment() {
 
     private fun initFacebookLogin() {
         callbackManager = CallbackManager.Factory.create()
+        // Register the callback with the FacebookSignInDataSource
+        facebookSignInDataSource.registerCallback(callbackManager)
+
         binding.btnFacebookLogin.setOnClickListener {
-            LoginManager.getInstance().logInWithReadPermissions(this, listOf("email", "public_profile"))
+            // Initiate Facebook login through the data source
+            facebookSignInDataSource.logInWithReadPermissions(this, listOf("email", "public_profile"))
         }
-        LoginManager.getInstance().registerCallback(callbackManager,
-            object : FacebookCallback<LoginResult> {
-                override fun onSuccess(loginResult: LoginResult) {
-                    handleFacebookLogin(loginResult)
-                }
-
-                override fun onCancel() {
-                    showSnackbar("Login cancelado")
-                }
-
-                override fun onError(exception: FacebookException) {
-                    showSnackbar("Error: ${exception.message}")
-                }
-            })
     }
 
-    // Manejo de interacciones de UI
+    // UI Interaction Handling
     private fun setupListeners() {
         binding.btnLogin.setOnClickListener {
             val email = binding.etEmail.text.toString()
@@ -133,7 +125,7 @@ class LoginFragment : Fragment() {
         }
     }
 
-    // Observación de estado y eventos
+    // State and Event Observation
     private fun observeState() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.uiState.collect { state ->
@@ -175,25 +167,26 @@ class LoginFragment : Fragment() {
                 }
             }
         }
+
+        // Observe Facebook access token results from the data source
+        viewLifecycleOwner.lifecycleScope.launch {
+            // Convert ReceiveChannel to Flow and then collect
+            facebookSignInDataSource.accessTokenChannel.collectLatest { result ->
+                result.onSuccess { token ->
+                    viewModel.loginWithFacebook(token)
+                }.onFailure { exception ->
+                    showSnackbar("Error: ${exception.message}")
+                }
+            }
+        }
     }
 
-    // Lógica de negocio
+    // Business Logic
     private fun checkLoginStatus() {
         val accessToken = AccessToken.getCurrentAccessToken()
         val isLoggedIn = accessToken != null && !accessToken.isExpired
         if (isLoggedIn) {
             findNavController().navigate(R.id.action_loginFragment_to_coverFragment)
-        }
-    }
-
-    private fun handleFacebookLogin(result: LoginResult) {
-        lifecycleScope.launch {
-            try {
-                val token = facebookSignInDataSource.handleFacebookAccessToken(result)
-                viewModel.loginWithFacebook(token)
-            } catch (e: Exception) {
-                showSnackbar("Error al obtener token de Facebook")
-            }
         }
     }
 
@@ -212,7 +205,7 @@ class LoginFragment : Fragment() {
         }
     }
 
-    // Utilidades
+    // Utilities
     private fun showSnackbar(message: String) {
         Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
     }

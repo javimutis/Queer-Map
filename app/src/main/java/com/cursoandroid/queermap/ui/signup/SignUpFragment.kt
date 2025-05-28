@@ -1,10 +1,13 @@
-// ui/signup/SignUpFragment.kt
 package com.cursoandroid.queermap.ui.signup
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -16,6 +19,7 @@ import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.DateValidatorPointBackward
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.snackbar.Snackbar
+import com.squareup.picasso.Picasso
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -30,6 +34,15 @@ class SignUpFragment : Fragment() {
 
     private val viewModel: SignUpViewModel by viewModels()
 
+    private val googleSignInLauncher: ActivityResultLauncher<Intent> =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                viewModel.onEvent(SignUpEvent.OnGoogleSignInResult(result.data))
+            } else {
+                viewModel.onEvent(SignUpEvent.ShowMessage("Inicio de sesión con Google cancelado o fallido."))
+            }
+        }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -42,7 +55,9 @@ class SignUpFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         setupListeners()
         observeState()
-        observeEvents() // Observar eventos one-shot
+        observeEvents()
+        observeGoogleSignInIntent()
+        loadSocialIcons()
     }
 
     override fun onDestroyView() {
@@ -89,6 +104,14 @@ class SignUpFragment : Fragment() {
             showModernDatePicker()
             binding.tilBirthday.error = null
         }
+
+        binding.ivGoogleSignIn.setOnClickListener {
+            viewModel.onEvent(SignUpEvent.OnGoogleSignUpClicked)
+        }
+        binding.ivFacebookLSignIn.setOnClickListener {
+            viewModel.onEvent(SignUpEvent.OnFacebookSignUpClicked)
+            com.facebook.login.LoginManager.getInstance().logInWithReadPermissions(this, listOf("email", "public_profile"))
+        }
     }
 
     private fun observeState() {
@@ -97,7 +120,6 @@ class SignUpFragment : Fragment() {
                 binding.progressBar.visibility =
                     if (state.isLoading) View.VISIBLE else View.GONE
 
-                // Limpiar errores antes de aplicar los nuevos
                 binding.tilEmail.error = null
                 binding.tilPassword.error = null
                 binding.tilRepeatPassword.error = null
@@ -105,21 +127,19 @@ class SignUpFragment : Fragment() {
                 binding.tilName.error = null
                 binding.tilBirthday.error = null
 
-                // Mostrar errores de validación
                 if (state.isEmailInvalid) {
-                    binding.tilEmail.error = "Please enter a valid email."
+                    binding.tilEmail.error = "Por favor, ingresa un email válido."
                 }
                 if (state.isPasswordInvalid) {
-                    binding.tilPassword.error = "Password must be at least 8 characters long."
+                    binding.tilPassword.error = "La contraseña debe tener al menos 8 caracteres."
                 }
                 if (state.doPasswordsMismatch) {
-                    binding.tilRepeatPassword.error = "Passwords do not match."
+                    binding.tilRepeatPassword.error = "Las contraseñas no coinciden."
                 }
                 if (state.isBirthdayInvalid) {
-                    binding.tilBirthday.error = "Please enter a valid birthday."
+                    binding.tilBirthday.error = "Por favor, ingresa una fecha de nacimiento válida."
                 }
 
-                // Actualizar campos de texto (aunque la entrada del usuario ya lo hace directamente)
                 state.user?.let { newText ->
                     if (binding.etUser.text.toString() != newText) {
                         binding.etUser.setText(newText)
@@ -165,20 +185,19 @@ class SignUpFragment : Fragment() {
                 when (event) {
                     is SignUpEvent.NavigateBack -> findNavController().popBackStack()
                     is SignUpEvent.NavigateToHome -> {
-                        // Navegar a CoverFragment (temporalmente)
                         findNavController().navigate(R.id.action_signupFragment_to_coverFragment)
                     }
                     is SignUpEvent.ShowMessage -> showSnackbar(event.message)
-                    // Estos eventos son para que el Fragment los envíe al ViewModel, no para que los observe del ViewModel.
-                    // Ya se eliminaron los TODOs en la revisión anterior.
-                    is SignUpEvent.OnBirthdayChanged,
-                    is SignUpEvent.OnConfirmPasswordChanged,
-                    is SignUpEvent.OnEmailChanged,
-                    is SignUpEvent.OnFullNameChanged,
-                    is SignUpEvent.OnPasswordChanged,
-                    SignUpEvent.OnRegisterClicked,
-                    is SignUpEvent.OnUserChanged -> Unit
+                    else -> Unit
                 }
+            }
+        }
+    }
+
+    private fun observeGoogleSignInIntent() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.launchGoogleSignIn.collect { intent ->
+                googleSignInLauncher.launch(intent)
             }
         }
     }
@@ -189,7 +208,7 @@ class SignUpFragment : Fragment() {
 
     private fun showModernDatePicker() {
         val builder = MaterialDatePicker.Builder.datePicker()
-            .setTitleText("Select your birth date")
+            .setTitleText("Selecciona tu fecha de nacimiento")
             .setTheme(R.style.ThemeOverlay_QueerMap_MaterialDatePicker)
 
         val currentBirthDateText = binding.tietBirthday.text.toString()
@@ -199,8 +218,7 @@ class SignUpFragment : Fragment() {
                 val date = sdf.parse(currentBirthDateText)
                 if (date != null) builder.setSelection(date.time)
             } catch (_: Exception) {
-                // Ignore parsing errors, date picker will default to current date or initial selection
-            }
+             }
         }
 
         val constraints = CalendarConstraints.Builder()
@@ -221,5 +239,10 @@ class SignUpFragment : Fragment() {
         }
 
         picker.show(parentFragmentManager, picker.toString())
+    }
+
+    private fun loadSocialIcons() {
+        Picasso.get().load(R.drawable.google_icon).into(binding.ivGoogleSignIn)
+        Picasso.get().load(R.drawable.facebook_icon).into(binding.ivFacebookLSignIn)
     }
 }

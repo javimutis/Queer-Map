@@ -1,44 +1,68 @@
 package com.cursoandroid.queermap.data.source.remote
 
 import android.app.Activity
-import android.content.Context
-import com.facebook.*
+import android.content.Intent
+import com.facebook.CallbackManager
+import com.facebook.FacebookCallback
+import com.facebook.FacebookException
 import com.facebook.login.LoginManager
 import com.facebook.login.LoginResult
-import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.receiveAsFlow // Import this
+import kotlinx.coroutines.channels.ReceiveChannel
 import javax.inject.Inject
-import kotlin.coroutines.resume
+import javax.inject.Singleton
 
-class FacebookSignInDataSource @Inject constructor(
-    @ApplicationContext private val context: Context
-) {
+interface FacebookSignInDataSource {
+    fun registerCallback(callbackManager: CallbackManager)
+    fun logInWithReadPermissions(fragment: androidx.fragment.app.Fragment, permissions: List<String>)
+    fun handleActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?
+    )
+    val accessTokenChannel: Flow<Result<String>> // Changed to Flow
+    suspend fun handleFacebookAccessToken(loginResult: LoginResult): String
+}
 
-    private val callbackManager = CallbackManager.Factory.create()
+@Singleton
+class FacebookSignInDataSourceImpl @Inject constructor() : FacebookSignInDataSource {
 
-    fun getCallbackManager(): CallbackManager = callbackManager
+    private val _accessTokenChannel = Channel<Result<String>>()
+    override val accessTokenChannel: Flow<Result<String>> = _accessTokenChannel.receiveAsFlow() // Convert to Flow here
 
-    fun login(activity: Activity) {
+    override fun registerCallback(callbackManager: CallbackManager) {
         LoginManager.getInstance()
-            .logInWithReadPermissions(activity, listOf("email", "public_profile"))
+            .registerCallback(callbackManager, object : FacebookCallback<LoginResult> {
+                override fun onSuccess(loginResult: LoginResult) {
+                    loginResult.accessToken?.let {
+                        _accessTokenChannel.trySend(Result.success(it.token))
+                    }
+                }
+
+                override fun onCancel() {
+                    _accessTokenChannel.trySend(Result.failure(Exception("Inicio de sesión de Facebook cancelado.")))
+                }
+
+                override fun onError(error: FacebookException) {
+                    _accessTokenChannel.trySend(Result.failure(Exception("Error de inicio de sesión de Facebook: ${error.message}")))
+                }
+            })
     }
 
-    suspend fun handleFacebookAccessToken(result: LoginResult): String =
-        suspendCancellableCoroutine { cont ->
-            val accessToken = result.accessToken.token
-            cont.resume(accessToken)
-        }
+    override fun logInWithReadPermissions(fragment: androidx.fragment.app.Fragment, permissions: List<String>) {
+        LoginManager.getInstance().logInWithReadPermissions(fragment, permissions)
+    }
 
-    fun registerCallback(
-        onSuccess: (LoginResult) -> Unit,
-        onCancel: () -> Unit,
-        onError: (Exception) -> Unit
-    ) {
-        LoginManager.getInstance().registerCallback(callbackManager,
-            object : FacebookCallback<LoginResult> {
-                override fun onSuccess(result: LoginResult) = onSuccess(result)
-                override fun onCancel() = onCancel()
-                override fun onError(error: FacebookException) = onError(error)
-            })
+    override suspend fun handleFacebookAccessToken(loginResult: LoginResult): String {
+        return loginResult.accessToken.token
+    }
+
+    override fun handleActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        // This method needs to be called from the Fragment's onActivityResult
+        // but the actual handling of the result for Facebook login is done via the callbackManager
+        // which is already registered in the initFacebookLogin method.
+        // So, this method can remain empty or be removed if not needed elsewhere.
     }
 }

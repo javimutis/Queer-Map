@@ -3,6 +3,7 @@
 kotlin = "1.9.22"
 agp = "8.3.1"
 hilt = "2.50"
+coroutines = "1.7.3"
 
 # Versiones de bibliotecas
 firebase-bom = "32.7.0"
@@ -32,7 +33,6 @@ espresso = "3.5.1"
 mockk = "1.13.5"
 coreTesting = "2.2.0"
 junitVersion = "1.1.5"
-coroutines = "1.7.3"
 espressoCore = "3.5.1"
 fragment = "1.6.1"
 runner = "1.5.2"
@@ -115,6 +115,11 @@ hilt-android-testing = { module = "com.google.dagger:hilt-android-testing", vers
 # Hilt
 hilt-core = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
 hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hilt" }
+
+# Kotlin Coroutines
+kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
+kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
+
 
 # AndroidX Activity y ConstraintLayout
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }

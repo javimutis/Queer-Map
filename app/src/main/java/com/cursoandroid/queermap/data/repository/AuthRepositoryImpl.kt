@@ -29,17 +29,15 @@ class AuthRepositoryImpl @Inject constructor(
             Result.failure(e)
         }
     }
-
-
-    override suspend fun sendPasswordResetEmail(email: String): Result<Unit> {
+    override suspend fun sendResetPasswordEmail(email: String): Result<Unit> {
         return remoteDataSource.sendPasswordResetEmail(email)
     }
 
-    override suspend fun firebaseAuthWithGoogle(idToken: String): Result<Boolean> {
+    override suspend fun firebaseAuthWithGoogle(idToken: String): Result<User> {
         return remoteDataSource.firebaseAuthWithGoogle(idToken)
     }
 
-    override suspend fun firebaseAuthWithFacebook(token: String): Result<Boolean> {
+    override suspend fun firebaseAuthWithFacebook(token: String): Result<User> {
         return remoteDataSource.firebaseAuthWithFacebook(token)
     }
 
@@ -53,15 +51,14 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun registerUser(user: User, password: String): Result<Unit> {
         return try {
-            // Usamos 'user.email!!' porque el ViewModel debe garantizar que no es nulo.
             val result = auth.createUserWithEmailAndPassword(user.email!!, password).await()
-            val firebaseUser = result.user ?: return Result.failure(Exception("User is null after registration."))
+            val firebaseUser = result.user ?: return Result.failure(Exception("Usuario nulo después del registro."))
             val userId = firebaseUser.uid
             val userMap = mapOf(
                 "id" to userId,
                 "name" to user.name,
                 "username" to user.username,
-                "email" to user.email, // Aquí puede ser String? para Firestore, Firestore lo manejará
+                "email" to user.email,
                 "birthday" to user.birthday
             )
             firestore.collection("users").document(userId).set(userMap).await()

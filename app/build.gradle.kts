@@ -45,7 +45,6 @@ android {
     }
 
     buildFeatures {
-        // Habilitar View Binding
         viewBinding = true
     }
 }
@@ -58,6 +57,9 @@ dependencies {
     implementation(libs.firebase.db)
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.coroutines)
+    // Kotlin Coroutines Core y Android
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.coroutines.android)
 
     // Autenticación
     implementation(libs.auth)
