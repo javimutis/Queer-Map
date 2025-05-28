@@ -22,7 +22,7 @@ object SignUpValidator {
         return user.isNotBlank()
     }
 
-    fun isValidUsername(username: String): Boolean {
+    fun isValidFullName(username: String): Boolean {
         return username.isNotBlank()
     }
 

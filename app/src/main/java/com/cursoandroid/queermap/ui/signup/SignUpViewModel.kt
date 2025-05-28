@@ -96,6 +96,15 @@ class SignUpViewModel @Inject constructor() : ViewModel() {
                 return@launch
             }
 
+            if (!SignUpValidator.isValidUser(user)) {
+                _event.emit(SignUpEvent.ShowMessage("El nombre de usuario no puede estar vacío"))
+                return@launch
+            }
+
+            if (!SignUpValidator.isValidFullName(fullName)) {
+                _event.emit(SignUpEvent.ShowMessage("El nombre completo no puede estar vacío"))
+                return@launch
+            }
             _uiState.update { it.copy(isLoading = true) }
             delay(1000)
             _uiState.update { it.copy(isLoading = false, isSuccess = true) }

@@ -10,4 +10,5 @@ interface AuthRepository {
     suspend fun firebaseAuthWithFacebook(token: String): Result<Boolean>
     fun saveCredentials(email: String, password: String)
     fun loadSavedCredentials(): Pair<String?, String?>
+    suspend fun registerUser(user: User, password: String): Result<Unit>
 }
