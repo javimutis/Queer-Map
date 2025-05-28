@@ -1,6 +1,7 @@
 package com.cursoandroid.queermap.di
 
 import com.cursoandroid.queermap.domain.repository.AuthRepository
+import com.cursoandroid.queermap.domain.usecase.auth.CreateUserUseCase
 import com.cursoandroid.queermap.domain.usecase.auth.LoginWithEmailUseCase
 import com.cursoandroid.queermap.domain.usecase.auth.LoginWithFacebookUseCase
 import com.cursoandroid.queermap.domain.usecase.auth.LoginWithGoogleUseCase
@@ -29,4 +30,8 @@ object UseCaseModule {
     @Provides
     fun provideSendResetPasswordUseCase(authRepository: AuthRepository): SendResetPasswordUseCase =
         SendResetPasswordUseCase(authRepository)
+
+    @Provides
+    fun provideCreateUserUseCase(authRepository: AuthRepository): CreateUserUseCase =
+        CreateUserUseCase(authRepository)
 }

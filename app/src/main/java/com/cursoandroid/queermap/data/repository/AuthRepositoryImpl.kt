@@ -5,10 +5,9 @@ import com.cursoandroid.queermap.data.source.local.SharedPreferencesDataSource
 import com.cursoandroid.queermap.domain.model.User
 import com.cursoandroid.queermap.domain.repository.AuthRepository
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
-import javax.inject.Inject
 import kotlinx.coroutines.tasks.await
+import javax.inject.Inject
 
 
 class AuthRepositoryImpl @Inject constructor(
@@ -43,6 +42,7 @@ class AuthRepositoryImpl @Inject constructor(
     override suspend fun firebaseAuthWithFacebook(token: String): Result<Boolean> {
         return remoteDataSource.firebaseAuthWithFacebook(token)
     }
+
     override fun saveCredentials(email: String, password: String) {
         sharedPreferencesDataSource.saveCredentials(email, password)
     }
@@ -50,10 +50,11 @@ class AuthRepositoryImpl @Inject constructor(
     override fun loadSavedCredentials(): Pair<String?, String?> {
         return sharedPreferencesDataSource.loadSavedCredentials()
     }
+
     override suspend fun registerUser(user: User, password: String): Result<Unit> {
         return try {
-            val result = user.email?.let { auth.createUserWithEmailAndPassword(it, password).await() }
-            val firebaseUser = result?.user ?: return Result.failure(Exception("User is null"))
+            val result = auth.createUserWithEmailAndPassword(user.email, password).await() // `user.email` no es nullable aquí
+            val firebaseUser = result.user ?: return Result.failure(Exception("User is null after registration."))
             val userId = firebaseUser.uid
             val userMap = mapOf(
                 "id" to userId,
@@ -69,4 +70,3 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
 }
-

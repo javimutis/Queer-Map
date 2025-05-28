@@ -2,10 +2,9 @@ package com.cursoandroid.queermap.ui.signup
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.cursoandroid.queermap.ui.forgotpassword.ForgotPasswordValidator.isValidEmail
-import com.cursoandroid.queermap.ui.forgotpassword.ForgotPasswordValidator.isValidPassword
+import com.cursoandroid.queermap.domain.model.User // Importar tu modelo de User
+import com.cursoandroid.queermap.domain.usecase.auth.CreateUserUseCase // Importar el UseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,7 +14,9 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class SignUpViewModel @Inject constructor() : ViewModel() {
+class SignUpViewModel @Inject constructor(
+    private val createUserUseCase: CreateUserUseCase
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SignUpUiState())
     val uiState: StateFlow<SignUpUiState> = _uiState
@@ -46,24 +47,26 @@ class SignUpViewModel @Inject constructor() : ViewModel() {
                 }
             }
 
-            SignUpEvent.OnRegisterClicked -> {
-                onSignupClicked()
-            }
-
-            SignUpEvent.NavigateBack -> {
-            }
-
-            SignUpEvent.NavigateToHome -> {
-            }
-
-            is SignUpEvent.ShowMessage -> {
-            }
-
             is SignUpEvent.OnFullNameChanged -> {
                 _uiState.update { it.copy(fullName = event.fullName) }
             }
+
             is SignUpEvent.OnBirthdayChanged -> {
                 _uiState.update { it.copy(birthday = event.birthday) }
+            }
+
+            SignUpEvent.OnRegisterClicked -> {
+                onSignupClicked()
+            }
+            // Los siguientes eventos no deberían manejarse aquí, sino emitirse desde onSignupClicked
+            // Para la ETAPA 5, los quitaremos de los TODOS y los manejaremos como eventos de navegación
+            SignUpEvent.NavigateBack -> { /* Handled in Fragment observeEvents */
+            }
+
+            SignUpEvent.NavigateToHome -> { /* Handled in Fragment observeEvents */
+            }
+
+            is SignUpEvent.ShowMessage -> { /* Handled in Fragment observeEvents */
             }
         }
     }
@@ -77,12 +80,13 @@ class SignUpViewModel @Inject constructor() : ViewModel() {
             val user = _uiState.value.user ?: ""
             val birthday = _uiState.value.birthday ?: ""
 
+            // Validaciones iniciales
             if (!SignUpValidator.isValidEmail(email)) {
                 _uiState.update { it.copy(isEmailInvalid = true) }
                 return@launch
             }
 
-            if (!SignUpValidator.isValidPassword(password)) { // O isStrongPassword si prefieres
+            if (!SignUpValidator.isValidPassword(password)) {
                 _uiState.update { it.copy(isPasswordInvalid = true) }
                 return@launch
             }
@@ -97,26 +101,46 @@ class SignUpViewModel @Inject constructor() : ViewModel() {
             }
 
             if (!SignUpValidator.isValidUser(user)) {
-                _event.emit(SignUpEvent.ShowMessage("El nombre de usuario no puede estar vacío"))
+                _event.emit(SignUpEvent.ShowMessage("El nombre de usuario no puede estar vacío."))
                 return@launch
             }
 
             if (!SignUpValidator.isValidFullName(fullName)) {
-                _event.emit(SignUpEvent.ShowMessage("El nombre completo no puede estar vacío"))
+                _event.emit(SignUpEvent.ShowMessage("El nombre completo no puede estar vacío."))
                 return@launch
             }
-            _uiState.update { it.copy(isLoading = true) }
-            delay(1000)
-            _uiState.update { it.copy(isLoading = false, isSuccess = true) }
-            _event.emit(SignUpEvent.NavigateToHome)
+
+            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+
+            val newUser = User(
+                id = "",
+                name = fullName,
+                username = user,
+                email = email,
+                birthday = birthday
+            )
+
+            val result = createUserUseCase(newUser, password)
+            result
+                .onSuccess {
+                    _uiState.update { it.copy(isLoading = false, isSuccess = true) }
+                    _event.emit(SignUpEvent.NavigateToHome)
+                }
+                .onFailure { exception ->
+                    _uiState.update { it.copy(isLoading = false, errorMessage = exception.message) }
+                    _event.emit(
+                        SignUpEvent.ShowMessage(
+                            exception.message ?: "Error desconocido durante el registro."
+                        )
+                    )
+                }
         }
     }
+
 
     fun onBackPressed() {
         viewModelScope.launch {
             _event.emit(SignUpEvent.NavigateBack)
-
         }
     }
 }
-

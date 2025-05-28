@@ -1,6 +1,5 @@
 package com.cursoandroid.queermap.ui.signup
 
-import android.app.DatePickerDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -19,7 +18,6 @@ import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
-import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
@@ -54,7 +52,7 @@ class SignUpFragment : Fragment() {
     private fun setupListeners() {
         binding.etEmail.addTextChangedListener { editable ->
             viewModel.onEvent(SignUpEvent.OnEmailChanged(editable.toString()))
-                   binding.tilEmail.error = null
+            binding.tilEmail.error = null
         }
 
         binding.etPassword.addTextChangedListener { editable ->
@@ -82,9 +80,9 @@ class SignUpFragment : Fragment() {
         }
 
         binding.ivBack.setOnClickListener {
-            viewModel.onBackPressed()
+            viewModel.onBackPressed() // Este ya emite un evento de navegación
         }
-            binding.tietBirthday.isFocusable = false
+        binding.tietBirthday.isFocusable = false
         binding.tietBirthday.isClickable = true
         binding.tietBirthday.setOnClickListener {
             showModernDatePicker()
@@ -98,7 +96,7 @@ class SignUpFragment : Fragment() {
                 binding.progressBar.visibility =
                     if (state.isLoading) View.VISIBLE else View.GONE
 
-                         binding.tilEmail.error = null
+                binding.tilEmail.error = null
                 binding.tilPassword.error = null
                 binding.tilRepeatPassword.error = null
                 binding.tilUser.error = null
@@ -117,7 +115,8 @@ class SignUpFragment : Fragment() {
                 if (state.isBirthdayInvalid) {
                     binding.tilBirthday.error = "Por favor, ingresa una fecha de nacimiento válida."
                 }
-                        if (state.errorMessage != null) {
+
+                if (state.errorMessage != null) {
                     showSnackbar(state.errorMessage)
                 }
 
@@ -168,14 +167,17 @@ class SignUpFragment : Fragment() {
                     is SignUpEvent.NavigateToHome -> {
                         findNavController().navigate(R.id.action_signupFragment_to_coverFragment)
                     }
+
                     is SignUpEvent.ShowMessage -> showSnackbar(event.message)
-                    is SignUpEvent.OnBirthdayChanged -> TODO()
-                    is SignUpEvent.OnConfirmPasswordChanged -> TODO()
-                    is SignUpEvent.OnEmailChanged -> TODO()
-                    is SignUpEvent.OnFullNameChanged -> TODO()
-                    is SignUpEvent.OnPasswordChanged -> TODO()
-                    SignUpEvent.OnRegisterClicked -> TODO()
-                    is SignUpEvent.OnUserChanged -> TODO()
+                    // Eliminar los siguientes eventos de aquí, ya que son entradas para el ViewModel, no eventos de salida
+                    is SignUpEvent.OnBirthdayChanged,
+                    is SignUpEvent.OnConfirmPasswordChanged,
+                    is SignUpEvent.OnEmailChanged,
+                    is SignUpEvent.OnFullNameChanged,
+                    is SignUpEvent.OnPasswordChanged,
+                    SignUpEvent.OnRegisterClicked,
+                    is SignUpEvent.OnUserChanged -> { /* No-op, handled by ViewModel onEvent */
+                    }
                 }
             }
         }
@@ -189,7 +191,6 @@ class SignUpFragment : Fragment() {
         val builder = MaterialDatePicker.Builder.datePicker()
             .setTitleText("Selecciona tu fecha de nacimiento")
             .setTheme(R.style.ThemeOverlay_QueerMap_MaterialDatePicker)
-
 
         val currentBirthDateText = binding.tietBirthday.text.toString()
         if (currentBirthDateText.isNotEmpty()) {
