@@ -165,8 +165,18 @@ class LoginFragment : Fragment() {
                     is LoginEvent.NavigateBack ->
                         findNavController().popBackStack()
 
-                    is LoginEvent.NavigateToSignupWithArgs -> // AGREGAR ESTO
-                        findNavController().navigate(event.directions)
+                    // *** CAMBIO CRUCIAL AQUÍ ***
+                    is LoginEvent.NavigateToSignupWithArgs -> {
+                        // Aquí en el Fragment, construimos las NavDirections usando los argumentos
+                        // que el ViewModel nos ha enviado.
+                        val directions =
+                            LoginFragmentDirections.actionLoginFragmentToSignupFragment(
+                                socialUserEmail = event.socialUserEmail,
+                                socialUserName = event.socialUserName,
+                                isSocialLoginFlow = event.isSocialLoginFlow
+                            )
+                        findNavController().navigate(directions)
+                    }
                 }
             }
         }

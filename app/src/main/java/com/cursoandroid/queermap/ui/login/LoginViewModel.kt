@@ -102,13 +102,15 @@ class LoginViewModel @Inject constructor(
                                 // El usuario se autenticó con Firebase, pero NO tiene perfil en Firestore
                                 // Debe ir a la pantalla de registro de perfil
                                 _uiState.value = LoginUiState(isSuccess = true)
-                                // MODIFICAR ESTA LÓGICA DE NAVEGACIÓN
-                                val directions = LoginFragmentDirections.actionLoginFragmentToSignupFragment(
+
+                                // *** ¡ESTE ES EL CAMBIO CLAVE EN EL VIEWMODEL! ***
+                                // Ahora emitimos los argumentos directamente en el evento,
+                                // SIN crear un objeto NavDirections aquí.
+                                _event.emit(LoginEvent.NavigateToSignupWithArgs(
                                     socialUserEmail = currentUser.email,
                                     socialUserName = currentUser.displayName,
-                                    isSocialLoginFlow = true // Pasamos el flag
-                                )
-                                _event.emit(LoginEvent.NavigateToSignupWithArgs(directions)) // Emitir el nuevo evento
+                                    isSocialLoginFlow = true
+                                ))
                                 _event.emit(LoginEvent.ShowMessage("Completa tu perfil para continuar"))
                             }
                         },

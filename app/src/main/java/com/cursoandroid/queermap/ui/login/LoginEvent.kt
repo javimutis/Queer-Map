@@ -6,6 +6,10 @@ sealed class LoginEvent {
     object NavigateToForgotPassword : LoginEvent()
     object NavigateBack : LoginEvent()
     object NavigateToHome : LoginEvent()
-    data class NavigateToSignupWithArgs(val directions: NavDirections) : LoginEvent()
+    data class NavigateToSignupWithArgs(
+        val socialUserEmail: String?,
+        val socialUserName: String?,
+        val isSocialLoginFlow: Boolean
+    ) : LoginEvent()
     data class ShowMessage(val message: String) : LoginEvent()
 }

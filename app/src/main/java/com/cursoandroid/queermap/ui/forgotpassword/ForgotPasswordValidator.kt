@@ -1,8 +1,10 @@
 package com.cursoandroid.queermap.ui.forgotpassword
 
+import com.cursoandroid.queermap.common.EmailValidator // Importa el nuevo validador
+
 object ForgotPasswordValidator {
     fun isValidEmail(email: String): Boolean {
-        return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
+        return EmailValidator.isValidEmail(email)
     }
 
     fun isValidPassword(password: String): Boolean {
