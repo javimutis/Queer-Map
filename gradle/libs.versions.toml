@@ -100,6 +100,7 @@ ext-junit = { module = "androidx.test.ext:junit", version.ref = "ext-junit" }
 espresso = { module = "androidx.test.espresso:espresso-core", version.ref = "espresso" }
 kotest-assertions = { group = "io.kotest", name = "kotest-assertions-core", version.ref = "kotest" }
 
+
 # Testing
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
