@@ -67,12 +67,14 @@
             app:popEnterAnim="@anim/fade_in"
             app:popExitAnim="@anim/fade_out" />
         <action
-            android:id="@+id/action_loginFragment_to_coverFragment"
-            app:destination="@id/coverFragment"
+            android:id="@+id/action_loginFragment_to_mapFragment"
+            app:destination="@id/mapFragment"
             app:enterAnim="@anim/fade_in"
             app:exitAnim="@anim/fade_out"
             app:popEnterAnim="@anim/fade_in"
-            app:popExitAnim="@anim/fade_out" />
+            app:popExitAnim="@anim/fade_out"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true" />
     </fragment>
 
     <fragment
@@ -82,27 +84,28 @@
         tools:layout="@layout/fragment_signup">
         <argument
             android:name="socialUserEmail"
-            app:argType="string"
             android:defaultValue="@null"
+            app:argType="string"
             app:nullable="true" />
         <argument
             android:name="socialUserName"
-            app:argType="string"
             android:defaultValue="@null"
+            app:argType="string"
             app:nullable="true" />
         <argument
-            android:name="isSocialLoginFlow" app:argType="boolean"
-            android:defaultValue="false" />
+            android:name="isSocialLoginFlow"
+            android:defaultValue="false"
+            app:argType="boolean" />
         <action
-            android:id="@+id/action_signupFragment_to_coverFragment"
-            app:destination="@id/coverFragment"
+            android:id="@+id/action_signupFragment_to_mapFragment"
+            app:destination="@id/mapFragment"
             app:enterAnim="@anim/fade_in"
             app:exitAnim="@anim/fade_out"
             app:popEnterAnim="@anim/fade_in"
-            app:popExitAnim="@anim/fade_out" />
+            app:popExitAnim="@anim/fade_out"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true" />
     </fragment>
-
-
 
     <!--        <action-->
     <!--            android:id="@+id/action_loginFragment_to_readTermsFragment"-->
@@ -118,5 +121,21 @@
         android:name="com.cursoandroid.queermap.ui.forgotpassword.ForgotPasswordFragment"
         android:label="forgot_password"
         tools:layout="@layout/fragment_forgot_password" />
+
+    <fragment
+        android:id="@+id/mapFragment"
+        android:name="com.cursoandroid.queermap.ui.map.MapFragment"
+        android:label="Map"
+        tools:layout="@layout/fragment_map">
+        <action
+            android:id="@+id/action_mapFragment_to_coverFragment"
+            app:destination="@id/coverFragment"
+            app:enterAnim="@anim/fade_in"
+            app:exitAnim="@anim/fade_out"
+            app:popEnterAnim="@anim/fade_in"
+            app:popExitAnim="@anim/fade_out"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true" />
+    </fragment>
 
 </navigation>

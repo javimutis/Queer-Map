@@ -157,7 +157,7 @@ class LoginFragment : Fragment() {
                 when (event) {
                     is LoginEvent.ShowMessage -> showSnackbar(event.message)
                     is LoginEvent.NavigateToHome ->
-                        findNavController().navigate(R.id.action_loginFragment_to_coverFragment)
+                        findNavController().navigate(R.id.action_loginFragment_to_mapFragment)
 
                     is LoginEvent.NavigateToForgotPassword ->
                         findNavController().navigate(R.id.action_loginFragment_to_forgotPasswordFragment)

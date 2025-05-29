@@ -206,7 +206,7 @@ class SignUpFragment : Fragment() {
                 when (event) {
                     is SignUpEvent.NavigateBack -> findNavController().popBackStack()
                     is SignUpEvent.NavigateToHome -> {
-                        findNavController().navigate(R.id.action_signupFragment_to_coverFragment)
+                        findNavController().navigate(R.id.action_signupFragment_to_mapFragment)
                     }
                     is SignUpEvent.ShowMessage -> showSnackbar(event.message)
                     else -> Unit
