@@ -2,7 +2,7 @@
   "project_info": {
     "project_number": "266619159161",
     "project_id": "queermap-79409",
-    "storage_bucket": "queermap-79409.appspot.com"
+    "storage_bucket": "queermap-79409.firebasestorage.app"
   },
   "client": [
     {
@@ -14,13 +14,21 @@
       },
       "oauth_client": [
         {
-          "client_id": "266619159161-hps71dmm39aphf1l0vbrsl4n62qcatkq.apps.googleusercontent.com",
+          "client_id": "266619159161-alctap716cr74lais1381frvem8m3jh5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.cursoandroid.queermap",
+            "certificate_hash": "564bdcb0f653a486e0bb30624f8520697874b00d"
+          }
+        },
+        {
+          "client_id": "266619159161-lfmdnqp2ueg0gves83g13q4gbmkf9fll.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyCCaSI4XFWA5PqpsTUkTxR8uYs68MaUy48"
+          "current_key": "AIzaSyCSRXPj9hz4SHhW3EBtqliYQ3S8pEdQ75Y"
         }
       ],
       "services": {

@@ -60,9 +60,5 @@ class FacebookSignInDataSourceImpl @Inject constructor() : FacebookSignInDataSou
     }
 
     override fun handleActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        // This method needs to be called from the Fragment's onActivityResult
-        // but the actual handling of the result for Facebook login is done via the callbackManager
-        // which is already registered in the initFacebookLogin method.
-        // So, this method can remain empty or be removed if not needed elsewhere.
-    }
+        }
 }

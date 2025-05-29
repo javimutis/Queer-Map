@@ -8,6 +8,9 @@ import com.cursoandroid.queermap.domain.usecase.auth.LoginWithFacebookUseCase
 import com.cursoandroid.queermap.domain.usecase.auth.LoginWithGoogleUseCase
 import com.cursoandroid.queermap.ui.forgotpassword.ForgotPasswordValidator.isValidEmail
 import com.cursoandroid.queermap.ui.forgotpassword.ForgotPasswordValidator.isValidPassword
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -19,7 +22,8 @@ class LoginViewModel @Inject constructor(
     private val loginWithEmailUseCase: LoginWithEmailUseCase,
     private val loginWithFacebookUseCase: LoginWithFacebookUseCase,
     private val loginWithGoogleUseCase: LoginWithGoogleUseCase,
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val firebaseAuth: FirebaseAuth
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LoginUiState())
@@ -85,8 +89,40 @@ class LoginViewModel @Inject constructor(
     private suspend fun handleThirdPartyResult(result: Result<Any>) {
         result.fold(
             onSuccess = {
-                _uiState.value = LoginUiState(isSuccess = true)
-                _event.emit(LoginEvent.NavigateToHome)
+                val currentUser = firebaseAuth.currentUser
+                if (currentUser != null) {
+                    val userProfileExistsResult = authRepository.verifyUserInFirestore(currentUser.uid)
+                    userProfileExistsResult.fold(
+                        onSuccess = { exists ->
+                            if (exists) {
+                                // El perfil ya existe en Firestore, el usuario está completamente registrado en la app
+                                _uiState.value = LoginUiState(isSuccess = true)
+                                _event.emit(LoginEvent.NavigateToHome)
+                            } else {
+                                // El usuario se autenticó con Firebase, pero NO tiene perfil en Firestore
+                                // Debe ir a la pantalla de registro de perfil
+                                _uiState.value = LoginUiState(isSuccess = true)
+                                // MODIFICAR ESTA LÓGICA DE NAVEGACIÓN
+                                val directions = LoginFragmentDirections.actionLoginFragmentToSignupFragment(
+                                    socialUserEmail = currentUser.email,
+                                    socialUserName = currentUser.displayName,
+                                    isSocialLoginFlow = true // Pasamos el flag
+                                )
+                                _event.emit(LoginEvent.NavigateToSignupWithArgs(directions)) // Emitir el nuevo evento
+                                _event.emit(LoginEvent.ShowMessage("Completa tu perfil para continuar"))
+                            }
+                        },
+                        onFailure = { error ->
+                            val errorMessage = error.message ?: "Error al verificar perfil de usuario."
+                            _uiState.value = LoginUiState(errorMessage = errorMessage)
+                            _event.emit(LoginEvent.ShowMessage(errorMessage))
+                        }
+                    )
+                } else {
+                    val errorMessage = "Error: Usuario autenticado nulo después del login social."
+                    _uiState.value = LoginUiState(errorMessage = errorMessage)
+                    _event.emit(LoginEvent.ShowMessage(errorMessage))
+                }
             },
             onFailure = {
                 val errorMessage = it.message ?: "Error inesperado"
@@ -134,6 +170,8 @@ class LoginViewModel @Inject constructor(
     private fun mapErrorToMessage(error: Throwable): String {
         return when (error) {
             is IOException -> "Error de red. Por favor, revisa tu conexión"
+            is FirebaseAuthInvalidCredentialsException -> "Credenciales inválidas. Email o contraseña incorrectos."
+            is FirebaseAuthUserCollisionException -> "Ya existe una cuenta con este email."
             else -> "Error inesperado. Intenta de nuevo más tarde"
         }
     }

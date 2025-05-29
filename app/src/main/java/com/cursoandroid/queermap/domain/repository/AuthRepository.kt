@@ -9,6 +9,7 @@ interface AuthRepository {
 
     suspend fun firebaseAuthWithGoogle(idToken: String): Result<User>
     suspend fun firebaseAuthWithFacebook(token: String): Result<User>
+    suspend fun updateUserProfile(uid: String, user: User): Result<Unit>
 
     fun saveCredentials(email: String, password: String)
     fun loadSavedCredentials(): Pair<String?, String?>

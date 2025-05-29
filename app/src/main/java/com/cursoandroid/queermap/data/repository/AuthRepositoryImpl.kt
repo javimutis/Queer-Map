@@ -6,6 +6,7 @@ import com.cursoandroid.queermap.domain.model.User
 import com.cursoandroid.queermap.domain.repository.AuthRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
@@ -29,6 +30,7 @@ class AuthRepositoryImpl @Inject constructor(
             Result.failure(e)
         }
     }
+
     override suspend fun sendResetPasswordEmail(email: String): Result<Unit> {
         return remoteDataSource.sendPasswordResetEmail(email)
     }
@@ -52,7 +54,8 @@ class AuthRepositoryImpl @Inject constructor(
     override suspend fun registerUser(user: User, password: String): Result<Unit> {
         return try {
             val result = auth.createUserWithEmailAndPassword(user.email!!, password).await()
-            val firebaseUser = result.user ?: return Result.failure(Exception("Usuario nulo después del registro."))
+            val firebaseUser = result.user
+                ?: return Result.failure(Exception("Usuario nulo después del registro."))
             val userId = firebaseUser.uid
             val userMap = mapOf(
                 "id" to userId,
@@ -62,6 +65,26 @@ class AuthRepositoryImpl @Inject constructor(
                 "birthday" to user.birthday
             )
             firestore.collection("users").document(userId).set(userMap).await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun updateUserProfile(uid: String, user: User): Result<Unit> {
+        return try {
+            val userMap = mutableMapOf<String, Any>(
+                "id" to uid,
+                "name" to (user.name ?: ""),
+                "username" to (user.username ?: ""),
+                "birthday" to (user.birthday ?: "")
+            )
+
+            user.email?.let {
+                userMap["email"] = it
+            }
+
+            firestore.collection("users").document(uid).set(userMap, SetOptions.merge()).await()
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)

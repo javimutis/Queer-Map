@@ -13,6 +13,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import com.cursoandroid.queermap.R
 import com.cursoandroid.queermap.databinding.FragmentSignupBinding
 import com.google.android.material.datepicker.CalendarConstraints
@@ -33,6 +34,7 @@ class SignUpFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val viewModel: SignUpViewModel by viewModels()
+    private val args: SignUpFragmentArgs by navArgs()
 
     private val googleSignInLauncher: ActivityResultLauncher<Intent> =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -53,6 +55,8 @@ class SignUpFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        viewModel.setSocialLoginData(args.isSocialLoginFlow, args.socialUserEmail, args.socialUserName)
+
         setupListeners()
         observeState()
         observeEvents()
@@ -94,7 +98,6 @@ class SignUpFragment : Fragment() {
         binding.btnRegister.setOnClickListener {
             viewModel.onEvent(SignUpEvent.OnRegisterClicked)
         }
-
         binding.ivBack.setOnClickListener {
             viewModel.onBackPressed()
         }
@@ -126,6 +129,24 @@ class SignUpFragment : Fragment() {
                 binding.tilUser.error = null
                 binding.tilName.error = null
                 binding.tilBirthday.error = null
+
+                if (state.isSocialLoginFlow) {
+                    binding.tilEmail.visibility = View.GONE
+                    binding.tilPassword.visibility = View.GONE
+                    binding.tilRepeatPassword.visibility = View.GONE
+                    binding.ivGoogleSignIn.visibility = View.GONE
+                    binding.ivFacebookLSignIn.visibility = View.GONE
+                    binding.btnRegister.text = "Completar mi Perfil"
+
+                } else {
+                    binding.tilEmail.visibility = View.VISIBLE
+                    binding.tilPassword.visibility = View.VISIBLE
+                    binding.tilRepeatPassword.visibility = View.VISIBLE
+                    binding.ivGoogleSignIn.visibility = View.VISIBLE
+                    binding.ivFacebookLSignIn.visibility = View.VISIBLE
+                    binding.btnRegister.text = "Registrarme"
+                }
+
 
                 if (state.isEmailInvalid) {
                     binding.tilEmail.error = "Por favor, ingresa un email válido."

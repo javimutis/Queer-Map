@@ -8,6 +8,8 @@ plugins {
     alias(libs.plugins.google.services)
     alias(libs.plugins.secrets)
     kotlin("kapt")
+    id("androidx.navigation.safeargs.kotlin")
+
 }
 
 android {

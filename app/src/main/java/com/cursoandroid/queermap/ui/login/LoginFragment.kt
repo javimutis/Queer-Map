@@ -13,17 +13,10 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.cursoandroid.queermap.R
 import com.cursoandroid.queermap.data.source.remote.FacebookSignInDataSource
-import com.cursoandroid.queermap.data.source.remote.GoogleSignInDataSource // Import GoogleSignInDataSource
+import com.cursoandroid.queermap.data.source.remote.GoogleSignInDataSource
 import com.cursoandroid.queermap.databinding.FragmentLoginBinding
 import com.facebook.AccessToken
 import com.facebook.CallbackManager
-import com.facebook.FacebookCallback
-import com.facebook.FacebookException
-import com.facebook.login.LoginManager
-import com.facebook.login.LoginResult
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInClient
-import com.google.android.gms.common.api.ApiException
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
@@ -38,12 +31,10 @@ class LoginFragment : Fragment() {
 
     private val viewModel: LoginViewModel by viewModels()
 
-    // REMOVE direct injection of GoogleSignInClient
-    // @Inject lateinit var googleSignInClient: GoogleSignInClient
-
-    // INJECT GoogleSignInDataSource instead
-    @Inject lateinit var googleSignInDataSource: GoogleSignInDataSource
-    @Inject lateinit var facebookSignInDataSource: FacebookSignInDataSource
+    @Inject
+    lateinit var googleSignInDataSource: GoogleSignInDataSource
+    @Inject
+    lateinit var facebookSignInDataSource: FacebookSignInDataSource
 
     private lateinit var googleSignInLauncher: androidx.activity.result.ActivityResultLauncher<Intent>
     private lateinit var callbackManager: CallbackManager
@@ -60,7 +51,6 @@ class LoginFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel.loadUserCredentials()
-        checkLoginStatus()
         initGoogleSignInLauncher()
         initFacebookLogin()
         setupListeners()
@@ -96,7 +86,10 @@ class LoginFragment : Fragment() {
         facebookSignInDataSource.registerCallback(callbackManager)
 
         binding.btnFacebookLogin.setOnClickListener {
-            facebookSignInDataSource.logInWithReadPermissions(this, listOf("email", "public_profile"))
+            facebookSignInDataSource.logInWithReadPermissions(
+                this,
+                listOf("email", "public_profile")
+            )
         }
     }
 
@@ -115,7 +108,6 @@ class LoginFragment : Fragment() {
         }
 
         binding.btnGoogleSignIn.setOnClickListener {
-            // Use googleSignInDataSource to get the intent
             googleSignInLauncher.launch(googleSignInDataSource.getSignInIntent())
         }
 
@@ -125,6 +117,9 @@ class LoginFragment : Fragment() {
 
         binding.ivBack.setOnClickListener {
             viewModel.onBackPressed()
+        }
+        binding.tvSignUpBtn.setOnClickListener {
+            findNavController().navigate(R.id.action_loginFragment_to_signupFragment)
         }
     }
 
@@ -163,10 +158,15 @@ class LoginFragment : Fragment() {
                     is LoginEvent.ShowMessage -> showSnackbar(event.message)
                     is LoginEvent.NavigateToHome ->
                         findNavController().navigate(R.id.action_loginFragment_to_coverFragment)
+
                     is LoginEvent.NavigateToForgotPassword ->
                         findNavController().navigate(R.id.action_loginFragment_to_forgotPasswordFragment)
+
                     is LoginEvent.NavigateBack ->
                         findNavController().popBackStack()
+
+                    is LoginEvent.NavigateToSignupWithArgs -> // AGREGAR ESTO
+                        findNavController().navigate(event.directions)
                 }
             }
         }
@@ -182,17 +182,9 @@ class LoginFragment : Fragment() {
         }
     }
 
-    // Business Logic
-    private fun checkLoginStatus() {
-        val accessToken = AccessToken.getCurrentAccessToken()
-        val isLoggedIn = accessToken != null && !accessToken.isExpired
-        if (isLoggedIn) {
-            findNavController().navigate(R.id.action_loginFragment_to_coverFragment)
-        }
-    }
+
 
     private fun handleGoogleSignInResult(data: Intent?) {
-        // Use googleSignInDataSource to handle the result
         lifecycleScope.launch {
             googleSignInDataSource.handleSignInResult(data)
                 .onSuccess { idToken ->

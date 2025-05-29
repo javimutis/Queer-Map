@@ -60,6 +60,13 @@
             app:popEnterAnim="@anim/fade_in"
             app:popExitAnim="@anim/fade_out" />
         <action
+            android:id="@+id/action_loginFragment_to_signupFragment"
+            app:destination="@id/signUpFragment"
+            app:enterAnim="@anim/fade_in"
+            app:exitAnim="@anim/fade_out"
+            app:popEnterAnim="@anim/fade_in"
+            app:popExitAnim="@anim/fade_out" />
+        <action
             android:id="@+id/action_loginFragment_to_coverFragment"
             app:destination="@id/coverFragment"
             app:enterAnim="@anim/fade_in"
@@ -73,15 +80,29 @@
         android:name="com.cursoandroid.queermap.ui.signup.SignUpFragment"
         android:label="SignUp"
         tools:layout="@layout/fragment_signup">
-
-    <action
-        android:id="@+id/action_signupFragment_to_coverFragment"
-        app:destination="@id/coverFragment"
-        app:enterAnim="@anim/fade_in"
-        app:exitAnim="@anim/fade_out"
-        app:popEnterAnim="@anim/fade_in"
-        app:popExitAnim="@anim/fade_out" />
+        <argument
+            android:name="socialUserEmail"
+            app:argType="string"
+            android:defaultValue="@null"
+            app:nullable="true" />
+        <argument
+            android:name="socialUserName"
+            app:argType="string"
+            android:defaultValue="@null"
+            app:nullable="true" />
+        <argument
+            android:name="isSocialLoginFlow" app:argType="boolean"
+            android:defaultValue="false" />
+        <action
+            android:id="@+id/action_signupFragment_to_coverFragment"
+            app:destination="@id/coverFragment"
+            app:enterAnim="@anim/fade_in"
+            app:exitAnim="@anim/fade_out"
+            app:popEnterAnim="@anim/fade_in"
+            app:popExitAnim="@anim/fade_out" />
     </fragment>
+
+
 
     <!--        <action-->
     <!--            android:id="@+id/action_loginFragment_to_readTermsFragment"-->

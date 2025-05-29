@@ -13,5 +13,6 @@ data class SignUpUiState(
     val confirmPassword: String? = null,
     val user: String? = null,
     val fullName: String? = null,
-    val birthday: String? = null
+    val birthday: String? = null,
+    val isSocialLoginFlow: Boolean = false
 )

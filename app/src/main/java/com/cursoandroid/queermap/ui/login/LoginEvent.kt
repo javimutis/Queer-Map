@@ -1,8 +1,11 @@
 package com.cursoandroid.queermap.ui.login
 
+import androidx.navigation.NavDirections
+
 sealed class LoginEvent {
     object NavigateToForgotPassword : LoginEvent()
     object NavigateBack : LoginEvent()
     object NavigateToHome : LoginEvent()
+    data class NavigateToSignupWithArgs(val directions: NavDirections) : LoginEvent()
     data class ShowMessage(val message: String) : LoginEvent()
 }

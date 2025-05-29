@@ -68,7 +68,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/margin_start_dp32"
-                android:layout_marginTop="@dimen/margin_top_dp40"
+                android:layout_marginTop="@dimen/layout_dp30"
                 android:layout_marginEnd="@dimen/margin_end_dp32"
                 android:fontFamily="@font/raleway_medium"
                 android:text="@string/insert_mail"
@@ -201,7 +201,7 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/remember_box"
                 android:layout_marginStart="@dimen/margin_start_dp32"
-                android:layout_marginTop="@dimen/margin_top_dp30"
+                android:layout_marginTop="20dp"
                 android:layout_marginEnd="@dimen/margin_end_dp32"
                 android:background="@drawable/neumorphism_button"
                 android:fontFamily="@font/raleway_medium_italic"
@@ -264,17 +264,35 @@
             </LinearLayout>
 
             <!-- Registro -->
+
             <LinearLayout
-                android:id="@+id/login_signin_group"
+                android:id="@+id/layoutSignUp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/socialButtonsLayout"
-                android:layout_centerHorizontal="true"
                 android:layout_marginTop="10dp"
-                android:orientation="horizontal"
-                android:paddingBottom="32dp">
+                android:layout_marginBottom="@dimen/layout_dp30"
+                android:layout_below="@id/socialButtonsLayout"
+                android:layout_marginStart="@dimen/margin_start_dp105"
+                android:orientation="horizontal">
 
-                <!-- Aquí va el texto y botón de registro -->
+                <TextView
+                    android:id="@+id/tvNoAccount"
+                    android:layout_width="@dimen/layout_dp130"
+                    android:layout_height="wrap_content"
+                    android:text="@string/no_account"
+                    android:textSize="@dimen/text_sp15"
+                    android:textColor="@color/title_color"
+                    android:fontFamily="@font/raleway_medium" />
+
+                <TextView
+                    android:id="@+id/tvSignUpBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/sign_up"
+                    android:textSize="@dimen/text_sp15"
+                    android:textColor="@color/title_color"
+                    android:fontFamily="@font/raleway_bold_italic" />
+
             </LinearLayout>
         </RelativeLayout>
     </LinearLayout>
