@@ -102,15 +102,21 @@ dependencies {
     testImplementation(libs.kotest.assertions)
 
     // Pruebas UI
-    androidTestImplementation(libs.androidx.junit)
+    // Hilt Android Testing
+    androidTestImplementation(libs.hilt.android.testing)
+    kaptAndroidTest(libs.hilt.compiler)
+    // Fragment Testing
+    androidTestImplementation(libs.androidx.fragment.testing)
+    // Espresso (para interacciones de UI y aserciones)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.espresso.intents)
     androidTestImplementation(libs.androidx.espresso.contrib)
-    androidTestImplementation(libs.hilt.android.testing)
-    kaptAndroidTest(libs.hilt.compiler)
-    androidTestImplementation(libs.androidx.fragment.testing)
+    androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.androidx.test.runner)
     androidTestImplementation(libs.androidx.test.rules)
-    androidTestImplementation(libs.ext.junit)
+    androidTestImplementation(libs.arch.core.testing)
+
+    androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.espresso)
+    androidTestImplementation(libs.mockk.android)
 }

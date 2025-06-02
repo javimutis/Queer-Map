@@ -1,3 +1,5 @@
+// app/src/main/java/com/cursoandroid/queermap/ui/login/LoginFragment.kt
+
 package com.cursoandroid.queermap.ui.login
 
 import android.app.Activity
@@ -29,6 +31,8 @@ class LoginFragment : Fragment() {
     private var _binding: FragmentLoginBinding? = null
     private val binding get() = _binding!!
 
+    // Propiedad 'viewModel' del Fragment. Para el test, la inyectaremos vía reflexión.
+    // Aunque aquí es 'private val', el test la modificará en tiempo de ejecución.
     private val viewModel: LoginViewModel by viewModels()
 
     @Inject
@@ -74,6 +78,7 @@ class LoginFragment : Fragment() {
             ActivityResultContracts.StartActivityForResult()
         ) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
+                // AHORA ESTA FUNCIÓN ES ACCESIBLE PARA EL TEST
                 handleGoogleSignInResult(result.data)
             } else {
                 showSnackbar("Inicio de sesión cancelado")
@@ -165,10 +170,7 @@ class LoginFragment : Fragment() {
                     is LoginEvent.NavigateBack ->
                         findNavController().popBackStack()
 
-                    // *** CAMBIO CRUCIAL AQUÍ ***
                     is LoginEvent.NavigateToSignupWithArgs -> {
-                        // Aquí en el Fragment, construimos las NavDirections usando los argumentos
-                        // que el ViewModel nos ha enviado.
                         val directions =
                             LoginFragmentDirections.actionLoginFragmentToSignupFragment(
                                 socialUserEmail = event.socialUserEmail,
@@ -192,9 +194,8 @@ class LoginFragment : Fragment() {
         }
     }
 
-
-
-    private fun handleGoogleSignInResult(data: Intent?) {
+    // CAMBIO: Hacer esta función interna para poder llamarla desde el test
+    internal fun handleGoogleSignInResult(data: Intent?) {
         lifecycleScope.launch {
             googleSignInDataSource.handleSignInResult(data)
                 .onSuccess { idToken ->

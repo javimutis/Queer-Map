@@ -22,7 +22,7 @@ interface FacebookSignInDataSource {
         resultCode: Int,
         data: Intent?
     )
-    val accessTokenChannel: Flow<Result<String>> // Changed to Flow
+    val accessTokenChannel: Flow<Result<String>>
     suspend fun handleFacebookAccessToken(loginResult: LoginResult): String
 }
 

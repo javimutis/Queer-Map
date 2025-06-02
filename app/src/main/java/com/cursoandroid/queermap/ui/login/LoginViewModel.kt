@@ -1,3 +1,5 @@
+// app/src/main/java/com/cursoandroid/queermap/ui/login/LoginViewModel.kt
+
 package com.cursoandroid.queermap.ui.login
 
 import androidx.lifecycle.ViewModel
@@ -19,18 +21,19 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    private val loginWithEmailUseCase: LoginWithEmailUseCase,
-    private val loginWithFacebookUseCase: LoginWithFacebookUseCase,
-    private val loginWithGoogleUseCase: LoginWithGoogleUseCase,
+    internal val loginWithEmailUseCase: LoginWithEmailUseCase, // CAMBIO: de private a internal
+    internal val loginWithFacebookUseCase: LoginWithFacebookUseCase, // CAMBIO: de private a internal
+    internal val loginWithGoogleUseCase: LoginWithGoogleUseCase, // CAMBIO: de private a internal
     private val authRepository: AuthRepository,
     private val firebaseAuth: FirebaseAuth
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(LoginUiState())
-    val uiState: StateFlow<LoginUiState> = _uiState
+    internal val _uiState = MutableStateFlow(LoginUiState()) // CAMBIO: de private a internal
+    val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow() // Añadir .asStateFlow() para exponerlo como StateFlow inmutable
 
-    private val _event = MutableSharedFlow<LoginEvent>()
-    val event = _event.asSharedFlow()
+    internal val _event = MutableSharedFlow<LoginEvent>() // CAMBIO: de private a internal
+    val event: SharedFlow<LoginEvent> = _event.asSharedFlow() // Añadir : SharedFlow<LoginEvent> para explicitar el tipo
+
 
     fun loginWithEmail(email: String, password: String) {
         updateUiState(isLoading = true)
