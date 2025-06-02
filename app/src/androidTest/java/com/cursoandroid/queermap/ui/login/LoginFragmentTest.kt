@@ -1,26 +1,35 @@
 package com.cursoandroid.queermap.ui.login
 
-// Importa los Directions generados por Safe Args
 import android.content.Intent
-import androidx.arch.core.executor.testing.InstantTaskExecutorRule // <-- Importación corregida
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.action.ViewActions.*
+import androidx.test.espresso.action.ViewActions.click
+import androidx.test.espresso.action.ViewActions.closeSoftKeyboard
+import androidx.test.espresso.action.ViewActions.typeText
 import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.matcher.ViewMatchers.*
+import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
+import androidx.test.espresso.matcher.ViewMatchers.withId
+import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.cursoandroid.queermap.R
 import com.cursoandroid.queermap.data.source.remote.FacebookSignInDataSource
 import com.cursoandroid.queermap.data.source.remote.GoogleSignInDataSource
-import com.cursoandroid.queermap.domain.model.User // Importar User
 import com.facebook.AccessToken
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.*
+import io.mockk.Runs
+import io.mockk.clearAllMocks
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.every
+import io.mockk.just
+import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.runBlocking
 import org.hamcrest.Matchers.not
@@ -58,7 +67,8 @@ class LoginFragmentTest {
         clearAllMocks()
 
         // Inicializar el canal de eventos de Facebook para cada test
-        testFacebookAccessTokenChannel = MutableSharedFlow(extraBufferCapacity = 1) // Añadir un buffer para trySend
+        testFacebookAccessTokenChannel =
+            MutableSharedFlow(extraBufferCapacity = 1) // Añadir un buffer para trySend
 
         // Configuramos el comportamiento por defecto de los DataSources inyectados
         // Mockeamos el getter de accessTokenChannel para que devuelva nuestro canal de test
@@ -142,44 +152,54 @@ class LoginFragmentTest {
     }
 
     @Test
-    fun loginFragment_navigatesToHome_onSuccessfulEmailLogin() = runBlocking {
-        val fragmentScenario = launchFragmentAndSetNavController()
+    fun loginFragment_navigatesToHome_onSuccessfulEmailLogin() {
+        runBlocking {
+            val fragmentScenario = launchFragmentAndSetNavController()
 
-        // Mockeamos el método loginWithEmail del ViewModel para simular un éxito
-        coEvery { mockLoginViewModel.loginWithEmail(any(), any()) } coAnswers {
-            // Simula el ViewModel emitiendo el evento de navegación y actualizando el estado de UI
-            mockLoginViewModel._event.emit(LoginEvent.NavigateToHome)
-            mockLoginViewModel._uiState.value = LoginUiState(isSuccess = true, isLoading = false)
+            // Mockeamos el método loginWithEmail del ViewModel para simular un éxito
+            coEvery { mockLoginViewModel.loginWithEmail(any(), any()) } coAnswers {
+                // Simula el ViewModel emitiendo el evento de navegación y actualizando el estado de UI
+                mockLoginViewModel._event.emit(LoginEvent.NavigateToHome)
+                mockLoginViewModel._uiState.value =
+                    LoginUiState(isSuccess = true, isLoading = false)
+            }
+
+            onView(withId(R.id.etEmail)).perform(typeText("valid@example.com"), closeSoftKeyboard())
+            onView(withId(R.id.etPassword)).perform(typeText("password123"), closeSoftKeyboard())
+            onView(withId(R.id.btnLogin)).perform(click())
+
+            // Verificamos que se llamó a la navegación a MapFragment
+            verify(exactly = 1) { mockNavController.navigate(R.id.action_loginFragment_to_mapFragment) }
+            onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
         }
-
-        onView(withId(R.id.etEmail)).perform(typeText("valid@example.com"), closeSoftKeyboard())
-        onView(withId(R.id.etPassword)).perform(typeText("password123"), closeSoftKeyboard())
-        onView(withId(R.id.btnLogin)).perform(click())
-
-        // Verificamos que se llamó a la navegación a MapFragment
-        verify(exactly = 1) { mockNavController.navigate(R.id.action_loginFragment_to_mapFragment) }
-        onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
     }
 
     @Test
-    fun loginFragment_showsSnackbar_onFailedEmailLogin() = runBlocking {
-        val fragmentScenario = launchFragmentAndSetNavController()
+    fun loginFragment_showsSnackbar_onFailedEmailLogin() {
+        runBlocking {
+            val fragmentScenario = launchFragmentAndSetNavController()
 
-        val errorMessage = "Credenciales incorrectas"
-        // Mockeamos el método loginWithEmail del ViewModel para simular un fallo
-        coEvery { mockLoginViewModel.loginWithEmail(any(), any()) } coAnswers {
-            // Simula el ViewModel emitiendo un mensaje de error y actualizando el estado de UI
-            mockLoginViewModel._event.emit(LoginEvent.ShowMessage(errorMessage))
-            mockLoginViewModel._uiState.value = LoginUiState(errorMessage = errorMessage, isLoading = false)
+            val errorMessage = "Credenciales incorrectas"
+            // Mockeamos el método loginWithEmail del ViewModel para simular un fallo
+            coEvery { mockLoginViewModel.loginWithEmail(any(), any()) } coAnswers {
+                // Simula el ViewModel emitiendo un mensaje de error y actualizando el estado de UI
+                mockLoginViewModel._event.emit(LoginEvent.ShowMessage(errorMessage))
+                mockLoginViewModel._uiState.value =
+                    LoginUiState(errorMessage = errorMessage, isLoading = false)
+            }
+
+            onView(withId(R.id.etEmail)).perform(
+                typeText("invalid@example.com"),
+                closeSoftKeyboard()
+            )
+            onView(withId(R.id.etPassword)).perform(typeText("wrongpass"), closeSoftKeyboard())
+            onView(withId(R.id.btnLogin)).perform(click())
+
+            onView(withText(errorMessage)).check(matches(isDisplayed()))
+            onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
         }
-
-        onView(withId(R.id.etEmail)).perform(typeText("invalid@example.com"), closeSoftKeyboard())
-        onView(withId(R.id.etPassword)).perform(typeText("wrongpass"), closeSoftKeyboard())
-        onView(withId(R.id.btnLogin)).perform(click())
-
-        onView(withText(errorMessage)).check(matches(isDisplayed()))
-        onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
     }
+
 
     // --- Tests de Login con Google ---
 
@@ -196,86 +216,99 @@ class LoginFragmentTest {
     }
 
     @Test
-    fun loginFragment_navigatesToHome_onSuccessfulGoogleLoginExistingUser() = runBlocking {
-        val fragmentScenario = launchFragmentAndSetNavController()
+    fun loginFragment_navigatesToHome_onSuccessfulGoogleLoginExistingUser() {
+        runBlocking {
+            val fragmentScenario = launchFragmentAndSetNavController() // Declared inside runBlocking
 
-        val idToken = "some_google_id_token"
-        val mockIntentData = mockk<Intent>(relaxed = true)
-        val mockResult = Result.success(idToken)
+            val idToken = "some_google_id_token"
+            val mockIntentData = mockk<Intent>(relaxed = true)
+            val mockResult = Result.success(idToken)
 
-        coEvery { googleSignInDataSource.handleSignInResult(mockIntentData) } returns mockResult
+            coEvery { googleSignInDataSource.handleSignInResult(mockIntentData) } returns mockResult
 
-        // Mockeamos el método loginWithGoogle del ViewModel
-        coEvery { mockLoginViewModel.loginWithGoogle(idToken) } coAnswers {
-            mockLoginViewModel._event.emit(LoginEvent.NavigateToHome)
-            mockLoginViewModel._uiState.value = LoginUiState(isSuccess = true, isLoading = false)
+            // Mockeamos el método loginWithGoogle del ViewModel
+            coEvery { mockLoginViewModel.loginWithGoogle(idToken) } coAnswers {
+                mockLoginViewModel._event.emit(LoginEvent.NavigateToHome)
+                mockLoginViewModel._uiState.value = LoginUiState(isSuccess = true, isLoading = false)
+            }
+
+            fragmentScenario.onFragment { fragment ->
+                // Llamamos a la función interna handleGoogleSignInResult directamente
+                fragment.handleGoogleSignInResult(mockIntentData)
+            }
+            InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+
+            verify(exactly = 1) { mockNavController.navigate(R.id.action_loginFragment_to_mapFragment) }
+            onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
         }
-
-        fragmentScenario.onFragment { fragment ->
-            // Llamamos a la función interna handleGoogleSignInResult directamente
-            fragment.handleGoogleSignInResult(mockIntentData)
-        }
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync()
-
-        verify(exactly = 1) { mockNavController.navigate(R.id.action_loginFragment_to_mapFragment) }
-        onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
     }
 
     @Test
-    fun loginFragment_navigatesToSignup_onSuccessfulGoogleLoginNewUser() = runBlocking {
-        val fragmentScenario = launchFragmentAndSetNavController()
+    fun loginFragment_navigatesToSignup_onSuccessfulGoogleLoginNewUser() {
+        runBlocking {
+            val fragmentScenario = launchFragmentAndSetNavController() // Declared inside runBlocking
 
-        val idToken = "some_google_id_token"
-        val userEmail = "newuser@example.com"
-        val userName = "New Google User"
-        val mockIntentData = mockk<Intent>(relaxed = true)
-        val mockResult = Result.success(idToken)
+            val idToken = "some_google_id_token"
+            val userEmail = "newuser@example.com"
+            val userName = "New Google User"
+            val mockIntentData = mockk<Intent>(relaxed = true)
+            val mockResult = Result.success(idToken)
 
-        coEvery { googleSignInDataSource.handleSignInResult(mockIntentData) } returns mockResult
+            coEvery { googleSignInDataSource.handleSignInResult(mockIntentData) } returns mockResult
 
-        // Mockeamos el método loginWithGoogle del ViewModel
-        coEvery { mockLoginViewModel.loginWithGoogle(idToken) } coAnswers {
-            mockLoginViewModel._event.emit(LoginEvent.NavigateToSignupWithArgs(userEmail, userName, true))
-            mockLoginViewModel._uiState.value = LoginUiState(isSuccess = true, isLoading = false)
+            // Mockeamos el método loginWithGoogle del ViewModel
+            coEvery { mockLoginViewModel.loginWithGoogle(idToken) } coAnswers {
+                mockLoginViewModel._event.emit(
+                    LoginEvent.NavigateToSignupWithArgs(
+                        userEmail,
+                        userName,
+                        true
+                    )
+                )
+                mockLoginViewModel._uiState.value = LoginUiState(isSuccess = true, isLoading = false)
+            }
+
+            fragmentScenario.onFragment { fragment ->
+                fragment.handleGoogleSignInResult(mockIntentData)
+            }
+            InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+
+            val expectedDirections = LoginFragmentDirections.actionLoginFragmentToSignupFragment(
+                socialUserEmail = userEmail,
+                socialUserName = userName,
+                isSocialLoginFlow = true
+            )
+            verify(exactly = 1) { mockNavController.navigate(expectedDirections) }
+            onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
         }
-
-        fragmentScenario.onFragment { fragment ->
-            fragment.handleGoogleSignInResult(mockIntentData)
-        }
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync()
-
-        val expectedDirections = LoginFragmentDirections.actionLoginFragmentToSignupFragment(
-            socialUserEmail = userEmail,
-            socialUserName = userName,
-            isSocialLoginFlow = true
-        )
-        verify(exactly = 1) { mockNavController.navigate(expectedDirections) }
-        onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
     }
 
     @Test
-    fun loginFragment_showsSnackbar_onGoogleLoginFailure() = runBlocking {
-        val fragmentScenario = launchFragmentAndSetNavController()
+    fun loginFragment_showsSnackbar_onGoogleLoginFailure() {
+        runBlocking {
+            val fragmentScenario = launchFragmentAndSetNavController() // Declared inside runBlocking
 
-        val errorMessage = "Google sign-in failed"
-        val mockIntentData = mockk<Intent>(relaxed = true)
-        val mockResult = Result.failure<String>(Exception(errorMessage))
+            val errorMessage = "Google sign-in failed"
+            val mockIntentData = mockk<Intent>(relaxed = true)
+            val mockResult = Result.failure<String>(Exception(errorMessage))
 
-        coEvery { googleSignInDataSource.handleSignInResult(mockIntentData) } returns mockResult
+            coEvery { googleSignInDataSource.handleSignInResult(mockIntentData) } returns mockResult
 
-        // Mockeamos el método loginWithGoogle del ViewModel (aunque no debería llamarse si handleSignInResult falla)
-        coEvery { mockLoginViewModel.loginWithGoogle(any()) } coAnswers {
-            mockLoginViewModel._event.emit(LoginEvent.ShowMessage(errorMessage))
-            mockLoginViewModel._uiState.value = LoginUiState(errorMessage = errorMessage, isLoading = false)
+            // Mockeamos el método loginWithGoogle del ViewModel (aunque no debería llamarse si handleSignInResult falla)
+            coEvery { mockLoginViewModel.loginWithGoogle(any()) } coAnswers {
+                mockLoginViewModel._event.emit(LoginEvent.ShowMessage(errorMessage))
+                mockLoginViewModel._uiState.value =
+                    LoginUiState(errorMessage = errorMessage, isLoading = false)
+            }
+
+            fragmentScenario.onFragment { fragment ->
+                fragment.handleGoogleSignInResult(mockIntentData)
+            }
+            InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+
+            onView(withText("Error en Sign-In: $errorMessage")).check(matches(isDisplayed()))
+            onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
         }
-
-        fragmentScenario.onFragment { fragment ->
-            fragment.handleGoogleSignInResult(mockIntentData)
-        }
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync()
-
-        onView(withText("Error en Sign-In: $errorMessage")).check(matches(isDisplayed()))
-        onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
     }
 
     // --- Tests de Login con Facebook ---
@@ -290,81 +323,97 @@ class LoginFragmentTest {
     }
 
     @Test
-    fun loginFragment_navigatesToHome_onSuccessfulFacebookLoginExistingUser() = runBlocking {
-        val fragmentScenario = launchFragmentAndSetNavController()
+    fun loginFragment_navigatesToHome_onSuccessfulFacebookLoginExistingUser() {
+        runBlocking {
+            val fragmentScenario = launchFragmentAndSetNavController()
 
-        val accessToken = mockk<AccessToken>(relaxed = true)
+            val accessToken = mockk<AccessToken>(relaxed = true)
 
-        // Mockeamos el método loginWithFacebook del ViewModel
-        coEvery { mockLoginViewModel.loginWithFacebook(accessToken.token) } coAnswers {
-            mockLoginViewModel._event.emit(LoginEvent.NavigateToHome)
-            mockLoginViewModel._uiState.value = LoginUiState(isSuccess = true, isLoading = false)
-        }
-
-        fragmentScenario.onFragment { fragment ->
-            runBlocking {
-                // Simulamos la emisión de un token por el canal de Facebook DataSource
-                testFacebookAccessTokenChannel.emit(Result.success(accessToken.token)) // Usar testFacebookAccessTokenChannel
+            // Mockeamos el método loginWithFacebook del ViewModel
+            coEvery { mockLoginViewModel.loginWithFacebook(accessToken.token) } coAnswers {
+                mockLoginViewModel._event.emit(LoginEvent.NavigateToHome)
+                mockLoginViewModel._uiState.value =
+                    LoginUiState(isSuccess = true, isLoading = false)
             }
-        }
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync()
 
-        verify(exactly = 1) { mockNavController.navigate(R.id.action_loginFragment_to_mapFragment) }
-        onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
+            fragmentScenario.onFragment { fragment ->
+                runBlocking {
+                    // Simulamos la emisión de un token por el canal de Facebook DataSource
+                    testFacebookAccessTokenChannel.emit(Result.success(accessToken.token)) // Usar testFacebookAccessTokenChannel
+                }
+            }
+            InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+
+            verify(exactly = 1) { mockNavController.navigate(R.id.action_loginFragment_to_mapFragment) }
+            onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
+        }
     }
 
     @Test
-    fun loginFragment_navigatesToSignup_onSuccessfulFacebookLoginNewUser() = runBlocking {
-        val fragmentScenario = launchFragmentAndSetNavController()
+    fun loginFragment_navigatesToSignup_onSuccessfulFacebookLoginNewUser() {
+        runBlocking {
+            val fragmentScenario = launchFragmentAndSetNavController()
 
-        val accessToken = mockk<AccessToken>(relaxed = true)
-        val userEmail = "fb_new@example.com"
-        val userName = "New Facebook User"
+            val accessToken = mockk<AccessToken>(relaxed = true)
+            val userEmail = "fb_new@example.com"
+            val userName = "New Facebook User"
 
-        // Mockeamos el método loginWithFacebook del ViewModel
-        coEvery { mockLoginViewModel.loginWithFacebook(accessToken.token) } coAnswers {
-            mockLoginViewModel._event.emit(LoginEvent.NavigateToSignupWithArgs(userEmail, userName, true))
-            mockLoginViewModel._uiState.value = LoginUiState(isSuccess = true, isLoading = false)
-        }
-
-        fragmentScenario.onFragment { fragment ->
-            runBlocking {
-                testFacebookAccessTokenChannel.emit(Result.success(accessToken.token)) // Usar testFacebookAccessTokenChannel
+            // Mockeamos el método loginWithFacebook del ViewModel
+            coEvery { mockLoginViewModel.loginWithFacebook(accessToken.token) } coAnswers {
+                mockLoginViewModel._event.emit(
+                    LoginEvent.NavigateToSignupWithArgs(
+                        userEmail,
+                        userName,
+                        true
+                    )
+                )
+                mockLoginViewModel._uiState.value =
+                    LoginUiState(isSuccess = true, isLoading = false)
             }
-        }
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync()
 
-        val expectedDirections = LoginFragmentDirections.actionLoginFragmentToSignupFragment(
-            socialUserEmail = userEmail,
-            socialUserName = userName,
-            isSocialLoginFlow = true
-        )
-        verify(exactly = 1) { mockNavController.navigate(expectedDirections) }
-        onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
+            fragmentScenario.onFragment { fragment ->
+                runBlocking {
+                    testFacebookAccessTokenChannel.emit(Result.success(accessToken.token)) // Usar testFacebookAccessTokenChannel
+                }
+            }
+            InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+
+            val expectedDirections =
+                LoginFragmentDirections.actionLoginFragmentToSignupFragment(
+                    socialUserEmail = userEmail,
+                    socialUserName = userName,
+                    isSocialLoginFlow = true
+                )
+            verify(exactly = 1) { mockNavController.navigate(expectedDirections) }
+            onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
+        }
     }
 
     @Test
-    fun loginFragment_showsSnackbar_onFacebookLoginFailure() = runBlocking {
-        val fragmentScenario = launchFragmentAndSetNavController()
+    fun loginFragment_showsSnackbar_onFacebookLoginFailure() {
+        runBlocking {
+            val fragmentScenario = launchFragmentAndSetNavController()
 
-        val errorMessage = "Facebook login failed"
-        val mockException = Exception(errorMessage)
+            val errorMessage = "Facebook login failed"
+            val mockException = Exception(errorMessage)
 
-        // Mockeamos el método loginWithFacebook del ViewModel
-        coEvery { mockLoginViewModel.loginWithFacebook(any()) } coAnswers {
-            mockLoginViewModel._event.emit(LoginEvent.ShowMessage(errorMessage))
-            mockLoginViewModel._uiState.value = LoginUiState(errorMessage = errorMessage, isLoading = false)
-        }
-
-        fragmentScenario.onFragment { fragment ->
-            runBlocking {
-                testFacebookAccessTokenChannel.emit(Result.failure(mockException)) // Usar testFacebookAccessTokenChannel
+            // Mockeamos el método loginWithFacebook del ViewModel
+            coEvery { mockLoginViewModel.loginWithFacebook(any()) } coAnswers {
+                mockLoginViewModel._event.emit(LoginEvent.ShowMessage(errorMessage))
+                mockLoginViewModel._uiState.value =
+                    LoginUiState(errorMessage = errorMessage, isLoading = false)
             }
-        }
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync()
 
-        onView(withText("Error: $errorMessage")).check(matches(isDisplayed()))
-        onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
+            fragmentScenario.onFragment { fragment ->
+                runBlocking {
+                    testFacebookAccessTokenChannel.emit(Result.failure(mockException)) // Usar testFacebookAccessTokenChannel
+                }
+            }
+            InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+
+            onView(withText("Error: $errorMessage")).check(matches(isDisplayed()))
+            onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
+        }
     }
 
     // --- Tests de Navegación de Botones (Forgot Password, Back, Sign Up) ---

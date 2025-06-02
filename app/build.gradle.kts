@@ -24,10 +24,16 @@ android {
         versionName = "1.0"
 
         // Configuración para pruebas
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "com.cursoandroid.queermap.HiltTestRunner"
+        // Esta línea es útil para asegurar que cada test comienza con un estado limpio,
+        // minimizando la interferencia entre tests.
+        testInstrumentationRunnerArguments["clearPackageData"] = "true"
     }
 
     buildTypes {
+        debug {
+            enableAndroidTestCoverage = true
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(
@@ -48,6 +54,19 @@ android {
 
     buildFeatures {
         viewBinding = true
+    }
+    packaging {
+        resources {
+            pickFirsts += "META-INF/LICENSE.md"
+            pickFirsts += "META-INF/LICENSE.txt"
+            pickFirsts += "META-INF/NOTICE.md"
+            pickFirsts += "META-INF/NOTICE.txt"
+            pickFirsts += "META-INF/*.kotlin_module"
+            pickFirsts += "META-INF/licenses/ASM"
+            pickFirsts += "META-INF/AL2.0"
+            pickFirsts += "META-INF/LGPL2.1"
+            pickFirsts += "META-INF/LICENSE-notice.md"
+        }
     }
 }
 
