@@ -469,9 +469,10 @@ class LoginViewModelTest {
         val userName = "Facebook User"
         coEvery { loginWithFacebookUseCase(accessToken) } returns Result.success(User(userUid, userEmail, null, userName, null))
         every { firebaseAuth.currentUser } returns firebaseUser
-        every { firebaseUser.uid } returns userUid
+        every { firebaseUser.uid } returns userUid // <<< ¡AGREGA ESTA LÍNEA!
         every { firebaseUser.email } returns userEmail
-        every { firebaseUser.displayName } returns userName
+        every { firebaseUser.displayName } returns userName // Asegúrate de que esto también esté aquí
+
         coEvery { authRepository.verifyUserInFirestore(userUid) } returns Result.success(false)
 
         // Recolecta todos los eventos emitidos (NavigateToSignupWithArgs y ShowMessage)
@@ -493,10 +494,10 @@ class LoginViewModelTest {
         assertTrue(emittedEvents.size >= 2) // Esperamos al menos 2 eventos: Navigate y ShowMessage
         val navigateEvent = emittedEvents.first()
         assertTrue(navigateEvent is LoginEvent.NavigateToSignupWithArgs)
-        val directions = (navigateEvent as LoginEvent.NavigateToSignupWithArgs).directions
-        assertEquals(userEmail, directions.arguments.getString("socialUserEmail"))
-        assertEquals(userName, directions.arguments.getString("socialUserName"))
-        assertEquals(true, directions.arguments.getBoolean("isSocialLoginFlow"))
+
+        assertEquals(userEmail, (navigateEvent as LoginEvent.NavigateToSignupWithArgs).socialUserEmail)
+        assertEquals(userName, (navigateEvent as LoginEvent.NavigateToSignupWithArgs).socialUserName)
+        assertEquals(true, (navigateEvent as LoginEvent.NavigateToSignupWithArgs).isSocialLoginFlow)
 
         val messageEvent = emittedEvents[1]
         assertTrue(messageEvent is LoginEvent.ShowMessage)
