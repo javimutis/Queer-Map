@@ -1,13 +1,13 @@
-package com.cursoandroid.queermap
+package com.cursoandroid.queermap // ¡IMPORTANTE: Asegúrate de que este paquete coincida con tu applicationId!
 
 import android.app.Application
 import android.content.Context
 import androidx.test.runner.AndroidJUnitRunner
 import dagger.hilt.android.testing.HiltTestApplication
 
-class HiltTestRunner : AndroidJUnitRunner() {
+class CustomTestRunner : AndroidJUnitRunner() {
     override fun newApplication(cl: ClassLoader?, name: String?, context: Context?): Application {
-        // Aseguramos que HiltTestApplication se usa para el test
+        // Le decimos al runner que use HiltTestApplication para nuestras pruebas
         return super.newApplication(cl, HiltTestApplication::class.java.name, context)
     }
 }

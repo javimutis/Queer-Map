@@ -1,15 +1,11 @@
 plugins {
-    // Plugins de Android y Kotlin
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-
-    // Plugins para Hilt y Google Services
     alias(libs.plugins.hilt)
     alias(libs.plugins.google.services)
     alias(libs.plugins.secrets)
     kotlin("kapt")
     id("androidx.navigation.safeargs.kotlin")
-
 }
 
 android {
@@ -23,11 +19,8 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        // Configuración para pruebas
-        testInstrumentationRunner = "com.cursoandroid.queermap.HiltTestRunner"
-        // Esta línea es útil para asegurar que cada test comienza con un estado limpio,
-        // minimizando la interferencia entre tests.
-        testInstrumentationRunnerArguments["clearPackageData"] = "true"
+        testInstrumentationRunner = "com.cursoandroid.queermap.CustomTestRunner"
+        multiDexEnabled = true
     }
 
     buildTypes {
@@ -55,6 +48,7 @@ android {
     buildFeatures {
         viewBinding = true
     }
+
     packaging {
         resources {
             pickFirsts += "META-INF/LICENSE.md"
@@ -62,23 +56,34 @@ android {
             pickFirsts += "META-INF/NOTICE.md"
             pickFirsts += "META-INF/NOTICE.txt"
             pickFirsts += "META-INF/*.kotlin_module"
-            pickFirsts += "META-INF/licenses/ASM"
             pickFirsts += "META-INF/AL2.0"
             pickFirsts += "META-INF/LGPL2.1"
+            pickFirsts += "META-INF/licenses/ASM"
             pickFirsts += "META-INF/LICENSE-notice.md"
         }
     }
 }
 
 dependencies {
-    // Firebase
+    // Core Android y Kotlin
+    implementation(libs.core.ktx)
+    implementation(libs.appcompat)
+    implementation(libs.material)
+    implementation(libs.cardview)
+    implementation(libs.core.splashscreen)
+    implementation(libs.androidx.activity)
+    implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.multidex)
+
+    // Firebase (usando la BoM para gestionar versiones)
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.auth)
     implementation(libs.firebase.db)
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.coroutines)
-    // Kotlin Coroutines Core y Android
+
+    // Kotlin Coroutines
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
 
@@ -87,55 +92,52 @@ dependencies {
     implementation(libs.google.auth)
     implementation(libs.facebook.login)
 
-    // Google Maps y Places
+    // Mapas y Lugares
     implementation(libs.maps)
     implementation(libs.places)
 
-    // Retrofit y GSON
+    // Red y JSON
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
     implementation(libs.gson)
 
-    // Navigation Component
+    // Navegación
     implementation(libs.androidx.navigation.fragment)
     implementation(libs.androidx.navigation.ui)
 
-    // Otros
+    // Carga de imágenes
     implementation(libs.picasso)
-    implementation(libs.material)
-    implementation(libs.core.ktx)
-    implementation(libs.appcompat)
-    implementation(libs.cardview)
-    implementation(libs.core.splashscreen)
+
+    // Hilt (Dependencias de inyección para la aplicación principal)
     implementation(libs.hilt.core)
-    implementation(libs.androidx.activity)
-    implementation(libs.androidx.constraintlayout)
     kapt(libs.hilt.compiler)
 
+    // --- DEPENDENCIAS DE PRUEBAS ---
 
-    // Unit Tests
+    // Pruebas Unitarias
     testImplementation(libs.junit)
     testImplementation(libs.mockk)
     testImplementation(libs.coroutines.test)
     testImplementation(libs.arch.core.testing)
     testImplementation(libs.kotest.assertions)
 
-    // Pruebas UI
-    // Hilt Android Testing
-    androidTestImplementation(libs.hilt.android.testing)
-    kaptAndroidTest(libs.hilt.compiler)
-    // Fragment Testing
-    androidTestImplementation(libs.androidx.fragment.testing)
-    // Espresso (para interacciones de UI y aserciones)
-    androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(libs.androidx.espresso.intents)
-    androidTestImplementation(libs.androidx.espresso.contrib)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.androidx.test.runner)
     androidTestImplementation(libs.androidx.test.rules)
     androidTestImplementation(libs.arch.core.testing)
 
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.espresso)
+    // Espresso
+    androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(libs.androidx.espresso.intents)
+    androidTestImplementation(libs.androidx.espresso.contrib)
+
+    // MockK para Android Tests
     androidTestImplementation(libs.mockk.android)
+
+    // Hilt para Pruebas de Instrumentación
+    androidTestImplementation(libs.hilt.android.testing)
+    kaptAndroidTest(libs.hilt.compiler)
+
+    // Fragment Testing (para lanzar fragmentos en tests)
+    debugImplementation(libs.androidx.fragment.testing)
 }

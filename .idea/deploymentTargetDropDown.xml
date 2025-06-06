@@ -2,7 +2,39 @@
 <project version="4">
   <component name="deploymentTargetDropDown">
     <value>
+      <entry key="HiltSmokeTest">
+        <State>
+          <targetSelectedWithDropDown>
+            <Target>
+              <type value="QUICK_BOOT_TARGET" />
+              <deviceKey>
+                <Key>
+                  <type value="VIRTUAL_DEVICE_PATH" />
+                  <value value="C:\Users\javie\.android\avd\Pixel_7_Pro_API_28.avd" />
+                </Key>
+              </deviceKey>
+            </Target>
+          </targetSelectedWithDropDown>
+          <timeTargetWasSelectedWithDropDown value="2025-06-05T17:12:12.528846600Z" />
+        </State>
+      </entry>
       <entry key="app">
+        <State>
+          <targetSelectedWithDropDown>
+            <Target>
+              <type value="QUICK_BOOT_TARGET" />
+              <deviceKey>
+                <Key>
+                  <type value="VIRTUAL_DEVICE_PATH" />
+                  <value value="C:\Users\javie\.android\avd\Prueba_Emulador.avd" />
+                </Key>
+              </deviceKey>
+            </Target>
+          </targetSelectedWithDropDown>
+          <timeTargetWasSelectedWithDropDown value="2025-06-05T16:03:21.139843800Z" />
+        </State>
+      </entry>
+      <entry key="testInjection()">
         <State />
       </entry>
     </value>
