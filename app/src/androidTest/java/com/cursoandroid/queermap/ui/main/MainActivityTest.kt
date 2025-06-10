@@ -60,8 +60,7 @@ class MainActivityTest {
         onView(withId(R.id.nav_host_fragment)).check(matches(isDisplayed()))
     }
 
-    // TEST 2: Verificar que el CoverFragment es el primer fragmento visible
-    // y sus elementos clave están en pantalla.
+    // TEST 2: Verificar que el CoverFragment es el primer fragmento visible y sus elementos clave están en pantalla.
     @Test
     fun when_main_activity_is_launched_then_cover_fragment_elements_are_displayed() {
         // Esperamos a que el IdlingResource indique que el CoverFragment está listo (delay del ViewModel)
