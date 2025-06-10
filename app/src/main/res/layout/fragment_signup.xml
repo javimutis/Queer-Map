@@ -184,7 +184,7 @@
                 app:layout_constraintTop_toBottomOf="@id/tvEmail">
 
                 <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/etEmail"
+                    android:id="@+id/etEmailRegister"
                     style="@style/FormInput"
                     android:hint="@string/email_hint"
                     android:inputType="textEmailAddress" />

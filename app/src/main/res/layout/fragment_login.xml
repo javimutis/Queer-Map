@@ -93,7 +93,7 @@
 
 
                 <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/etEmail"
+                    android:id="@+id/etEmailLogin"
                     android:layout_width="match_parent"
                     android:layout_height="56dp"
                     android:background="@drawable/neumorph_edittext"

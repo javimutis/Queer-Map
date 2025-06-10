@@ -70,7 +70,7 @@ class SignUpFragment : Fragment() {
     }
 
     private fun setupListeners() {
-        binding.etEmail.addTextChangedListener { editable ->
+        binding.etEmailRegister.addTextChangedListener { editable ->
             viewModel.onEvent(SignUpEvent.OnEmailChanged(editable.toString()))
             binding.tilEmail.error = null
         }
@@ -168,9 +168,9 @@ class SignUpFragment : Fragment() {
                     }
                 }
                 state.email?.let { newText ->
-                    if (binding.etEmail.text.toString() != newText) {
-                        binding.etEmail.setText(newText)
-                        binding.etEmail.setSelection(newText.length)
+                    if (binding.etEmailRegister.text.toString() != newText) {
+                        binding.etEmailRegister.setText(newText)
+                        binding.etEmailRegister.setSelection(newText.length)
                     }
                 }
                 state.password?.let { newText ->

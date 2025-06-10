@@ -101,7 +101,7 @@ class LoginFragment : Fragment() {
     // UI Interaction Handling
     private fun setupListeners() {
         binding.btnLogin.setOnClickListener {
-            val email = binding.etEmail.text.toString()
+            val email = binding.etEmailLogin.text.toString()
             val password = binding.etPassword.text.toString()
             if (!isValidEmail(email)) {
                 showSnackbar("Por favor ingresa un email válido")
@@ -147,7 +147,7 @@ class LoginFragment : Fragment() {
                     showSnackbar(state.errorMessage)
                 }
                 state.email?.let {
-                    binding.etEmail.setText(it)
+                    binding.etEmailLogin.setText(it)
                 }
                 state.password?.let {
                     binding.etPassword.setText(it)
