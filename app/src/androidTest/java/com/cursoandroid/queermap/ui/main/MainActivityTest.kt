@@ -85,11 +85,9 @@ class MainActivityTest {
         onView(withId(R.id.btnCoverLogin)).perform(click())
 
         // Ahora, verificamos que el LoginFragment se muestra
-        // (por ejemplo, buscando un elemento único de LoginFragment, como el campo de email)
-        // Asegúrate de que R.id.etEmail sea el ID del campo de email en fragment_login.xml
         onView(withId(R.id.etEmailLogin)).check(matches(isDisplayed()))
-        // También puedes verificar un texto si es distintivo
-        // onView(withText(R.string.login_title)).check(matches(isDisplayed()))
+
+        onView(withText(R.string.login_title)).check(matches(isDisplayed()))
     }
 
     // TEST 4: Verificar la navegación del CoverFragment al SignUpFragment al hacer clic en el botón de registro
