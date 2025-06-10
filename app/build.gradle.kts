@@ -110,6 +110,7 @@ dependencies {
 
     // Hilt (Dependencias de inyección para la aplicación principal)
     implementation(libs.hilt.core)
+    implementation(libs.androidx.espresso.idling.resource)
     kapt(libs.hilt.compiler)
 
     // --- DEPENDENCIAS DE PRUEBAS ---

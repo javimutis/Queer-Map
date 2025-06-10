@@ -46,7 +46,8 @@ arch-core-testing = "2.2.0"
 fragment-testing = "1.6.1"
 test-runner = "1.5.2"
 test-rules = "1.5.0"
-kotest = "5.6.2" # Versión de Kotest
+kotest = "5.6.2"
+espresso-idling-resource = "3.6.1" # Versión de Kotest
 
 
 [plugins]
@@ -64,7 +65,7 @@ firebase-analytics = { module = "com.google.firebase:firebase-analytics-ktx" }
 firebase-auth = { module = "com.google.firebase:firebase-auth-ktx" }
 firebase-db = { module = "com.google.firebase:firebase-database-ktx" }
 firebase-firestore = { module = "com.google.firebase:firebase-firestore-ktx" }
-firebase-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services", version = "1.7.3" }
+firebase-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services", version.ref = "coroutines" }
 
 # Google Maps y Places
 maps = { module = "com.google.android.gms:play-services-maps", version.ref = "maps" }
@@ -109,7 +110,7 @@ ext-junit = { module = "androidx.test.ext:junit", version.ref = "ext-junit" }
 kotest-assertions = { group = "io.kotest", name = "kotest-assertions-core", version.ref = "kotest" }
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" } # Para tests unitarios
 mockk-android = { group = "io.mockk", name = "mockk-android", version.ref = "mockk" } # Para tests de instrumentación
-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines-test" }
+coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
 arch-core-testing = { group = "androidx.arch.core", name = "core-testing", version.ref = "arch-core-testing" }
 
 # Espresso
@@ -127,3 +128,4 @@ androidx-fragment-testing = { group = "androidx.fragment", name = "fragment-test
 hilt-core = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
 hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" }
 hilt-android-testing = { group = "com.google.dagger", name = "hilt-android-testing", version.ref = "hilt" }
+androidx-espresso-idling-resource = { group = "androidx.test.espresso", name = "espresso-idling-resource", version.ref = "espresso-idling-resource" }

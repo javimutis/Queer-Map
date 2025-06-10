@@ -3,29 +3,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/welcomeFragment">
-
-    <fragment
-        android:id="@+id/welcomeFragment"
-        android:name="com.cursoandroid.queermap.ui.welcome.WelcomeFragment"
-        android:label="Welcome"
-        tools:layout="@layout/fragment_welcome">
-        <action
-            android:id="@+id/action_welcome_to_cover"
-            app:destination="@id/coverFragment"
-            app:enterAnim="@anim/fade_in"
-            app:exitAnim="@anim/fade_out"
-            app:popEnterAnim="@anim/fade_in"
-            app:popExitAnim="@anim/fade_out" />
-
-    </fragment>
+    app:startDestination="@id/coverFragment">
 
     <fragment
         android:id="@+id/coverFragment"
         android:name="com.cursoandroid.queermap.ui.cover.CoverFragment"
         android:label="Cover"
         tools:layout="@layout/fragment_cover">
-
         <action
             android:id="@+id/action_cover_to_login"
             app:destination="@id/loginFragment"
@@ -34,7 +18,6 @@
             app:popEnterAnim="@anim/fade_in"
             app:popExitAnim="@anim/fade_out" />
 
-
         <action
             android:id="@+id/action_cover_to_signup"
             app:destination="@id/signUpFragment"
@@ -42,9 +25,7 @@
             app:exitAnim="@anim/fade_out"
             app:popEnterAnim="@anim/fade_in"
             app:popExitAnim="@anim/fade_out" />
-
     </fragment>
-
 
     <fragment
         android:id="@+id/loginFragment"
@@ -107,15 +88,6 @@
             app:popUpToInclusive="true" />
     </fragment>
 
-    <!--        <action-->
-    <!--            android:id="@+id/action_loginFragment_to_readTermsFragment"-->
-    <!--            app:destination="@id/readTermsFragment" />-->
-
-    <!--    <fragment-->
-    <!--        android:id="@+id/readTermsFragment"-->
-    <!--        android:name="com.cursoandroid.queermap.ui.terms.ReadTermsFragment"-->
-    <!--        android:label="Términos" />-->
-
     <fragment
         android:id="@+id/forgotPasswordFragment"
         android:name="com.cursoandroid.queermap.ui.forgotpassword.ForgotPasswordFragment"
@@ -137,5 +109,4 @@
             app:popUpTo="@id/nav_graph"
             app:popUpToInclusive="true" />
     </fragment>
-
 </navigation>
