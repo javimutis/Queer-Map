@@ -6,50 +6,59 @@ import com.cursoandroid.queermap.domain.usecase.auth.SendResetPasswordUseCase
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class ForgotPasswordViewModel @Inject constructor(
-    private val sendResetPasswordUseCase: SendResetPasswordUseCase
+    private val sendResetPasswordUseCase: SendResetPasswordUseCase,
+    private val forgotPasswordValidator: ForgotPasswordValidator // Inyectar validador
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ForgotPasswordUiState())
     val uiState: StateFlow<ForgotPasswordUiState> = _uiState
 
+    private val _events = Channel<ForgotPasswordEvent>(Channel.BUFFERED)
+    val events = _events.receiveAsFlow() // Eventos de una sola vez (mensajes, navegación)
+
     fun sendPasswordReset(email: String) {
-        updateUiState(isLoading = true)
+        // Validar email antes de proceder
+        if (!forgotPasswordValidator.isValidEmail(email)) {
+            viewModelScope.launch {
+                _events.send(ForgotPasswordEvent.ShowMessage("Ingrese un correo válido"))
+            }
+            return
+        }
+
+        _uiState.value = _uiState.value.copy(isLoading = true) // Iniciar carga
+
         viewModelScope.launch {
             val result = sendResetPasswordUseCase(email)
-            val newState = if (result.isSuccess) {
-                ForgotPasswordUiState(isSuccess = true, message = "Correo enviado")
+            _uiState.value = _uiState.value.copy(isLoading = false) // Finalizar carga
+
+            if (result.isSuccess) {
+                _uiState.value = _uiState.value.copy(isSuccess = true) // Actualizar estado de éxito
+                _events.send(ForgotPasswordEvent.ShowMessage("Se ha enviado un correo de restablecimiento de contraseña."))
+                _events.send(ForgotPasswordEvent.NavigateBack) // Navegar al terminar
             } else {
                 val errorMessage = when (val exception = result.exceptionOrNull()) {
-                    is FirebaseAuthInvalidUserException -> "No hay ninguna cuenta con ese correo"
-                    is FirebaseAuthInvalidCredentialsException -> "Correo inválido"
-                    else -> exception?.localizedMessage ?: "Ocurrió un error"
+                    is FirebaseAuthInvalidUserException -> "No hay ninguna cuenta registrada con este correo electrónico."
+                    is FirebaseAuthInvalidCredentialsException -> "El formato del correo electrónico es inválido."
+                    else -> "Ocurrió un error inesperado. Intenta de nuevo más tarde."
                 }
-                ForgotPasswordUiState(message = errorMessage)
+                _events.send(ForgotPasswordEvent.ShowMessage(errorMessage))
+                _uiState.value = _uiState.value.copy(isSuccess = false) // Asegurar que no está en éxito
             }
-            _uiState.value = newState.copy(isLoading = false)
         }
     }
+}
 
-    private fun updateUiState(
-        isLoading: Boolean = false,
-        message: String? = null,
-        isSuccess: Boolean = false
-    ) {
-        _uiState.value = _uiState.value.copy(
-            isLoading = isLoading,
-            message = message,
-            isSuccess = isSuccess
-        )
-    }
-
-    fun clearMessage() {
-        _uiState.value = _uiState.value.copy(message = null)
-    }
+// Clase sellada para eventos de una sola vez
+sealed class ForgotPasswordEvent {
+    object NavigateBack : ForgotPasswordEvent()
+    data class ShowMessage(val message: String) : ForgotPasswordEvent()
 }

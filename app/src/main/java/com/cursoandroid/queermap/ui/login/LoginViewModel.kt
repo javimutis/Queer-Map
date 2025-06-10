@@ -1,20 +1,23 @@
-// app/src/main/java/com/cursoandroid/queermap/ui/login/LoginViewModel.kt
-
 package com.cursoandroid.queermap.ui.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.cursoandroid.queermap.common.EmailValidator.isValidEmail
 import com.cursoandroid.queermap.domain.repository.AuthRepository
 import com.cursoandroid.queermap.domain.usecase.auth.LoginWithEmailUseCase
 import com.cursoandroid.queermap.domain.usecase.auth.LoginWithFacebookUseCase
 import com.cursoandroid.queermap.domain.usecase.auth.LoginWithGoogleUseCase
-import com.cursoandroid.queermap.ui.forgotpassword.ForgotPasswordValidator.isValidEmail
-import com.cursoandroid.queermap.ui.forgotpassword.ForgotPasswordValidator.isValidPassword
+import com.cursoandroid.queermap.ui.signup.SignUpValidator.isValidPassword
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.io.IOException
 import javax.inject.Inject
@@ -29,10 +32,12 @@ class LoginViewModel @Inject constructor(
 ) : ViewModel() {
 
     internal val _uiState = MutableStateFlow(LoginUiState()) // CAMBIO: de private a internal
-    val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow() // Añadir .asStateFlow() para exponerlo como StateFlow inmutable
+    val uiState: StateFlow<LoginUiState> =
+        _uiState.asStateFlow() // Añadir .asStateFlow() para exponerlo como StateFlow inmutable
 
     internal val _event = MutableSharedFlow<LoginEvent>() // CAMBIO: de private a internal
-    val event: SharedFlow<LoginEvent> = _event.asSharedFlow() // Añadir : SharedFlow<LoginEvent> para explicitar el tipo
+    val event: SharedFlow<LoginEvent> =
+        _event.asSharedFlow() // Añadir : SharedFlow<LoginEvent> para explicitar el tipo
 
 
     fun loginWithEmail(email: String, password: String) {
@@ -94,7 +99,8 @@ class LoginViewModel @Inject constructor(
             onSuccess = {
                 val currentUser = firebaseAuth.currentUser
                 if (currentUser != null) {
-                    val userProfileExistsResult = authRepository.verifyUserInFirestore(currentUser.uid)
+                    val userProfileExistsResult =
+                        authRepository.verifyUserInFirestore(currentUser.uid)
                     userProfileExistsResult.fold(
                         onSuccess = { exists ->
                             if (exists) {
@@ -109,16 +115,19 @@ class LoginViewModel @Inject constructor(
                                 // *** ¡ESTE ES EL CAMBIO CLAVE EN EL VIEWMODEL! ***
                                 // Ahora emitimos los argumentos directamente en el evento,
                                 // SIN crear un objeto NavDirections aquí.
-                                _event.emit(LoginEvent.NavigateToSignupWithArgs(
-                                    socialUserEmail = currentUser.email,
-                                    socialUserName = currentUser.displayName,
-                                    isSocialLoginFlow = true
-                                ))
+                                _event.emit(
+                                    LoginEvent.NavigateToSignupWithArgs(
+                                        socialUserEmail = currentUser.email,
+                                        socialUserName = currentUser.displayName,
+                                        isSocialLoginFlow = true
+                                    )
+                                )
                                 _event.emit(LoginEvent.ShowMessage("Completa tu perfil para continuar"))
                             }
                         },
                         onFailure = { error ->
-                            val errorMessage = error.message ?: "Error al verificar perfil de usuario."
+                            val errorMessage =
+                                error.message ?: "Error al verificar perfil de usuario."
                             _uiState.value = LoginUiState(errorMessage = errorMessage)
                             _event.emit(LoginEvent.ShowMessage(errorMessage))
                         }

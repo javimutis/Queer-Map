@@ -22,11 +22,11 @@ class ForgotPasswordFragment : Fragment(R.layout.fragment_forgot_password) {
 
     private val viewModel: ForgotPasswordViewModel by viewModels()
 
-    // Ciclo de vida del fragmento
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         _binding = FragmentForgotPasswordBinding.bind(view)
         setupListeners()
         observeUiState()
+        observeEvents() // Nuevo observador de eventos
     }
 
     override fun onDestroyView() {
@@ -34,15 +34,12 @@ class ForgotPasswordFragment : Fragment(R.layout.fragment_forgot_password) {
         _binding = null
     }
 
-    // Manejo de interacciones de UI
     private fun setupListeners() {
         binding.btnResetPassword.setOnClickListener {
             val email = binding.etEmail.text.toString().trim()
-            if (ForgotPasswordValidator.isValidEmail(email)) {
-                viewModel.sendPasswordReset(email)
-            } else {
-                showSnackbar("Ingrese un correo válido")
-            }
+            // La validación ahora la maneja el ViewModel y si no es válida,
+            // el ViewModel emitirá un evento ShowMessage.
+            viewModel.sendPasswordReset(email)
         }
 
         binding.btnCancel.setOnClickListener {
@@ -50,29 +47,33 @@ class ForgotPasswordFragment : Fragment(R.layout.fragment_forgot_password) {
         }
     }
 
-    // Observación de estado y eventos
     private fun observeUiState() {
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect { state ->
                     binding.btnResetPassword.isEnabled = !state.isLoading
+                    binding.btnCancel.isEnabled = !state.isLoading // Deshabilitar cancelar también
+                    binding.etEmail.isEnabled = !state.isLoading // Deshabilitar campo
                     binding.progressBar.visibility = if (state.isLoading) View.VISIBLE else View.GONE
+                }
+            }
+        }
+    }
 
-                    state.message?.let {
-                        showSnackbar(it)
-                        viewModel.clearMessage()
-                    }
-
-                    if (state.isSuccess) {
-                        findNavController().popBackStack()
+    private fun observeEvents() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.events.collect { event ->
+                    when (event) {
+                        is ForgotPasswordEvent.ShowMessage -> showSnackbar(event.message)
+                        is ForgotPasswordEvent.NavigateBack -> findNavController().popBackStack()
                     }
                 }
             }
         }
     }
 
-    // Utilidades
     private fun showSnackbar(message: String) {
-        Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
+        Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show() // Usar LENGTH_LONG para mensajes importantes
     }
 }
