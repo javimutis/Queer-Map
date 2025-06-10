@@ -99,5 +99,4 @@ class MainActivityTest {
         onView(withId(R.id.etName)).check(matches(isDisplayed()))
         onView(withText(R.string.register_title)).check(matches(isDisplayed()))
     }
-
 }
