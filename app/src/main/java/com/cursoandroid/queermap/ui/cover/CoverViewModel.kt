@@ -1,22 +1,26 @@
 // Queermap/ui/cover/CoverViewModel.kt
 package com.cursoandroid.queermap.ui.cover
 
-import android.util.Log // Importa Log para depuración
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import com.cursoandroid.queermap.util.EspressoIdlingResource // Importa EspressoIdlingResource
+import com.cursoandroid.queermap.util.IdlingResourceProvider
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
 data class CoverUiState(
     val showTitle: Boolean = false,
     val navigateToLogin: Boolean = false,
-    val navigateToSignUp: Boolean = false)
+    val navigateToSignUp: Boolean = false
+)
 
-
-class CoverViewModel : ViewModel() {
+@HiltViewModel
+class CoverViewModel @Inject constructor(
+    private val idlingResourceProvider: IdlingResourceProvider
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(CoverUiState())
     val uiState: StateFlow<CoverUiState> = _uiState
@@ -26,16 +30,12 @@ class CoverViewModel : ViewModel() {
     }
 
     private fun showTitleWithDelay() {
-        // Incrementa el IdlingResource antes de iniciar la operación asíncrona
-        EspressoIdlingResource.increment()
-        Log.d("IdlingResourceLog", "CoverViewModel: INCREMENTADO (delay iniciado). ¿Ahora inactivo? ${EspressoIdlingResource.countingIdlingResource.isIdleNow}")
+        idlingResourceProvider.increment()
 
         viewModelScope.launch {
             delay(1300)
             _uiState.value = _uiState.value.copy(showTitle = true)
-            // Decrementa el IdlingResource cuando la operación asíncrona ha terminado
-            EspressoIdlingResource.decrement()
-            Log.d("IdlingResourceLog", "CoverViewModel: DECREMENTADO (delay finalizado). ¿Ahora inactivo? ${EspressoIdlingResource.countingIdlingResource.isIdleNow}")
+            idlingResourceProvider.decrement()
         }
     }
 
