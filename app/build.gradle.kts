@@ -131,6 +131,8 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.espresso.intents)
     androidTestImplementation(libs.androidx.espresso.contrib)
+    androidTestImplementation(libs.coroutines.test)
+    androidTestImplementation(libs.androidx.espresso.idling.resource)
 
     // MockK para Android Tests
     androidTestImplementation(libs.mockk.android)
@@ -141,4 +143,7 @@ dependencies {
 
     // Fragment Testing (para lanzar fragmentos en tests)
     debugImplementation(libs.androidx.fragment.testing)
+
+    androidTestImplementation(libs.androidx.multidex)
+    androidTestImplementation(libs.androidx.multidex.instrumentation) // <-- ¡NUEVA LÍNEA!
 }

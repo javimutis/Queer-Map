@@ -5,7 +5,7 @@
         android:debuggable="true">
         <activity
             android:name="com.cursoandroid.queermap.HiltTestActivity"
-            android:exported="true">
-        </activity>
+            android:exported="true"
+            android:process="com.cursoandroid.queermap"> </activity>
     </application>
 </manifest>

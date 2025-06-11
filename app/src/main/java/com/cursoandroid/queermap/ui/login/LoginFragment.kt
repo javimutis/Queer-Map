@@ -31,14 +31,10 @@ class LoginFragment : Fragment() {
     private var _binding: FragmentLoginBinding? = null
     private val binding get() = _binding!!
 
-    // Propiedad 'viewModel' del Fragment. Para el test, la inyectaremos vía reflexión.
-    // Aunque aquí es 'private val', el test la modificará en tiempo de ejecución.
-    private val viewModel: LoginViewModel by viewModels()
+    internal val viewModel: LoginViewModel by viewModels()
 
-    @Inject
-    lateinit var googleSignInDataSource: GoogleSignInDataSource
-    @Inject
-    lateinit var facebookSignInDataSource: FacebookSignInDataSource
+    @Inject internal lateinit var googleSignInDataSource: GoogleSignInDataSource
+    @Inject internal lateinit var facebookSignInDataSource: FacebookSignInDataSource
 
     private lateinit var googleSignInLauncher: androidx.activity.result.ActivityResultLauncher<Intent>
     private lateinit var callbackManager: CallbackManager
