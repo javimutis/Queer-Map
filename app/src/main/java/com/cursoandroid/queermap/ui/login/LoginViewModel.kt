@@ -2,12 +2,13 @@ package com.cursoandroid.queermap.ui.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.cursoandroid.queermap.common.EmailValidator.isValidEmail
+import com.cursoandroid.queermap.common.EmailValidator.isValidEmail // Mantener esta importación si EmailValidator.kt tiene un 'object'
 import com.cursoandroid.queermap.domain.repository.AuthRepository
 import com.cursoandroid.queermap.domain.usecase.auth.LoginWithEmailUseCase
 import com.cursoandroid.queermap.domain.usecase.auth.LoginWithFacebookUseCase
 import com.cursoandroid.queermap.domain.usecase.auth.LoginWithGoogleUseCase
-import com.cursoandroid.queermap.ui.signup.SignUpValidator.isValidPassword
+// import com.cursoandroid.queermap.ui.signup.SignUpValidator.isValidPassword // ELIMINAR esta importación
+import com.cursoandroid.queermap.ui.signup.SignUpValidator // IMPORTAR la clase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
@@ -24,30 +25,31 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    internal val loginWithEmailUseCase: LoginWithEmailUseCase, // CAMBIO: de private a internal
-    internal val loginWithFacebookUseCase: LoginWithFacebookUseCase, // CAMBIO: de private a internal
-    internal val loginWithGoogleUseCase: LoginWithGoogleUseCase, // CAMBIO: de private a internal
+    internal val loginWithEmailUseCase: LoginWithEmailUseCase,
+    internal val loginWithFacebookUseCase: LoginWithFacebookUseCase,
+    internal val loginWithGoogleUseCase: LoginWithGoogleUseCase,
     private val authRepository: AuthRepository,
-    private val firebaseAuth: FirebaseAuth
+    private val firebaseAuth: FirebaseAuth,
+    private val signUpValidator: SignUpValidator // INYECTAR SignUpValidator
 ) : ViewModel() {
 
-    internal val _uiState = MutableStateFlow(LoginUiState()) // CAMBIO: de private a internal
+    internal val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> =
-        _uiState.asStateFlow() // Añadir .asStateFlow() para exponerlo como StateFlow inmutable
+        _uiState.asStateFlow()
 
-    internal val _event = MutableSharedFlow<LoginEvent>() // CAMBIO: de private a internal
+    internal val _event = MutableSharedFlow<LoginEvent>()
     val event: SharedFlow<LoginEvent> =
-        _event.asSharedFlow() // Añadir : SharedFlow<LoginEvent> para explicitar el tipo
+        _event.asSharedFlow()
 
 
     fun loginWithEmail(email: String, password: String) {
         updateUiState(isLoading = true)
         viewModelScope.launch {
-            if (!isValidEmail(email)) {
+            if (!isValidEmail(email)) { // Asumiendo que EmailValidator.isValidEmail sigue siendo accesible así
                 updateEmailInvalid()
                 return@launch
             }
-            if (!isValidPassword(password)) {
+            if (!signUpValidator.isValidPassword(password)) { // USAR la instancia inyectada
                 updatePasswordInvalid()
                 return@launch
             }
@@ -104,17 +106,10 @@ class LoginViewModel @Inject constructor(
                     userProfileExistsResult.fold(
                         onSuccess = { exists ->
                             if (exists) {
-                                // El perfil ya existe en Firestore, el usuario está completamente registrado en la app
                                 _uiState.value = LoginUiState(isSuccess = true)
                                 _event.emit(LoginEvent.NavigateToHome)
                             } else {
-                                // El usuario se autenticó con Firebase, pero NO tiene perfil en Firestore
-                                // Debe ir a la pantalla de registro de perfil
                                 _uiState.value = LoginUiState(isSuccess = true)
-
-                                // *** ¡ESTE ES EL CAMBIO CLAVE EN EL VIEWMODEL! ***
-                                // Ahora emitimos los argumentos directamente en el evento,
-                                // SIN crear un objeto NavDirections aquí.
                                 _event.emit(
                                     LoginEvent.NavigateToSignupWithArgs(
                                         socialUserEmail = currentUser.email,

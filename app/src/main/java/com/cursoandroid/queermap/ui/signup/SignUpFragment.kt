@@ -86,7 +86,7 @@ class SignUpFragment : Fragment() {
         }
 
         binding.etUser.addTextChangedListener { editable ->
-            viewModel.onEvent(SignUpEvent.OnUserChanged(editable.toString()))
+            viewModel.onEvent(SignUpEvent.OnUsernameChanged(editable.toString()))
             binding.tilUser.error = null
         }
 
@@ -137,7 +137,6 @@ class SignUpFragment : Fragment() {
                     binding.ivGoogleSignIn.visibility = View.GONE
                     binding.ivFacebookLSignIn.visibility = View.GONE
                     binding.btnRegister.text = "Completar mi Perfil"
-
                 } else {
                     binding.tilEmail.visibility = View.VISIBLE
                     binding.tilPassword.visibility = View.VISIBLE
@@ -147,9 +146,8 @@ class SignUpFragment : Fragment() {
                     binding.btnRegister.text = "Registrarme"
                 }
 
-
                 if (state.isEmailInvalid) {
-                    binding.tilEmail.error = "Por favor, ingresa un email válido."
+                    binding.tilEmail.error = "Ingresa un email válido."
                 }
                 if (state.isPasswordInvalid) {
                     binding.tilPassword.error = "La contraseña debe tener al menos 8 caracteres."
@@ -158,10 +156,10 @@ class SignUpFragment : Fragment() {
                     binding.tilRepeatPassword.error = "Las contraseñas no coinciden."
                 }
                 if (state.isBirthdayInvalid) {
-                    binding.tilBirthday.error = "Por favor, ingresa una fecha de nacimiento válida."
+                    binding.tilBirthday.error = "Ingresa una fecha de nacimiento válida."
                 }
 
-                state.user?.let { newText ->
+                state.username?.let { newText ->
                     if (binding.etUser.text.toString() != newText) {
                         binding.etUser.setText(newText)
                         binding.etUser.setSelection(newText.length)
@@ -209,6 +207,7 @@ class SignUpFragment : Fragment() {
                         findNavController().navigate(R.id.action_signupFragment_to_mapFragment)
                     }
                     is SignUpEvent.ShowMessage -> showSnackbar(event.message)
+                    // Added else branch to handle all other SignUpEvent types
                     else -> Unit
                 }
             }
@@ -239,7 +238,8 @@ class SignUpFragment : Fragment() {
                 val date = sdf.parse(currentBirthDateText)
                 if (date != null) builder.setSelection(date.time)
             } catch (_: Exception) {
-             }
+                // No es necesario manejar esto, el valor predeterminado será la fecha actual si falla el parseo
+            }
         }
 
         val constraints = CalendarConstraints.Builder()

@@ -3,7 +3,7 @@ package com.cursoandroid.queermap.ui.signup
 import android.content.Intent
 
 sealed class SignUpEvent {
-    data class OnUserChanged(val user: String) : SignUpEvent()
+    data class OnUsernameChanged(val username: String) : SignUpEvent() // Renombrado de 'user' a 'username'
     data class OnEmailChanged(val email: String) : SignUpEvent()
     data class OnPasswordChanged(val password: String) : SignUpEvent()
     data class OnConfirmPasswordChanged(val confirmPassword: String) : SignUpEvent()

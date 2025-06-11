@@ -1,9 +1,12 @@
 package com.cursoandroid.queermap.ui.signup
 
-object SignUpValidator {
+import javax.inject.Inject
 
-
-    private const val PASSWORD_MIN_LENGTH = 8
+class SignUpValidator @Inject constructor() {
+    // Mover a companion object
+    companion object {
+        private const val PASSWORD_MIN_LENGTH = 8
+    }
 
     fun isValidEmail(email: String): Boolean {
         return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
@@ -18,12 +21,12 @@ object SignUpValidator {
         return password.matches(passwordRegex.toRegex())
     }
 
-    fun isValidUser(user: String): Boolean {
-        return user.isNotBlank()
+    fun isValidUsername(username: String): Boolean {
+        return username.isNotBlank()
     }
 
-    fun isValidFullName(username: String): Boolean {
-        return username.isNotBlank()
+    fun isValidFullName(fullName: String): Boolean {
+        return fullName.isNotBlank()
     }
 
     fun isValidBirthday(birthday: String): Boolean {
