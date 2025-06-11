@@ -64,8 +64,8 @@ class SignUpViewModel @Inject constructor(
                     handleFacebookAuthWithFirebase(result.getOrThrow())
                 } else {
                     val exception = result.exceptionOrNull()
-                    _uiState.update { it.copy(isLoading = false) }
                     val errorMessage = exception?.message ?: "Inicio de sesión con Facebook fallido."
+                    _uiState.update { it.copy(isLoading = false, errorMessage = errorMessage) }
                     _event.emit(SignUpEvent.ShowMessage(errorMessage))
                 }
             }
@@ -138,7 +138,8 @@ class SignUpViewModel @Inject constructor(
                     }
                 }
             }
-            // AÑADIDO: 'else' branch para hacer el 'when' exhaustivo
+            // Agrega esta rama 'else' para manejar cualquier otro tipo de evento
+            // o los que solo se emiten y no requieren procesamiento directo en onEvent
             else -> Unit
         }
     }
@@ -164,35 +165,37 @@ class SignUpViewModel @Inject constructor(
                     isPasswordInvalid = false,
                     doPasswordsMismatch = false,
                     isBirthdayInvalid = false,
-                    errorMessage = null
+                    errorMessage = null // Reset error message before new attempt
                 )
             }
 
             if (!signUpValidator.isValidEmail(email)) {
-                _uiState.update { it.copy(isEmailInvalid = true) }
+                _uiState.update { it.copy(isEmailInvalid = true, errorMessage = "Ingresa un email válido.") }
                 _event.emit(SignUpEvent.ShowMessage("Ingresa un email válido."))
                 return@launch
             }
             if (!signUpValidator.isValidPassword(password)) {
-                _uiState.update { it.copy(isPasswordInvalid = true) }
+                _uiState.update { it.copy(isPasswordInvalid = true, errorMessage = "La contraseña debe tener al menos 8 caracteres.") }
                 _event.emit(SignUpEvent.ShowMessage("La contraseña debe tener al menos 8 caracteres."))
                 return@launch
             }
             if (password != confirmPassword) {
-                _uiState.update { it.copy(doPasswordsMismatch = true) }
+                _uiState.update { it.copy(doPasswordsMismatch = true, errorMessage = "Las contraseñas no coinciden.") }
                 _event.emit(SignUpEvent.ShowMessage("Las contraseñas no coinciden."))
                 return@launch
             }
             if (!signUpValidator.isValidUsername(username)) {
+                _uiState.update { it.copy(errorMessage = "El nombre de usuario no puede estar vacío.") }
                 _event.emit(SignUpEvent.ShowMessage("El nombre de usuario no puede estar vacío."))
                 return@launch
             }
             if (!signUpValidator.isValidFullName(fullName)) {
+                _uiState.update { it.copy(errorMessage = "El nombre completo no puede estar vacío.") }
                 _event.emit(SignUpEvent.ShowMessage("El nombre completo no puede estar vacío."))
                 return@launch
             }
             if (!signUpValidator.isValidBirthday(birthday)) {
-                _uiState.update { it.copy(isBirthdayInvalid = true) }
+                _uiState.update { it.copy(isBirthdayInvalid = true, errorMessage = "Ingresa una fecha de nacimiento válida.") }
                 _event.emit(SignUpEvent.ShowMessage("Ingresa una fecha de nacimiento válida."))
                 return@launch
             }
@@ -209,7 +212,7 @@ class SignUpViewModel @Inject constructor(
 
             createUserUseCase(newUser, password)
                 .onSuccess {
-                    _uiState.update { it.copy(isLoading = false, isSuccess = true) }
+                    _uiState.update { it.copy(isLoading = false, isSuccess = true, errorMessage = null) }
                     _event.emit(SignUpEvent.NavigateToHome)
                     _event.emit(SignUpEvent.ShowMessage("Registro exitoso. ¡Bienvenido/a!"))
                 }
@@ -220,7 +223,7 @@ class SignUpViewModel @Inject constructor(
                         is FirebaseAuthInvalidCredentialsException -> "El formato del correo electrónico es inválido."
                         else -> "Error de registro: ${exception.message ?: "desconocido"}."
                     }
-                    _uiState.update { it.copy(isLoading = false, isSuccess = false) }
+                    _uiState.update { it.copy(isLoading = false, isSuccess = false, errorMessage = errorMessage) }
                     _event.emit(SignUpEvent.ShowMessage(errorMessage))
                 }
         }
@@ -232,7 +235,7 @@ class SignUpViewModel @Inject constructor(
 
             val currentUser = firebaseAuth.currentUser
             if (currentUser == null) {
-                _uiState.update { it.copy(isLoading = false) }
+                _uiState.update { it.copy(isLoading = false, errorMessage = "Usuario no autenticado para completar el perfil.") }
                 _event.emit(SignUpEvent.ShowMessage("Usuario no autenticado para completar el perfil."))
                 return@launch
             }
@@ -243,17 +246,17 @@ class SignUpViewModel @Inject constructor(
             val birthday = _uiState.value.birthday.orEmpty()
 
             if (!signUpValidator.isValidUsername(username)) {
-                _uiState.update { it.copy(isLoading = false) }
+                _uiState.update { it.copy(isLoading = false, errorMessage = "El nombre de usuario no puede estar vacío.") }
                 _event.emit(SignUpEvent.ShowMessage("El nombre de usuario no puede estar vacío."))
                 return@launch
             }
             if (!signUpValidator.isValidFullName(fullName)) {
-                _uiState.update { it.copy(isLoading = false) }
+                _uiState.update { it.copy(isLoading = false, errorMessage = "El nombre completo no puede estar vacío.") }
                 _event.emit(SignUpEvent.ShowMessage("El nombre completo no puede estar vacío."))
                 return@launch
             }
             if (!signUpValidator.isValidBirthday(birthday)) {
-                _uiState.update { it.copy(isLoading = false, isBirthdayInvalid = true) }
+                _uiState.update { it.copy(isLoading = false, isBirthdayInvalid = true, errorMessage = "Ingresa una fecha de nacimiento válida.") }
                 _event.emit(SignUpEvent.ShowMessage("Ingresa una fecha de nacimiento válida."))
                 return@launch
             }
@@ -268,13 +271,13 @@ class SignUpViewModel @Inject constructor(
 
             authRepository.updateUserProfile(uid, updatedUser)
                 .onSuccess {
-                    _uiState.update { it.copy(isLoading = false, isSuccess = true) }
+                    _uiState.update { it.copy(isLoading = false, isSuccess = true, errorMessage = null) }
                     _event.emit(SignUpEvent.NavigateToHome)
                     _event.emit(SignUpEvent.ShowMessage("Perfil completado exitosamente."))
                 }
                 .onFailure { exception ->
                     val errorMessage = exception.message ?: "Error al completar el perfil."
-                    _uiState.update { it.copy(isLoading = false, isSuccess = false) }
+                    _uiState.update { it.copy(isLoading = false, isSuccess = false, errorMessage = errorMessage) }
                     _event.emit(SignUpEvent.ShowMessage(errorMessage))
                 }
         }
@@ -299,7 +302,7 @@ class SignUpViewModel @Inject constructor(
                 .onSuccess { idToken ->
                     registerWithGoogleUseCase(idToken)
                         .onSuccess {
-                            _uiState.update { it.copy(isLoading = false, isSuccess = true) }
+                            _uiState.update { it.copy(isLoading = false, isSuccess = true, errorMessage = null) }
                             _event.emit(SignUpEvent.NavigateToHome)
                             _event.emit(SignUpEvent.ShowMessage("Registro con Google exitoso. ¡Bienvenido/a!"))
                         }
@@ -311,7 +314,8 @@ class SignUpViewModel @Inject constructor(
                             _uiState.update {
                                 it.copy(
                                     isLoading = false,
-                                    errorMessage = errorMessage
+                                    errorMessage = errorMessage,
+                                    isSuccess = false
                                 )
                             }
                             _event.emit(SignUpEvent.ShowMessage(errorMessage))
@@ -319,7 +323,7 @@ class SignUpViewModel @Inject constructor(
                 }
                 .onFailure { exception ->
                     val errorMessage = exception.message ?: "Error de inicio de sesión de Google."
-                    _uiState.update { it.copy(isLoading = false, errorMessage = errorMessage) }
+                    _uiState.update { it.copy(isLoading = false, errorMessage = errorMessage, isSuccess = false) }
                     _event.emit(SignUpEvent.ShowMessage(errorMessage))
                 }
         }
@@ -340,7 +344,7 @@ class SignUpViewModel @Inject constructor(
         _uiState.update { it.copy(isLoading = true, errorMessage = null) }
         registerWithFacebookUseCase(accessToken)
             .onSuccess {
-                _uiState.update { it.copy(isLoading = false, isSuccess = true) }
+                _uiState.update { it.copy(isLoading = false, isSuccess = true, errorMessage = null) }
                 _event.emit(SignUpEvent.NavigateToHome)
                 _event.emit(SignUpEvent.ShowMessage("Registro con Facebook exitoso. ¡Bienvenido/a!"))
             }
@@ -349,7 +353,7 @@ class SignUpViewModel @Inject constructor(
                     is FirebaseAuthUserCollisionException -> "El correo electrónico ya está registrado con otra cuenta."
                     else -> exception.message ?: "Autenticación de Facebook con Firebase fallida."
                 }
-                _uiState.update { it.copy(isLoading = false, errorMessage = errorMessage) }
+                _uiState.update { it.copy(isLoading = false, errorMessage = errorMessage, isSuccess = false) }
                 _event.emit(SignUpEvent.ShowMessage(errorMessage))
             }
     }
