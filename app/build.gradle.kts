@@ -21,14 +21,25 @@ android {
 
         testInstrumentationRunner = "com.cursoandroid.queermap.CustomTestRunner"
         multiDexEnabled = true
+
+        // ¡IMPORTANTE! Hemos ELIMINADO el bloque 'ndk { abiFilters += "x86_64" }'
+        // Esto permite que Gradle incluya ABIs según las librerías en jniLibs
+        // y evita conflictos cuando el emulador no soporta x86_64 directamente.
+
+        testInstrumentationRunnerArguments.putAll(mapOf(
+            "clearPackageData" to "true",
+            // Esta línea le dice a Hilt qué Application de test debe usar
+            "dagger.hilt.android.testing.HiltTestApplication_Application" to "com.cursoandroid.queermap.HiltTestApplication"
+        ))
     }
 
     buildTypes {
         debug {
             enableAndroidTestCoverage = true
+            isMinifyEnabled = false
         }
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -61,6 +72,9 @@ android {
             pickFirsts += "META-INF/licenses/ASM"
             pickFirsts += "META-INF/LICENSE-notice.md"
         }
+        jniLibs {
+            useLegacyPackaging = true // Esto es crucial para que dummy.so se empaquete correctamente.
+        }
     }
 }
 
@@ -73,7 +87,7 @@ dependencies {
     implementation(libs.core.splashscreen)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
-    implementation(libs.androidx.multidex)
+    implementation(libs.androidx.multidex) // Dependencia de MultiDex
 
     // Firebase (usando la BoM para gestionar versiones)
     implementation(platform(libs.firebase.bom))
@@ -111,7 +125,7 @@ dependencies {
     // Hilt (Dependencias de inyección para la aplicación principal)
     implementation(libs.hilt.core)
     implementation(libs.androidx.espresso.idling.resource)
-    kapt(libs.hilt.compiler)
+    kapt(libs.hilt.compiler) // Procesador de anotaciones para Hilt en el módulo principal
 
     // --- DEPENDENCIAS DE PRUEBAS ---
 
@@ -139,11 +153,10 @@ dependencies {
 
     // Hilt para Pruebas de Instrumentación
     androidTestImplementation(libs.hilt.android.testing)
-    kaptAndroidTest(libs.hilt.compiler)
+    kaptAndroidTest(libs.hilt.compiler) // ¡IMPORTANTE! Procesador de anotaciones para Hilt en tests
 
     // Fragment Testing (para lanzar fragmentos en tests)
     debugImplementation(libs.androidx.fragment.testing)
 
-    androidTestImplementation(libs.androidx.multidex)
-    androidTestImplementation(libs.androidx.multidex.instrumentation) // <-- ¡NUEVA LÍNEA!
+    androidTestImplementation(libs.androidx.multidex) // MultiDex para tests
 }

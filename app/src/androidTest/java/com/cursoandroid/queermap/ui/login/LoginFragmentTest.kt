@@ -2,6 +2,7 @@ package com.cursoandroid.queermap.ui.login
 
 import android.content.Intent
 import android.view.View
+import androidx.lifecycle.Lifecycle
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.IdlingRegistry
 import androidx.test.espresso.action.ViewActions.click
@@ -43,7 +44,10 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.junit.FixMethodOrder
+import org.junit.runners.MethodSorters
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING) // Mantiene el orden para depuración, si es necesario
 @RunWith(AndroidJUnit4::class)
 @HiltAndroidTest
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -61,17 +65,26 @@ class LoginFragmentTest {
 
     private val uiStateFlow = MutableStateFlow(LoginUiState())
     private val eventFlow = MutableSharedFlow<LoginEvent>()
-    private val accessTokenChannelFlow = MutableSharedFlow<Result<String>>()
+    private val accessTokenChannelFlow = MutableSharedFlow<Result<String>>() // Para mockear FacebookDataSource
 
-    private val testDispatcher = StandardTestDispatcher(TestCoroutineScheduler())
+    // Usar TestCoroutineScheduler para controlar el tiempo en runTest
+    private val testScheduler = TestCoroutineScheduler()
+    private val testDispatcher = StandardTestDispatcher(testScheduler)
 
-    // Variable para almacenar el decorView de la actividad de prueba
     private lateinit var activityDecorView: View
 
     @Before
     fun setUp() {
         hiltRule.inject()
+        // No es necesario registrar EspressoIdlingResource aquí si solo usas runTest y advanceUntilIdle
+        // para controlar el tiempo de las coroutines. EspressoIdlingResource es más para operaciones
+        // asíncronas no gestionadas por TestCoroutineDispatcher. Si tus coroutines están bien mockeadas
+        // y usas advanceUntilIdle, no lo necesitas. Si tienes operaciones en tu UI o ViewModel
+        // que no se gestionan con TestCoroutineDispatcher (ej. Room, Retrofit real), sí.
+        // Por ahora, lo mantenemos si el ViewModel real usa Dispatchers.IO o Dispatchers.Default
+        // y no se ha inyectado un TestDispatcher en producción.
         IdlingRegistry.getInstance().register(EspressoIdlingResource.countingIdlingResource)
+
 
         mockLoginViewModel = mockk(relaxed = true)
         mockGoogleSignInDataSource = mockk(relaxed = true)
@@ -85,15 +98,19 @@ class LoginFragmentTest {
         every { mockFacebookSignInDataSource.registerCallback(any()) } just runs
         every { mockFacebookSignInDataSource.logInWithReadPermissions(any(), any()) } just runs
 
+        // Asegúrate de que el fragmento se añade y se obtiene la decorView DE LA MISMA ACTIVIDAD.
         activityRule.scenario.onActivity { activity ->
-            // Almacenamos el decorView aquí, asegurando que la actividad esté lista
             activityDecorView = activity.window.decorView
 
             val fragment = LoginFragment()
+
+            // Asegurarse de que el fragmento se añade correctamente al decorView de HiltTestActivity
             activity.supportFragmentManager.beginTransaction()
                 .replace(android.R.id.content, fragment, "LoginFragmentTag")
                 .commitNow()
 
+            // Inyectar los mocks. Asegúrate de que los nombres de los campos coincidan
+            // con las propiedades `@Inject` en tu LoginFragment.
             val vmField = LoginFragment::class.java.getDeclaredField("viewModel")
             vmField.isAccessible = true
             vmField.set(fragment, mockLoginViewModel)
@@ -113,6 +130,12 @@ class LoginFragmentTest {
     fun tearDown() {
         IdlingRegistry.getInstance().unregister(EspressoIdlingResource.countingIdlingResource)
         clearAllMocks()
+    }
+
+    // Este test es fundamental para validar que el entorno de UI está funcionando correctamente
+    @Test
+    fun a_very_basic_test_to_check_setup() {
+        onView(withId(R.id.tvTitle)).check(matches(isDisplayed()))
     }
 
     // Tests de Visibilidad de Elementos
@@ -153,18 +176,12 @@ class LoginFragmentTest {
             val email = "valid@example.com"
             val password = "validpassword"
 
-            uiStateFlow.value = LoginUiState(isLoading = false)
-            coEvery {
-                mockLoginViewModel.loginWithEmail(
-                    email,
-                    password
-                )
-            } answers {
+            coEvery { mockLoginViewModel.loginWithEmail(email, password) } coAnswers {
                 uiStateFlow.value = uiStateFlow.value.copy(isLoading = true)
-                testDispatcher.scheduler.advanceTimeBy(100)
+                testScheduler.advanceTimeBy(100) // Simula un retraso de la operación
                 uiStateFlow.value = uiStateFlow.value.copy(isLoading = false, isSuccess = true)
-                launch { eventFlow.emit(LoginEvent.NavigateToHome) }
-                launch { eventFlow.emit(LoginEvent.ShowMessage("Inicio de sesión exitoso")) }
+                eventFlow.emit(LoginEvent.NavigateToHome)
+                eventFlow.emit(LoginEvent.ShowMessage("Inicio de sesión exitoso"))
             }
 
             onView(withId(R.id.etEmailLogin)).perform(typeText(email))
@@ -173,13 +190,14 @@ class LoginFragmentTest {
 
             coVerify(exactly = 1) { mockLoginViewModel.loginWithEmail(email, password) }
 
+            // Verifica el progressBar durante la carga
             onView(withId(R.id.progressBar)).check(matches(isDisplayed()))
-            advanceUntilIdle()
+            advanceUntilIdle() // Avanza el tiempo para que las coroutines en mocks se completen
 
+            // Verifica el estado final y el mensaje
             onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
-            // Se usa activityDecorView directamente
             onView(withText("Inicio de sesión exitoso"))
-                .inRoot(withDecorView(not(`is`(activityDecorView)))) // <-- CAMBIO AQUÍ
+                .inRoot(withDecorView(not(`is`(activityDecorView))))
                 .check(matches(isDisplayed()))
         }
 
@@ -188,10 +206,9 @@ class LoginFragmentTest {
         val email = "invalid-email"
         val password = "validpassword"
 
-        uiStateFlow.value = LoginUiState(isLoading = false)
-        coEvery { mockLoginViewModel.loginWithEmail(email, password) } answers {
+        coEvery { mockLoginViewModel.loginWithEmail(email, password) } coAnswers {
             uiStateFlow.value = uiStateFlow.value.copy(isEmailInvalid = true)
-            launch { eventFlow.emit(LoginEvent.ShowMessage("Por favor ingresa un email válido")) }
+            eventFlow.emit(LoginEvent.ShowMessage("Por favor ingresa un email válido"))
         }
 
         onView(withId(R.id.etEmailLogin)).perform(typeText(email), closeSoftKeyboard())
@@ -200,8 +217,10 @@ class LoginFragmentTest {
 
         coVerify(exactly = 1) { mockLoginViewModel.loginWithEmail(email, password) }
 
+        advanceUntilIdle() // Asegura que los flujos se emitan
+
         onView(withText("Por favor ingresa un email válido"))
-            .inRoot(withDecorView(not(`is`(activityDecorView)))) // <-- CAMBIO AQUÍ
+            .inRoot(withDecorView(not(`is`(activityDecorView))))
             .check(matches(isDisplayed()))
 
         onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
@@ -212,10 +231,9 @@ class LoginFragmentTest {
         val email = "valid@example.com"
         val password = "short"
 
-        uiStateFlow.value = LoginUiState(isLoading = false)
-        coEvery { mockLoginViewModel.loginWithEmail(email, password) } answers {
+        coEvery { mockLoginViewModel.loginWithEmail(email, password) } coAnswers {
             uiStateFlow.value = uiStateFlow.value.copy(isPasswordInvalid = true)
-            launch { eventFlow.emit(LoginEvent.ShowMessage("La contraseña debe tener al menos 6 caracteres")) }
+            eventFlow.emit(LoginEvent.ShowMessage("La contraseña debe tener al menos 6 caracteres"))
         }
 
         onView(withId(R.id.etEmailLogin)).perform(typeText(email), closeSoftKeyboard())
@@ -224,8 +242,10 @@ class LoginFragmentTest {
 
         coVerify(exactly = 1) { mockLoginViewModel.loginWithEmail(email, password) }
 
+        advanceUntilIdle() // Asegura que los flujos se emitan
+
         onView(withText("La contraseña debe tener al menos 6 caracteres"))
-            .inRoot(withDecorView(not(`is`(activityDecorView)))) // <-- CAMBIO AQUÍ
+            .inRoot(withDecorView(not(`is`(activityDecorView))))
             .check(matches(isDisplayed()))
 
         onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
@@ -236,15 +256,14 @@ class LoginFragmentTest {
         runTest(testDispatcher) {
             val email = "test@example.com"
             val password = "password123"
+            val errorMessage = "Error de red. Por favor, revisa tu conexión"
 
-            uiStateFlow.value = LoginUiState(isLoading = false)
-            coEvery { mockLoginViewModel.loginWithEmail(email, password) } answers {
+            coEvery { mockLoginViewModel.loginWithEmail(email, password) } coAnswers {
                 uiStateFlow.value = uiStateFlow.value.copy(isLoading = true)
-                testDispatcher.scheduler.advanceTimeBy(100)
-                val errorMessage = "Error de red. Por favor, revisa tu conexión"
+                testScheduler.advanceTimeBy(100)
                 uiStateFlow.value =
                     uiStateFlow.value.copy(isLoading = false, errorMessage = errorMessage)
-                launch { eventFlow.emit(LoginEvent.ShowMessage(errorMessage)) }
+                eventFlow.emit(LoginEvent.ShowMessage(errorMessage))
             }
 
             onView(withId(R.id.etEmailLogin)).perform(typeText(email))
@@ -252,8 +271,8 @@ class LoginFragmentTest {
             onView(withId(R.id.btnLogin)).perform(click())
             advanceUntilIdle()
 
-            onView(withText("Error de red. Por favor, revisa tu conexión"))
-                .inRoot(withDecorView(not(`is`(activityDecorView)))) // <-- CAMBIO AQUÍ
+            onView(withText(errorMessage))
+                .inRoot(withDecorView(not(`is`(activityDecorView))))
                 .check(matches(isDisplayed()))
             onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
         }
@@ -280,24 +299,19 @@ class LoginFragmentTest {
             val socialEmail = "new_google@example.com"
             val socialName = "New Google User"
 
-            coEvery { mockGoogleSignInDataSource.handleSignInResult(intentData) } returns Result.success(
-                idToken
-            )
+            coEvery { mockGoogleSignInDataSource.handleSignInResult(intentData) } returns Result.success(idToken)
 
-            coEvery { mockLoginViewModel.loginWithGoogle(idToken) } answers {
+            coEvery { mockLoginViewModel.loginWithGoogle(idToken) } coAnswers {
                 uiStateFlow.value = uiStateFlow.value.copy(isLoading = true)
-                testDispatcher.scheduler.advanceTimeBy(100)
-
-                launch {
-                    eventFlow.emit(
-                        LoginEvent.NavigateToSignupWithArgs(
-                            socialEmail,
-                            socialName,
-                            true
-                        )
+                testScheduler.advanceTimeBy(100)
+                eventFlow.emit(
+                    LoginEvent.NavigateToSignupWithArgs(
+                        socialUserEmail = socialEmail,
+                        socialUserName = socialName,
+                        isSocialLoginFlow = true
                     )
-                }
-                launch { eventFlow.emit(LoginEvent.ShowMessage("Completa tu perfil para continuar")) }
+                )
+                eventFlow.emit(LoginEvent.ShowMessage("Completa tu perfil para continuar"))
                 uiStateFlow.value = uiStateFlow.value.copy(isLoading = false, isSuccess = true)
             }
 
@@ -312,7 +326,7 @@ class LoginFragmentTest {
             coVerify(exactly = 1) { mockLoginViewModel.loginWithGoogle(idToken) }
 
             onView(withText("Completa tu perfil para continuar"))
-                .inRoot(withDecorView(not(`is`(activityDecorView)))) // <-- CAMBIO AQUÍ
+                .inRoot(withDecorView(not(`is`(activityDecorView))))
                 .check(matches(isDisplayed()))
 
             onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
@@ -322,6 +336,7 @@ class LoginFragmentTest {
     fun when_google_sign_in_result_is_failure_then_shows_error_message() = runTest(testDispatcher) {
         val intentData = mockk<Intent>()
         val errorMessage = "Error en Sign-In: Fallo de Google"
+
         coEvery { mockGoogleSignInDataSource.handleSignInResult(intentData) } returns Result.failure(
             Exception("Fallo de Google")
         )
@@ -337,7 +352,7 @@ class LoginFragmentTest {
         coVerify(exactly = 0) { mockLoginViewModel.loginWithGoogle(any()) }
 
         onView(withText(errorMessage))
-            .inRoot(withDecorView(not(`is`(activityDecorView)))) // <-- CAMBIO AQUÍ
+            .inRoot(withDecorView(not(`is`(activityDecorView))))
             .check(matches(isDisplayed()))
         onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
     }
@@ -363,21 +378,22 @@ class LoginFragmentTest {
         runTest(testDispatcher) {
             val accessToken = "facebook_access_token"
 
-            launch(testDispatcher) { accessTokenChannelFlow.emit(Result.success(accessToken)) }.join()
-
-            coEvery { mockLoginViewModel.loginWithFacebook(accessToken) } answers {
+            coEvery { mockLoginViewModel.loginWithFacebook(accessToken) } coAnswers {
                 uiStateFlow.value = uiStateFlow.value.copy(isLoading = true)
-                testDispatcher.scheduler.advanceTimeBy(100)
-                launch { eventFlow.emit(LoginEvent.NavigateToHome) }
-                launch { eventFlow.emit(LoginEvent.ShowMessage("Inicio de sesión con Facebook exitoso")) }
+                testScheduler.advanceTimeBy(100)
+                eventFlow.emit(LoginEvent.NavigateToHome)
+                eventFlow.emit(LoginEvent.ShowMessage("Inicio de sesión con Facebook exitoso"))
                 uiStateFlow.value = uiStateFlow.value.copy(isLoading = false, isSuccess = true)
             }
+
+            // Simular la emisión del accessTokenChannel del DataSource
+            launch(testDispatcher) { accessTokenChannelFlow.emit(Result.success(accessToken)) }
             advanceUntilIdle()
 
             coVerify(exactly = 1) { mockLoginViewModel.loginWithFacebook(accessToken) }
 
             onView(withText("Inicio de sesión con Facebook exitoso"))
-                .inRoot(withDecorView(not(`is`(activityDecorView)))) // <-- CAMBIO AQUÍ
+                .inRoot(withDecorView(not(`is`(activityDecorView))))
                 .check(matches(isDisplayed()))
             onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
         }
@@ -386,14 +402,16 @@ class LoginFragmentTest {
     fun when_facebook_accessTokenChannel_failure_then_shows_error_message() =
         runTest(testDispatcher) {
             val errorMessage = "Error: Facebook login failed"
-            launch(testDispatcher) { accessTokenChannelFlow.emit(Result.failure(Exception("Facebook login failed"))) }.join()
+
+            // Simular la emisión del accessTokenChannel del DataSource con un fallo.
+            launch(testDispatcher) { accessTokenChannelFlow.emit(Result.failure(Exception("Facebook login failed"))) }
             advanceUntilIdle()
 
-            onView(withText(errorMessage))
-                .inRoot(withDecorView(not(`is`(activityDecorView)))) // <-- CAMBIO AQUÍ
-                .check(matches(isDisplayed()))
-
             coVerify(exactly = 0) { mockLoginViewModel.loginWithFacebook(any()) }
+
+            onView(withText(errorMessage))
+                .inRoot(withDecorView(not(`is`(activityDecorView))))
+                .check(matches(isDisplayed()))
             onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
         }
 
@@ -402,8 +420,8 @@ class LoginFragmentTest {
     @Test
     fun when_forgot_password_is_clicked_then_navigates_to_ForgotPasswordFragment() =
         runTest(testDispatcher) {
-            coEvery { mockLoginViewModel.onForgotPasswordClicked() } answers {
-                launch { eventFlow.emit(LoginEvent.NavigateToForgotPassword) }
+            coEvery { mockLoginViewModel.onForgotPasswordClicked() } coAnswers {
+                eventFlow.emit(LoginEvent.NavigateToForgotPassword)
             }
 
             onView(withId(R.id.tvForgotPassword)).perform(click())
@@ -414,8 +432,8 @@ class LoginFragmentTest {
 
     @Test
     fun when_back_button_is_clicked_then_navigates_back() = runTest(testDispatcher) {
-        coEvery { mockLoginViewModel.onBackPressed() } answers {
-            launch { eventFlow.emit(LoginEvent.NavigateBack) }
+        coEvery { mockLoginViewModel.onBackPressed() } coAnswers {
+            eventFlow.emit(LoginEvent.NavigateBack)
         }
 
         onView(withId(R.id.ivBack)).perform(click())
@@ -426,7 +444,19 @@ class LoginFragmentTest {
 
     @Test
     fun when_sign_up_button_is_clicked_then_navigates_to_SignUpFragment() {
+        // Para este test de navegación, necesitas el NavController mockeado o real,
+        // o usar una approach diferente como en MainActivityTest donde el NavHostFragment
+        // ya está en la actividad. Aquí, si navegas fuera del LoginFragment,
+        // Espresso ya no podrá encontrar elementos del LoginFragment.
+        // Si tu implementación de navegación es puramente a través del evento del ViewModel,
+        // debes mockear esa navegación o verificar el evento emitido.
+        // Asumiendo que tvSignUpBtn realiza una acción de navegación interna directa:
         onView(withId(R.id.tvSignUpBtn)).perform(click())
+        // Si la navegación ocurre dentro del mismo NavHost, puedes verificar el elemento del nuevo Fragmento.
+        // Si implica un cambio de actividad o algo más complejo, el test puede necesitar adaptarse.
+        // Este test de navegación a SignUpFragment podría ser más robusto si verificas que el NavController
+        // fue llamado con la acción correcta, en lugar de verificar la UI del siguiente fragmento
+        // directamente en este test de LoginFragment.
         onView(withId(R.id.etName)).check(matches(isDisplayed()))
         onView(withText(R.string.register_title)).check(matches(isDisplayed()))
     }
@@ -435,37 +465,32 @@ class LoginFragmentTest {
 
     @Test
     fun when_loading_then_progress_bar_is_displayed() = runTest(testDispatcher) {
-        val job = launch(testDispatcher) {
+        launch(testDispatcher) {
             uiStateFlow.emit(LoginUiState(isLoading = true))
         }
         advanceUntilIdle()
         onView(withId(R.id.progressBar)).check(matches(isDisplayed()))
-        job.cancel()
     }
 
     @Test
     fun when_not_loading_then_progress_bar_is_hidden() = runTest(testDispatcher) {
-        val job = launch(testDispatcher) {
+        launch(testDispatcher) {
             uiStateFlow.emit(LoginUiState(isLoading = false))
         }
         advanceUntilIdle()
         onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
-        job.cancel()
     }
 
     @Test
     fun when_error_message_in_UiState_then_shows_Snackbar() = runTest(testDispatcher) {
         val errorMessage = "Algo salió mal"
-        val job = launch(testDispatcher) {
+        launch(testDispatcher) {
             uiStateFlow.emit(LoginUiState(errorMessage = errorMessage))
         }
         advanceUntilIdle()
 
         onView(withText(errorMessage))
-            .inRoot(withDecorView(not(`is`(activityDecorView)))) // <-- CAMBIO AQUÍ
+            .inRoot(withDecorView(not(`is`(activityDecorView))))
             .check(matches(isDisplayed()))
-        job.cancel()
     }
-
-
 }

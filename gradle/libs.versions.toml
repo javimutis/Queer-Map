@@ -88,7 +88,6 @@ core-ktx = { module = "androidx.core:core-ktx", version.ref = "core-ktx" }
 appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
 cardview = { module = "androidx.cardview:cardview", version.ref = "cardview" }
 androidx-multidex = { group = "androidx.multidex", name = "multidex", version.ref = "multidex" }
-androidx-multidex-instrumentation = { group = "androidx.multidex", name = "multidex-instrumentation", version.ref = "multidex" }
 
 # Splash Screen
 core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "core-splashscreen" }
