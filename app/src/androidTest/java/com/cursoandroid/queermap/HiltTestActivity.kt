@@ -1,4 +1,4 @@
-package com.cursoandroid.queermap
+package com.cursoandroid.queermap.test // CAMBIO AQUÍ
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity

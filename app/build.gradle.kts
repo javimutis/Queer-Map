@@ -22,13 +22,11 @@ android {
         testInstrumentationRunner = "com.cursoandroid.queermap.CustomTestRunner"
         multiDexEnabled = true
 
-        // ¡IMPORTANTE! Hemos ELIMINADO el bloque 'ndk { abiFilters += "x86_64" }'
-        // Esto permite que Gradle incluya ABIs según las librerías en jniLibs
-        // y evita conflictos cuando el emulador no soporta x86_64 directamente.
+        testApplicationId = "com.cursoandroid.queermap.test"
+        // ------------------------------------
 
         testInstrumentationRunnerArguments.putAll(mapOf(
             "clearPackageData" to "true",
-            // Esta línea le dice a Hilt qué Application de test debe usar
             "dagger.hilt.android.testing.HiltTestApplication_Application" to "com.cursoandroid.queermap.HiltTestApplication"
         ))
     }
@@ -73,7 +71,7 @@ android {
             pickFirsts += "META-INF/LICENSE-notice.md"
         }
         jniLibs {
-            useLegacyPackaging = true // Esto es crucial para que dummy.so se empaquete correctamente.
+            useLegacyPackaging = true
         }
     }
 }
@@ -152,11 +150,10 @@ dependencies {
     androidTestImplementation(libs.mockk.android)
 
     // Hilt para Pruebas de Instrumentación
-    androidTestImplementation(libs.hilt.android.testing)
-    kaptAndroidTest(libs.hilt.compiler) // ¡IMPORTANTE! Procesador de anotaciones para Hilt en tests
+    debugImplementation(libs.hilt.android.testing)
+    kaptAndroidTest(libs.hilt.compiler) // Este se queda en kaptAndroidTest
 
-    // Fragment Testing (para lanzar fragmentos en tests)
+    // ... debugImplementation (otras libs) ...
     debugImplementation(libs.androidx.fragment.testing)
-
-    androidTestImplementation(libs.androidx.multidex) // MultiDex para tests
+    androidTestImplementation(libs.androidx.multidex)// MultiDex para tests
 }

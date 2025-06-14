@@ -15,10 +15,11 @@ import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.cursoandroid.queermap.HiltTestActivity
+
 import com.cursoandroid.queermap.R
 import com.cursoandroid.queermap.data.source.remote.FacebookSignInDataSource
 import com.cursoandroid.queermap.data.source.remote.GoogleSignInDataSource
+import com.cursoandroid.queermap.test.HiltTestActivity
 import com.cursoandroid.queermap.util.EspressoIdlingResource
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -76,13 +77,7 @@ class LoginFragmentTest {
     @Before
     fun setUp() {
         hiltRule.inject()
-        // No es necesario registrar EspressoIdlingResource aquí si solo usas runTest y advanceUntilIdle
-        // para controlar el tiempo de las coroutines. EspressoIdlingResource es más para operaciones
-        // asíncronas no gestionadas por TestCoroutineDispatcher. Si tus coroutines están bien mockeadas
-        // y usas advanceUntilIdle, no lo necesitas. Si tienes operaciones en tu UI o ViewModel
-        // que no se gestionan con TestCoroutineDispatcher (ej. Room, Retrofit real), sí.
-        // Por ahora, lo mantenemos si el ViewModel real usa Dispatchers.IO o Dispatchers.Default
-        // y no se ha inyectado un TestDispatcher en producción.
+
         IdlingRegistry.getInstance().register(EspressoIdlingResource.countingIdlingResource)
 
 

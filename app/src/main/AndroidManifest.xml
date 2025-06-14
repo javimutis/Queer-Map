@@ -33,6 +33,7 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
 
+
         <!-- Actividad principal -->
         <activity
             android:name=".ui.main.MainActivity"
