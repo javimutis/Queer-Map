@@ -168,7 +168,7 @@ class LoginFragmentTest {
         onView(withId(R.id.etPassword)).perform(typeText("password123"), closeSoftKeyboard())
         onView(withId(R.id.etPassword)).check(matches(withText("password123")))
     }
-
+//ERROR_ REVISAR MAÑANA
     @Test
     fun when_valid_credentials_are_entered_and_login_clicked_then_navigates_to_home() =
         runTest(testDispatcher) {
