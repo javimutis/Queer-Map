@@ -8,10 +8,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ScrollView // Importante: Asumiendo que tu root es un ScrollView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.Lifecycle
+// Importar `repeatOnLifecycle` para una observación más segura
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.cursoandroid.queermap.R
 import com.cursoandroid.queermap.data.source.remote.FacebookSignInDataSource
@@ -29,7 +33,8 @@ import javax.inject.Inject
 class LoginFragment : Fragment() {
 
     private var _binding: FragmentLoginBinding? = null
-    private val binding get() = _binding!!
+    // Haz que el getter sea nullable, y todos los usos deberán ser safe-called
+    private val binding get() = _binding
 
     internal val viewModel: LoginViewModel by viewModels()
 
@@ -43,9 +48,9 @@ class LoginFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
+    ): View { // Cambiado a View en lugar de ScrollView? si root no siempre es ScrollView
         _binding = FragmentLoginBinding.inflate(inflater, container, false)
-        return binding.root
+        return binding?.root ?: View(context) // Proporcionar una vista por defecto si binding es nulo (poco probable aquí)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -65,7 +70,10 @@ class LoginFragment : Fragment() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        callbackManager.onActivityResult(requestCode, resultCode, data)
+        // Solo si callbackManager está inicializado
+        if (::callbackManager.isInitialized) {
+            callbackManager.onActivityResult(requestCode, resultCode, data)
+        }
     }
 
     // Setup and Initialization
@@ -74,7 +82,6 @@ class LoginFragment : Fragment() {
             ActivityResultContracts.StartActivityForResult()
         ) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
-                // AHORA ESTA FUNCIÓN ES ACCESIBLE PARA EL TEST
                 handleGoogleSignInResult(result.data)
             } else {
                 showSnackbar("Inicio de sesión cancelado")
@@ -86,7 +93,8 @@ class LoginFragment : Fragment() {
         callbackManager = CallbackManager.Factory.create()
         facebookSignInDataSource.registerCallback(callbackManager)
 
-        binding.btnFacebookLogin.setOnClickListener {
+        // Acceso seguro a binding
+        binding?.btnFacebookLogin?.setOnClickListener {
             facebookSignInDataSource.logInWithReadPermissions(
                 this,
                 listOf("email", "public_profile")
@@ -96,9 +104,10 @@ class LoginFragment : Fragment() {
 
     // UI Interaction Handling
     private fun setupListeners() {
-        binding.btnLogin.setOnClickListener {
-            val email = binding.etEmailLogin.text.toString()
-            val password = binding.etPassword.text.toString()
+        // Acceso seguro a binding en todos los listeners
+        binding?.btnLogin?.setOnClickListener {
+            val email = binding?.etEmailLogin?.text.toString() // Safe call
+            val password = binding?.etPassword?.text.toString() // Safe call
             if (!isValidEmail(email)) {
                 showSnackbar("Por favor ingresa un email válido")
             } else if (!isValidPassword(password)) {
@@ -108,91 +117,106 @@ class LoginFragment : Fragment() {
             }
         }
 
-        binding.btnGoogleSignIn.setOnClickListener {
+        binding?.btnGoogleSignIn?.setOnClickListener {
             googleSignInLauncher.launch(googleSignInDataSource.getSignInIntent())
         }
 
-        binding.tvForgotPassword.setOnClickListener {
+        binding?.tvForgotPassword?.setOnClickListener {
             viewModel.onForgotPasswordClicked()
         }
 
-        binding.ivBack.setOnClickListener {
+        binding?.ivBack?.setOnClickListener {
             viewModel.onBackPressed()
         }
-        binding.tvSignUpBtn.setOnClickListener {
+        binding?.tvSignUpBtn?.setOnClickListener {
             findNavController().navigate(R.id.action_loginFragment_to_signupFragment)
         }
     }
 
     // State and Event Observation
     private fun observeState() {
+        // CAMBIO CLAVE: Usar repeatOnLifecycle(Lifecycle.State.STARTED)
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.uiState.collect { state ->
-                if (state.isLoading) {
-                    binding.progressBar.visibility = View.VISIBLE
-                } else {
-                    binding.progressBar.visibility = View.GONE
-                }
-                if (state.isEmailInvalid) {
-                    showSnackbar("Por favor ingresa un email válido")
-                }
-                if (state.isPasswordInvalid) {
-                    showSnackbar("La contraseña debe tener al menos 6 caracteres")
-                }
-                if (state.errorMessage != null) {
-                    showSnackbar(state.errorMessage)
-                }
-                state.email?.let {
-                    binding.etEmailLogin.setText(it)
-                }
-                state.password?.let {
-                    binding.etPassword.setText(it)
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState.collect { state ->
+                    // El error KotlinNothingValueException ocurre aquí si binding es null
+                    // con el getter `binding get() = _binding!!`.
+                    // Con el cambio a `binding get() = _binding`, ahora es nullable.
+                    // Usar `binding?.let { ... }` es la forma más robusta.
+                    binding?.let { currentBinding ->
+                        if (state.isLoading) {
+                            currentBinding.progressBar.visibility = View.VISIBLE
+                        } else {
+                            currentBinding.progressBar.visibility = View.GONE
+                        }
+                        if (state.isEmailInvalid) {
+                            showSnackbar("Por favor ingresa un email válido")
+                        }
+                        if (state.isPasswordInvalid) {
+                            showSnackbar("La contraseña debe tener al menos 6 caracteres")
+                        }
+                        if (state.errorMessage != null) {
+                            showSnackbar(state.errorMessage)
+                        }
+                        // Asegúrate de que email y password también son non-null si se van a setear.
+                        state.email?.let { emailText ->
+                            currentBinding.etEmailLogin.setText(emailText)
+                        }
+                        state.password?.let { passwordText ->
+                            currentBinding.etPassword.setText(passwordText)
+                        }
+                    }
                 }
             }
         }
     }
 
     private fun observeEvents() {
+        // CAMBIO CLAVE: Usar repeatOnLifecycle(Lifecycle.State.STARTED) para eventos también
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.event.collect { event ->
-                when (event) {
-                    is LoginEvent.ShowMessage -> showSnackbar(event.message)
-                    is LoginEvent.NavigateToHome ->
-                        findNavController().navigate(R.id.action_loginFragment_to_mapFragment)
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.event.collect { event ->
+                    when (event) {
+                        is LoginEvent.ShowMessage -> showSnackbar(event.message)
+                        is LoginEvent.NavigateToHome ->
+                            findNavController().navigate(R.id.action_loginFragment_to_mapFragment)
 
-                    is LoginEvent.NavigateToForgotPassword ->
-                        findNavController().navigate(R.id.action_loginFragment_to_forgotPasswordFragment)
+                        is LoginEvent.NavigateToForgotPassword ->
+                            findNavController().navigate(R.id.action_loginFragment_to_forgotPasswordFragment)
 
-                    is LoginEvent.NavigateBack ->
-                        findNavController().popBackStack()
+                        is LoginEvent.NavigateBack ->
+                            findNavController().popBackStack()
 
-                    is LoginEvent.NavigateToSignupWithArgs -> {
-                        val directions =
-                            LoginFragmentDirections.actionLoginFragmentToSignupFragment(
-                                socialUserEmail = event.socialUserEmail,
-                                socialUserName = event.socialUserName,
-                                isSocialLoginFlow = event.isSocialLoginFlow
-                            )
-                        findNavController().navigate(directions)
+                        is LoginEvent.NavigateToSignupWithArgs -> {
+                            val directions =
+                                LoginFragmentDirections.actionLoginFragmentToSignupFragment(
+                                    socialUserEmail = event.socialUserEmail,
+                                    socialUserName = event.socialUserName,
+                                    isSocialLoginFlow = event.isSocialLoginFlow
+                                )
+                            findNavController().navigate(directions)
+                        }
                     }
                 }
             }
         }
 
+        // También para el canal de acceso de Facebook
         viewLifecycleOwner.lifecycleScope.launch {
-            facebookSignInDataSource.accessTokenChannel.collectLatest { result ->
-                result.onSuccess { token ->
-                    viewModel.loginWithFacebook(token)
-                }.onFailure { exception ->
-                    showSnackbar("Error: ${exception.message}")
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                facebookSignInDataSource.accessTokenChannel.collectLatest { result ->
+                    result.onSuccess { token ->
+                        viewModel.loginWithFacebook(token)
+                    }.onFailure { exception ->
+                        showSnackbar("Error: ${exception.message}")
+                    }
                 }
             }
         }
     }
 
-    // CAMBIO: Hacer esta función interna para poder llamarla desde el test
     internal fun handleGoogleSignInResult(data: Intent?) {
-        lifecycleScope.launch {
+        lifecycleScope.launch { // Esto NO usa viewLifecycleOwner, así que está bien
             googleSignInDataSource.handleSignInResult(data)
                 .onSuccess { idToken ->
                     if (idToken != null) {
@@ -209,7 +233,10 @@ class LoginFragment : Fragment() {
 
     // Utilities
     private fun showSnackbar(message: String) {
-        Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
+        // Acceso seguro a binding para el Snackbar
+        binding?.root?.let {
+            Snackbar.make(it, message, Snackbar.LENGTH_SHORT).show()
+        }
     }
 
     private fun isValidEmail(email: String): Boolean {

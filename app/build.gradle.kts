@@ -1,10 +1,12 @@
+// build.gradle.kts (app module)
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.hilt)
+    alias(libs.plugins.hilt) // Asegúrate de que este plugin esté aplicado
     alias(libs.plugins.google.services)
     alias(libs.plugins.secrets)
-    kotlin("kapt")
+    kotlin("kapt") // Este también es crucial para Hilt
     id("androidx.navigation.safeargs.kotlin")
 }
 
@@ -22,11 +24,9 @@ android {
         testInstrumentationRunner = "com.cursoandroid.queermap.CustomTestRunner"
         multiDexEnabled = true
 
-        testApplicationId = "com.cursoandroid.queermap.test"
-        // ------------------------------------
-
         testInstrumentationRunnerArguments.putAll(mapOf(
-            "clearPackageData" to "true",
+            // La siguiente línea es crucial para Hilt en las pruebas.
+            // Asegúrate de que el paquete sea correcto si HiltTestApplication no está en el raíz.
             "dagger.hilt.android.testing.HiltTestApplication_Application" to "com.cursoandroid.queermap.HiltTestApplication"
         ))
     }
@@ -85,7 +85,7 @@ dependencies {
     implementation(libs.core.splashscreen)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
-    implementation(libs.androidx.multidex) // Dependencia de MultiDex
+    implementation(libs.androidx.multidex)
 
     // Firebase (usando la BoM para gestionar versiones)
     implementation(platform(libs.firebase.bom))
@@ -100,7 +100,6 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
 
     // Autenticación
-    implementation(libs.auth)
     implementation(libs.google.auth)
     implementation(libs.facebook.login)
 
@@ -120,10 +119,9 @@ dependencies {
     // Carga de imágenes
     implementation(libs.picasso)
 
-    // Hilt (Dependencias de inyección para la aplicación principal)
-    implementation(libs.hilt.core)
-    implementation(libs.androidx.espresso.idling.resource)
-    kapt(libs.hilt.compiler) // Procesador de anotaciones para Hilt en el módulo principal
+    // Hilt **¡Asegúrate de que estas dos líneas estén presentes y correctas!**
+    implementation(libs.hilt.core) // Esta es la dependencia que busca el plugin.
+    kapt(libs.hilt.compiler)       // El procesador de anotaciones.
 
     // --- DEPENDENCIAS DE PRUEBAS ---
 
@@ -134,6 +132,7 @@ dependencies {
     testImplementation(libs.arch.core.testing)
     testImplementation(libs.kotest.assertions)
 
+    // Pruebas de Instrumentación (Android Tests)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.androidx.test.runner)
     androidTestImplementation(libs.androidx.test.rules)
@@ -144,16 +143,16 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.intents)
     androidTestImplementation(libs.androidx.espresso.contrib)
     androidTestImplementation(libs.coroutines.test)
-    androidTestImplementation(libs.androidx.espresso.idling.resource)
+    androidTestImplementation(libs.espresso.idling.resource)
 
     // MockK para Android Tests
     androidTestImplementation(libs.mockk.android)
 
     // Hilt para Pruebas de Instrumentación
-    debugImplementation(libs.hilt.android.testing)
-    kaptAndroidTest(libs.hilt.compiler) // Este se queda en kaptAndroidTest
+    androidTestImplementation(libs.hilt.android.testing)
+    // El procesador de anotaciones para Hilt en las pruebas de instrumentación
+    kaptAndroidTest(libs.hilt.compiler)
 
-    // ... debugImplementation (otras libs) ...
-    debugImplementation(libs.androidx.fragment.testing)
-    androidTestImplementation(libs.androidx.multidex)// MultiDex para tests
+    // Fragment Testing
+    androidTestImplementation(libs.androidx.fragment.testing)
 }

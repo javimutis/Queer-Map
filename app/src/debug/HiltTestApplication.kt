@@ -1,12 +1,12 @@
-package com.cursoandroid.queermap
+package com.cursoandroid.queermap // ESTE PAQUETE DEBE SER EL applicationID
 
 import android.app.Application
 import dagger.hilt.android.HiltAndroidApp
 
-// Esta es la clase Application custom que Hilt usará para tus tests.
-// Necesita tener la misma anotación @HiltAndroidApp que tu aplicación de producción
-// para que Hilt genere el código necesario.
+// Solo si necesitas una aplicación de prueba personalizada más allá de la predeterminada de Hilt.
+// HiltTestApplication es generada automáticamente por Hilt si no la defines tú.
+// Si la definiste, su paquete debe coincidir con el applicationId.
 @HiltAndroidApp
 class HiltTestApplication : Application() {
-    // Puedes dejarla vacía, Hilt la usará para sus propósitos de testing.
+    // ...
 }

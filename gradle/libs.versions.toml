@@ -1,9 +1,9 @@
 [versions]
 # Versiones del SDK y herramientas
-kotlin = "2.0.21" # Mantén tu versión actual si funciona
-agp = "8.10.1"   # Mantén tu versión actual si funciona
-hilt = "2.51.1"   # Versión que funcionó en HiltCleanTest
-coroutines = "1.8.0" # Asegura la consistencia con coroutines-test
+kotlin = "1.9.0"
+agp = "8.1.0"
+hilt = "2.51.1"
+coroutines = "1.8.1"
 
 # Versiones de bibliotecas principales
 firebase-bom = "32.7.0"
@@ -21,7 +21,7 @@ multidex = "2.0.1"
 # Servicios de Google y secretos
 google-services = "4.4.1"
 secrets = "2.0.1"
-google-auth-gms = "21.0.0" # play-services-auth
+google-auth-gms = "21.0.0"
 
 # Facebook
 facebook-login = "16.3.0"
@@ -31,24 +31,21 @@ navigation = "2.7.5"
 
 # AndroidX UI
 activity = "1.8.0"
-constraintlayout = "2.1.4" # Mejor que la alpha
-
-# Splash Screen
+constraintlayout = "2.1.4"
 core-splashscreen = "1.0.1"
 
-# Versiones de Pruebas (unificadas y actualizadas cuando sea posible)
+# Versiones de Pruebas (unificadas y actualizadas)
 junit = "4.13.2"
 ext-junit = "1.1.5"
-espresso = "3.5.1" # Versión unificada para todas las dependencias de Espresso
-mockk = "1.13.10" # Unificamos mockk y mockkAndroid
-coroutines-test = "1.8.1" # Coincide con 'coroutines'
+espresso = "3.5.1"
+mockk = "1.13.10"
+coroutines-test = "1.8.1"
 arch-core-testing = "2.2.0"
-fragment-testing = "1.6.1"
+fragment-testing = "1.7.0"
 test-runner = "1.5.2"
 test-rules = "1.5.0"
 kotest = "5.6.2"
-espresso-idling-resource = "3.6.1" # Versión de Kotest
-
+espresso-idling-resource = "3.6.1"
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -59,6 +56,18 @@ google-services = { id = "com.google.gms.google-services", version.ref = "google
 secrets = { id = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin", version.ref = "secrets" }
 
 [libraries]
+# AndroidX Core y UI
+# AGREGADO: Formato completo con group y name
+appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+cardview = { group = "androidx.cardview", name = "cardview", version.ref = "cardview" }
+core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+androidx-activity = { group = "androidx.activity", name = "activity-ktx", version.ref = "activity" }
+androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+androidx-multidex = { group = "androidx.multidex", name = "multidex", version.ref = "multidex" }
+core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "core-splashscreen" }
+
+
 # Firebase
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebase-bom" }
 firebase-analytics = { module = "com.google.firebase:firebase-analytics-ktx" }
@@ -67,65 +76,59 @@ firebase-db = { module = "com.google.firebase:firebase-database-ktx" }
 firebase-firestore = { module = "com.google.firebase:firebase-firestore-ktx" }
 firebase-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services", version.ref = "coroutines" }
 
-# Google Maps y Places
+# Kotlin Coroutines
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
+
+# Autenticación
+google-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "google-auth-gms" }
+facebook-login = { module = "com.facebook.android:facebook-login", version.ref = "facebook-login" }
+
+# Mapas y Lugares
 maps = { module = "com.google.android.gms:play-services-maps", version.ref = "maps" }
 places = { module = "com.google.android.libraries.places:places", version.ref = "places" }
 
-# Autenticación
-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "google-auth-gms" }
-facebook-login = { module = "com.facebook.android:facebook-login", version.ref = "facebook-login" }
-google-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "google-auth-gms" }
-
-# Retrofit y GSON
+# Red y JSON
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 
-# Otros
-picasso = { module = "com.squareup.picasso:picasso", version.ref = "picasso" }
-material = { module = "com.google.android.material:material", version.ref = "material" }
-core-ktx = { module = "androidx.core:core-ktx", version.ref = "core-ktx" }
-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
-cardview = { module = "androidx.cardview:cardview", version.ref = "cardview" }
-androidx-multidex = { group = "androidx.multidex", name = "multidex", version.ref = "multidex" }
-
-# Splash Screen
-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "core-splashscreen" }
-
-# Navigation
+# Navegación
 androidx-navigation-fragment = { module = "androidx.navigation:navigation-fragment-ktx", version.ref = "navigation" }
 androidx-navigation-ui = { module = "androidx.navigation:navigation-ui-ktx", version.ref = "navigation" }
 
-# Kotlin Coroutines
-kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
-kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
+# Carga de imágenes
+picasso = { module = "com.squareup.picasso:picasso", version.ref = "picasso" }
 
-# AndroidX Activity y ConstraintLayout
-androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
-androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+# Hilt
+hilt-core = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
+hilt-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hilt" }
 
-# Pruebas
+# --- DEPENDENCIAS DE PRUEBAS ---
 junit = { module = "junit:junit", version.ref = "junit" }
 ext-junit = { module = "androidx.test.ext:junit", version.ref = "ext-junit" }
-kotest-assertions = { group = "io.kotest", name = "kotest-assertions-core", version.ref = "kotest" }
-mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" } # Para tests unitarios
-mockk-android = { group = "io.mockk", name = "mockk-android", version.ref = "mockk" } # Para tests de instrumentación
-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
-arch-core-testing = { group = "androidx.arch.core", name = "core-testing", version.ref = "arch-core-testing" }
+androidx-test-runner = { module = "androidx.test:runner", version.ref = "test-runner" }
+androidx-test-rules = { module = "androidx.test:rules", version.ref = "test-rules" }
+arch-core-testing = { module = "androidx.arch.core:core-testing", version.ref = "arch-core-testing" }
 
 # Espresso
-androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso" }
-androidx-espresso-intents = { group = "androidx.test.espresso", name = "espresso-intents", version.ref = "espresso" }
-androidx-espresso-contrib = { group = "androidx.test.espresso", name = "espresso-contrib", version.ref = "espresso" }
+androidx-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "espresso" }
+androidx-espresso-intents = { module = "androidx.test.espresso:espresso-intents", version.ref = "espresso" }
+androidx-espresso-contrib = { module = "androidx.test.espresso:espresso-contrib", version.ref = "espresso" }
+espresso-idling-resource = { module = "androidx.test.espresso:espresso-idling-resource", version.ref = "espresso" }
 
-# AndroidX Test (general)
-androidx-test-runner = { group = "androidx.test", name = "runner", version.ref = "test-runner" }
-androidx-test-rules = { group = "androidx.test", name = "rules", version.ref = "test-rules" }
-androidx-fragment-testing = { group = "androidx.fragment", name = "fragment-testing", version.ref = "fragment-testing" }
+coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines-test" }
+
+# MockK
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+mockk-android = { module = "io.mockk:mockk-android", version.ref = "mockk" }
 
 # Hilt para Pruebas
-# Estos alias ya están correctos en tu archivo Queer-Map, solo reconfírmalos.
-hilt-core = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
-hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" }
-hilt-android-testing = { group = "com.google.dagger", name = "hilt-android-testing", version.ref = "hilt" }
+hilt-android-testing = { module = "com.google.dagger:hilt-android-testing", version.ref = "hilt" }
+
+# Fragment Testing
+androidx-fragment-testing = { module = "androidx.fragment:fragment-testing", version.ref = "fragment-testing" }
+
+# Kotest (si la usas)
+kotest-assertions = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
 androidx-espresso-idling-resource = { group = "androidx.test.espresso", name = "espresso-idling-resource", version.ref = "espresso-idling-resource" }

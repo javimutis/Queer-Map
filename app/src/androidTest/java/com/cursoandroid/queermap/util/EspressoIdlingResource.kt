@@ -1,9 +1,10 @@
-// com.cursoandroid.queermap.util.EspressoIdlingResource.kt
 package com.cursoandroid.queermap.util
 
 import androidx.test.espresso.idling.CountingIdlingResource
+import javax.inject.Singleton
 
-object EspressoIdlingResource : IdlingResourceProvider { // <-- Debe ser un object e implementar la interfaz
+@Singleton
+object EspressoIdlingResource : IdlingResourceProvider {
 
     private const val RESOURCE = "GLOBAL"
 

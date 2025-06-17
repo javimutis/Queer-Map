@@ -30,7 +30,7 @@ class LoginViewModel @Inject constructor(
     internal val loginWithGoogleUseCase: LoginWithGoogleUseCase,
     private val authRepository: AuthRepository,
     private val firebaseAuth: FirebaseAuth,
-    private val signUpValidator: SignUpValidator // INYECTAR SignUpValidator
+    private val signUpValidator: SignUpValidator
 ) : ViewModel() {
 
     internal val _uiState = MutableStateFlow(LoginUiState())
@@ -41,15 +41,14 @@ class LoginViewModel @Inject constructor(
     val event: SharedFlow<LoginEvent> =
         _event.asSharedFlow()
 
-
     fun loginWithEmail(email: String, password: String) {
         updateUiState(isLoading = true)
         viewModelScope.launch {
-            if (!isValidEmail(email)) { // Asumiendo que EmailValidator.isValidEmail sigue siendo accesible así
+            if (!isValidEmail(email)) {
                 updateEmailInvalid()
                 return@launch
             }
-            if (!signUpValidator.isValidPassword(password)) { // USAR la instancia inyectada
+            if (!signUpValidator.isValidPassword(password)) {
                 updatePasswordInvalid()
                 return@launch
             }
@@ -59,10 +58,12 @@ class LoginViewModel @Inject constructor(
 
     private fun updateEmailInvalid() {
         _uiState.value = LoginUiState(isEmailInvalid = true)
+        sendEvent(LoginEvent.ShowMessage("Por favor ingresa un email válido"))
     }
 
     private fun updatePasswordInvalid() {
         _uiState.value = LoginUiState(isPasswordInvalid = true)
+        sendEvent(LoginEvent.ShowMessage("La contraseña debe tener al menos 6 caracteres"))
     }
 
     private suspend fun handleEmailLogin(email: String, password: String) {
@@ -183,5 +184,9 @@ class LoginViewModel @Inject constructor(
             is FirebaseAuthUserCollisionException -> "Ya existe una cuenta con este email."
             else -> "Error inesperado. Intenta de nuevo más tarde"
         }
+    }
+
+    private fun isValidEmail(email: String): Boolean {
+        return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
     }
 }
