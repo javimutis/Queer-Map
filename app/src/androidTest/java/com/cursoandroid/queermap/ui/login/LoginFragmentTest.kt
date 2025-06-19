@@ -232,7 +232,8 @@ class LoginFragmentTest {
         onView(withId(R.id.etPassword)).perform(typeText("password123"), closeSoftKeyboard())
         onView(withId(R.id.etPassword)).check(matches(withText("password123")))
     }
-//passed
+
+    //passed
     @Test
     fun when_valid_credentials_are_entered_and_login_clicked_then_navigates_to_home() =
         runTest(testDispatcher) {
@@ -259,93 +260,62 @@ class LoginFragmentTest {
             assertThat(navController.currentDestination?.id).isEqualTo(R.id.mapFragment)
 
         }
-//passed
-@Test
-fun when_invalid_email_is_entered_then_shows_error_message() = runTest(testDispatcher) {
-    val email = "invalid-email"
-    val password = "validpassword"
 
-    every { mockInputValidator.isValidEmail(email) } returns false
-    every { mockInputValidator.isValidPassword(password) } returns true
-
-    coEvery { mockLoginViewModel.loginWithEmail(email, password) } coAnswers {
-        uiStateFlow.emit(uiStateFlow.value.copy(isLoading = false, isEmailInvalid = true))
-        eventFlow.emit(LoginEvent.ShowMessage("Por favor ingresa un email válido"))
-    }
-    onView(withId(R.id.etEmailLogin)).perform(typeText(email), closeSoftKeyboard())
-    onView(withId(R.id.etPassword)).perform(typeText(password), closeSoftKeyboard())
-    onView(withId(R.id.btnLogin)).perform(click())
-
-    testScheduler.advanceUntilIdle()
-
-     onView(withText("Por favor ingresa un email válido"))
-        .check(matches(isDisplayed()))
-
-    onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
-}
-
-
-
+    //passed
     @Test
+    fun when_invalid_email_is_entered_then_shows_error_message() = runTest(testDispatcher) {
+        val email = "invalid-email"
+        val password = "validpassword"
 
-    fun when_invalid_password_is_entered_then_shows_error_message() = runTest(testDispatcher) {
-
-        val email = "valid@example.com"
-
-        val password = "short"
-
-
-
-        every { mockInputValidator.isValidEmail(email) } returns true
-
-        every { mockInputValidator.isValidPassword(password) } returns false
-
-
+        every { mockInputValidator.isValidEmail(email) } returns false
+        every { mockInputValidator.isValidPassword(password) } returns true
 
         coEvery { mockLoginViewModel.loginWithEmail(email, password) } coAnswers {
-
-            uiStateFlow.emit(
-
-                uiStateFlow.value.copy(
-
-                    isLoading = false,
-
-                    isPasswordInvalid = true
-
-                )
-
-            )
-
-            eventFlow.emit(LoginEvent.ShowMessage("La contraseña debe tener al menos 6 caracteres"))
-
+            uiStateFlow.emit(uiStateFlow.value.copy(isLoading = false, isEmailInvalid = true))
+            eventFlow.emit(LoginEvent.ShowMessage("Por favor ingresa un email válido"))
         }
-
-
-
         onView(withId(R.id.etEmailLogin)).perform(typeText(email), closeSoftKeyboard())
-
         onView(withId(R.id.etPassword)).perform(typeText(password), closeSoftKeyboard())
-
         onView(withId(R.id.btnLogin)).perform(click())
-
-
 
         testScheduler.advanceUntilIdle()
 
-
-
-        onView(withText("La contraseña debe tener al menos 6 caracteres"))
-
-            .inRoot(withDecorView(not(`is`(activityDecorView))))
-
+        onView(withText("Por favor ingresa un email válido"))
             .check(matches(isDisplayed()))
 
-
-
         onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
-
     }
 
+    //passed
+    @Test
+    fun when_invalid_password_is_entered_then_shows_error_message() = runTest(testDispatcher) {
+        val email = "valid@example.com"
+        val password = "short"
+
+        every { mockInputValidator.isValidEmail(email) } returns true
+        every { mockInputValidator.isValidPassword(password) } returns false
+
+        coEvery { mockLoginViewModel.loginWithEmail(email, password) } coAnswers {
+            uiStateFlow.emit(
+                uiStateFlow.value.copy(
+                    isLoading = false,
+                    isPasswordInvalid = true
+                )
+            )
+            eventFlow.emit(LoginEvent.ShowMessage("La contraseña debe tener al menos 6 caracteres"))
+        }
+
+        onView(withId(R.id.etEmailLogin)).perform(typeText(email), closeSoftKeyboard())
+        onView(withId(R.id.etPassword)).perform(typeText(password), closeSoftKeyboard())
+        onView(withId(R.id.btnLogin)).perform(click())
+
+        testScheduler.advanceUntilIdle()
+
+        onView(withText("La contraseña debe tener al menos 6 caracteres"))
+            .check(matches(isDisplayed()))
+
+        onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
+    }
 
     @Test
 
