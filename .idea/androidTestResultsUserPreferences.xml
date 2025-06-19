@@ -3,6 +3,19 @@
   <component name="AndroidTestResultsUserPreferences">
     <option name="androidTestResultsTableState">
       <map>
+        <entry key="-1820481176">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="QueerMap_Test_API30" value="120" />
+                  <entry key="Tests" value="360" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
         <entry key="-1779185478">
           <value>
             <AndroidTestResultsTableState>
@@ -37,6 +50,7 @@
                   <entry key="Duration" value="90" />
                   <entry key="Pixel_6a" value="120" />
                   <entry key="Pixel_7" value="120" />
+                  <entry key="QueerMap_Test_API30" value="120" />
                   <entry key="Tests" value="360" />
                 </map>
               </option>
@@ -199,6 +213,7 @@
                   <entry key="Duration" value="90" />
                   <entry key="Pixel_6a" value="120" />
                   <entry key="Pixel_7" value="120" />
+                  <entry key="QueerMap_Test_API30" value="120" />
                   <entry key="Tests" value="360" />
                 </map>
               </option>
@@ -221,6 +236,19 @@
             </AndroidTestResultsTableState>
           </value>
         </entry>
+        <entry key="1888617998">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="QueerMap_Test_API30" value="120" />
+                  <entry key="Tests" value="360" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
         <entry key="1912806436">
           <value>
             <AndroidTestResultsTableState>
@@ -228,6 +256,7 @@
                 <map>
                   <entry key="Duration" value="90" />
                   <entry key="Pixel_6a" value="120" />
+                  <entry key="QueerMap_Test_API30" value="120" />
                   <entry key="Tests" value="360" />
                 </map>
               </option>

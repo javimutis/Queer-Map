@@ -20,8 +20,7 @@
 
         <action
             android:id="@+id/action_cover_to_signup"
-            app:destination="@id/signUpFragment"
-            app:enterAnim="@anim/fade_in"
+            app:destination="@id/signupFragment" app:enterAnim="@anim/fade_in"
             app:exitAnim="@anim/fade_out"
             app:popEnterAnim="@anim/fade_in"
             app:popExitAnim="@anim/fade_out" />
@@ -42,8 +41,7 @@
             app:popExitAnim="@anim/fade_out" />
         <action
             android:id="@+id/action_loginFragment_to_signupFragment"
-            app:destination="@id/signUpFragment"
-            app:enterAnim="@anim/fade_in"
+            app:destination="@id/signupFragment" app:enterAnim="@anim/fade_in"
             app:exitAnim="@anim/fade_out"
             app:popEnterAnim="@anim/fade_in"
             app:popExitAnim="@anim/fade_out" />
@@ -59,8 +57,7 @@
     </fragment>
 
     <fragment
-        android:id="@+id/signUpFragment"
-        android:name="com.cursoandroid.queermap.ui.signup.SignUpFragment"
+        android:id="@+id/signupFragment" android:name="com.cursoandroid.queermap.ui.signup.SignUpFragment"
         android:label="SignUp"
         tools:layout="@layout/fragment_signup">
         <argument

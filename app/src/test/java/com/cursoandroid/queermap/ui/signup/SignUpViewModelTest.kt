@@ -1,6 +1,7 @@
 package com.cursoandroid.queermap.ui.signup
 
 import android.content.Intent
+import com.cursoandroid.queermap.common.InputValidator
 import com.cursoandroid.queermap.data.source.remote.FacebookSignInDataSource
 import com.cursoandroid.queermap.data.source.remote.GoogleSignInDataSource
 import com.cursoandroid.queermap.domain.model.User
@@ -10,7 +11,6 @@ import com.cursoandroid.queermap.domain.usecase.auth.RegisterWithFacebookUseCase
 import com.cursoandroid.queermap.domain.usecase.auth.RegisterWithGoogleUseCase
 import com.facebook.CallbackManager
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import com.google.firebase.auth.FirebaseUser
@@ -51,7 +51,7 @@ class SignUpViewModelTest {
     @MockK
     private lateinit var firebaseUser: FirebaseUser
     @MockK
-    private lateinit var signUpValidator: SignUpValidator
+    private lateinit var signUpValidator: InputValidator
 
     private lateinit var viewModel: SignUpViewModel
 

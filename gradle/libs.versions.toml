@@ -22,12 +22,14 @@ multidex = "2.0.1"
 google-services = "4.4.1"
 secrets = "2.0.1"
 google-auth-gms = "21.0.0"
+google-truth = "1.1.5"
 
 # Facebook
 facebook-login = "16.3.0"
 
 # Navegación
 navigation = "2.7.5"
+navigation-test = "2.7.5"
 
 # AndroidX UI
 activity = "1.8.0"
@@ -96,10 +98,12 @@ gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 # Navegación
 androidx-navigation-fragment = { module = "androidx.navigation:navigation-fragment-ktx", version.ref = "navigation" }
 androidx-navigation-ui = { module = "androidx.navigation:navigation-ui-ktx", version.ref = "navigation" }
+androidx-navigation-testing = { module = "androidx.navigation:navigation-testing", version.ref = "navigation-test" }
 
 # Carga de imágenes
 picasso = { module = "com.squareup.picasso:picasso", version.ref = "picasso" }
-
+# Google Truth
+google-truth = { group = "com.google.truth", name = "truth", version.ref = "google-truth" }
 # Hilt
 hilt-core = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
 hilt-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hilt" }

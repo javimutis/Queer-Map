@@ -24,11 +24,13 @@ android {
         testInstrumentationRunner = "com.cursoandroid.queermap.CustomTestRunner"
         multiDexEnabled = true
 
-        testInstrumentationRunnerArguments.putAll(mapOf(
-            // La siguiente línea es crucial para Hilt en las pruebas.
-            // Asegúrate de que el paquete sea correcto si HiltTestApplication no está en el raíz.
-            "dagger.hilt.android.testing.HiltTestApplication_Application" to "com.cursoandroid.queermap.HiltTestApplication"
-        ))
+        testInstrumentationRunnerArguments.putAll(
+            mapOf(
+                // La siguiente línea es crucial para Hilt en las pruebas.
+                // Asegúrate de que el paquete sea correcto si HiltTestApplication no está en el raíz.
+                "dagger.hilt.android.testing.HiltTestApplication_Application" to "com.cursoandroid.queermap.HiltTestApplication"
+            )
+        )
     }
 
     buildTypes {
@@ -155,4 +157,9 @@ dependencies {
 
     // Fragment Testing
     androidTestImplementation(libs.androidx.fragment.testing)
+
+// Navigation Testing (for TestNavHostController)
+    androidTestImplementation(libs.androidx.navigation.testing)
+    // Google Truth for assertions
+    androidTestImplementation(libs.google.truth)
 }

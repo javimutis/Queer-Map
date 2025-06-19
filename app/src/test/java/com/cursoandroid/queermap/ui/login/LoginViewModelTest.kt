@@ -5,7 +5,7 @@ import com.cursoandroid.queermap.domain.repository.AuthRepository
 import com.cursoandroid.queermap.domain.usecase.auth.LoginWithEmailUseCase
 import com.cursoandroid.queermap.domain.usecase.auth.LoginWithFacebookUseCase
 import com.cursoandroid.queermap.domain.usecase.auth.LoginWithGoogleUseCase
-import com.cursoandroid.queermap.ui.signup.SignUpValidator // Importar SignUpValidator
+import com.cursoandroid.queermap.common.InputValidator // Importar SignUpValidator
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseUser
@@ -22,7 +22,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import java.io.IOException
 
 @ExperimentalCoroutinesApi
 class LoginViewModelTest {
@@ -40,7 +39,7 @@ class LoginViewModelTest {
     @MockK
     private lateinit var firebaseUser: FirebaseUser
     @MockK // AÑADIDO: Mock para SignUpValidator
-    private lateinit var signUpValidator: SignUpValidator
+    private lateinit var signUpValidator: InputValidator
 
     private lateinit var viewModel: LoginViewModel
 

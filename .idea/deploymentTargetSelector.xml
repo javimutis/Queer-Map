@@ -8,12 +8,12 @@
       <SelectionState runConfigName="when_email_field_is_typed_then_text_is_updated()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="very_basic_test_to_check_setup()">
+      <SelectionState runConfigName="when_password_field_is_typed_then_text_is_updated()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="a_very_basic_test_to_check_setup()">
+      <SelectionState runConfigName="when_valid_credentials_are_entered_and_login_clicked_then_navigates_to_home()">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-06-13T20:14:43.411895600Z">
+        <DropdownSelection timestamp="2025-06-18T15:29:40.151505700Z">
           <Target type="DEFAULT_BOOT">
             <handle>
               <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\javie\.android\avd\QueerMap_Test_API30.avd" />
@@ -22,7 +22,7 @@
         </DropdownSelection>
         <DialogSelection />
       </SelectionState>
-      <SelectionState runConfigName="when_main_activity_is_launched_then_nav_host_fragment_is_displayed()">
+      <SelectionState runConfigName="when_invalid_email_is_entered_then_shows_error_message()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>

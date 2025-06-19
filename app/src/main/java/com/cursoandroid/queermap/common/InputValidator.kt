@@ -1,15 +1,17 @@
-package com.cursoandroid.queermap.ui.signup
+package com.cursoandroid.queermap.common
 
+import android.util.Patterns
 import javax.inject.Inject
 
-class SignUpValidator @Inject constructor() {
-    // Mover a companion object
+class InputValidator @Inject constructor() {
     companion object {
-        private const val PASSWORD_MIN_LENGTH = 8
+        // AJUSTADO A 6 para coincidir con el mensaje de error del LoginViewModel
+        // y con la validación mínima esperada en el contexto de login.
+        private const val PASSWORD_MIN_LENGTH = 6
     }
 
     fun isValidEmail(email: String): Boolean {
-        return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
+        return Patterns.EMAIL_ADDRESS.matcher(email).matches()
     }
 
     fun isValidPassword(password: String): Boolean {
@@ -17,6 +19,10 @@ class SignUpValidator @Inject constructor() {
     }
 
     fun isStrongPassword(password: String): Boolean {
+        // Nota: Esta regex actual espera 8 caracteres.
+        // Si PASSWORD_MIN_LENGTH es 6, hay una inconsistencia si usas esta para validación mínima.
+        // Decide si necesitas una contraseña "fuerte" con más requisitos y más longitud.
+        // Para el login, usualmente solo isValidPassword es suficiente.
         val passwordRegex = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#\$%^&+=])(?=\\S+\$).{8,}$"
         return password.matches(passwordRegex.toRegex())
     }

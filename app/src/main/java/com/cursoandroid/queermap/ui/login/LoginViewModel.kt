@@ -2,13 +2,11 @@ package com.cursoandroid.queermap.ui.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.cursoandroid.queermap.common.EmailValidator.isValidEmail // Mantener esta importación si EmailValidator.kt tiene un 'object'
-import com.cursoandroid.queermap.domain.repository.AuthRepository
 import com.cursoandroid.queermap.domain.usecase.auth.LoginWithEmailUseCase
 import com.cursoandroid.queermap.domain.usecase.auth.LoginWithFacebookUseCase
 import com.cursoandroid.queermap.domain.usecase.auth.LoginWithGoogleUseCase
-// import com.cursoandroid.queermap.ui.signup.SignUpValidator.isValidPassword // ELIMINAR esta importación
-import com.cursoandroid.queermap.ui.signup.SignUpValidator // IMPORTAR la clase
+import com.cursoandroid.queermap.domain.repository.AuthRepository
+import com.cursoandroid.queermap.common.InputValidator
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
@@ -30,67 +28,84 @@ class LoginViewModel @Inject constructor(
     internal val loginWithGoogleUseCase: LoginWithGoogleUseCase,
     private val authRepository: AuthRepository,
     private val firebaseAuth: FirebaseAuth,
-    private val signUpValidator: SignUpValidator
+    private val signUpValidator: InputValidator
 ) : ViewModel() {
 
     internal val _uiState = MutableStateFlow(LoginUiState())
-    val uiState: StateFlow<LoginUiState> =
-        _uiState.asStateFlow()
+    val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
 
     internal val _event = MutableSharedFlow<LoginEvent>()
-    val event: SharedFlow<LoginEvent> =
-        _event.asSharedFlow()
+    val event: SharedFlow<LoginEvent> = _event.asSharedFlow()
 
     fun loginWithEmail(email: String, password: String) {
-        updateUiState(isLoading = true)
+        _uiState.value = _uiState.value.copy(
+            isLoading = true,
+            isEmailInvalid = false,
+            isPasswordInvalid = false,
+            errorMessage = null,
+            isSuccess = false
+        )
+
         viewModelScope.launch {
-            if (!isValidEmail(email)) {
-                updateEmailInvalid()
+            if (!signUpValidator.isValidEmail(email)) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    isEmailInvalid = true
+                )
+                _event.emit(LoginEvent.ShowMessage("Por favor ingresa un email válido"))
                 return@launch
             }
             if (!signUpValidator.isValidPassword(password)) {
-                updatePasswordInvalid()
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    isPasswordInvalid = true
+                )
+                _event.emit(LoginEvent.ShowMessage("La contraseña debe tener al menos 6 caracteres"))
                 return@launch
             }
             handleEmailLogin(email, password)
         }
     }
 
-    private fun updateEmailInvalid() {
-        _uiState.value = LoginUiState(isEmailInvalid = true)
-        sendEvent(LoginEvent.ShowMessage("Por favor ingresa un email válido"))
-    }
-
-    private fun updatePasswordInvalid() {
-        _uiState.value = LoginUiState(isPasswordInvalid = true)
-        sendEvent(LoginEvent.ShowMessage("La contraseña debe tener al menos 6 caracteres"))
-    }
-
     private suspend fun handleEmailLogin(email: String, password: String) {
         val result = loginWithEmailUseCase(email, password)
         result.fold(
             onSuccess = {
-                _uiState.value = LoginUiState(isSuccess = true)
+                _uiState.value = _uiState.value.copy(isLoading = false, isSuccess = true)
                 _event.emit(LoginEvent.NavigateToHome)
+                _event.emit(LoginEvent.ShowMessage("Inicio de sesión exitoso"))
             },
             onFailure = { error ->
                 val errorMessage = mapErrorToMessage(error)
-                _uiState.value = LoginUiState(errorMessage = errorMessage)
+                _uiState.value = _uiState.value.copy(isLoading = false, errorMessage = errorMessage)
                 _event.emit(LoginEvent.ShowMessage(errorMessage))
             }
         )
     }
 
     fun loginWithGoogle(idToken: String) {
+        _uiState.value = _uiState.value.copy(
+            isLoading = true,
+            isEmailInvalid = false,
+            isPasswordInvalid = false,
+            errorMessage = null,
+            isSuccess = false
+        )
         performThirdPartyLogin { loginWithGoogleUseCase(idToken) }
     }
 
     fun loginWithFacebook(token: String) {
+        _uiState.value = _uiState.value.copy(
+            isLoading = true,
+            isEmailInvalid = false,
+            isPasswordInvalid = false,
+            errorMessage = null,
+            isSuccess = false
+        )
         performThirdPartyLogin { loginWithFacebookUseCase(token) }
     }
 
     private fun performThirdPartyLogin(loginAction: suspend () -> Result<Any>) {
-        updateUiState(isLoading = true)
         viewModelScope.launch {
             val result = loginAction()
             handleThirdPartyResult(result)
@@ -107,10 +122,11 @@ class LoginViewModel @Inject constructor(
                     userProfileExistsResult.fold(
                         onSuccess = { exists ->
                             if (exists) {
-                                _uiState.value = LoginUiState(isSuccess = true)
+                                _uiState.value = _uiState.value.copy(isLoading = false, isSuccess = true)
                                 _event.emit(LoginEvent.NavigateToHome)
+                                _event.emit(LoginEvent.ShowMessage("Inicio de sesión social exitoso"))
                             } else {
-                                _uiState.value = LoginUiState(isSuccess = true)
+                                _uiState.value = _uiState.value.copy(isLoading = false, isSuccess = true)
                                 _event.emit(
                                     LoginEvent.NavigateToSignupWithArgs(
                                         socialUserEmail = currentUser.email,
@@ -122,21 +138,20 @@ class LoginViewModel @Inject constructor(
                             }
                         },
                         onFailure = { error ->
-                            val errorMessage =
-                                error.message ?: "Error al verificar perfil de usuario."
-                            _uiState.value = LoginUiState(errorMessage = errorMessage)
+                            val errorMessage = error.message ?: "Error al verificar perfil de usuario."
+                            _uiState.value = _uiState.value.copy(isLoading = false, errorMessage = errorMessage)
                             _event.emit(LoginEvent.ShowMessage(errorMessage))
                         }
                     )
                 } else {
                     val errorMessage = "Error: Usuario autenticado nulo después del login social."
-                    _uiState.value = LoginUiState(errorMessage = errorMessage)
+                    _uiState.value = _uiState.value.copy(isLoading = false, errorMessage = errorMessage)
                     _event.emit(LoginEvent.ShowMessage(errorMessage))
                 }
             },
-            onFailure = {
-                val errorMessage = it.message ?: "Error inesperado"
-                _uiState.value = LoginUiState(errorMessage = errorMessage)
+            onFailure = { error ->
+                val errorMessage = error.message ?: "Error inesperado"
+                _uiState.value = _uiState.value.copy(isLoading = false, errorMessage = errorMessage)
                 _event.emit(LoginEvent.ShowMessage(errorMessage))
             }
         )
@@ -163,18 +178,8 @@ class LoginViewModel @Inject constructor(
     fun loadUserCredentials() {
         viewModelScope.launch {
             val (email, password) = authRepository.loadSavedCredentials()
-            updateCredentials(email, password)
-        }
-    }
-
-    private fun updateCredentials(email: String?, password: String?) {
-        if (!email.isNullOrBlank() && !password.isNullOrBlank()) {
             _uiState.value = _uiState.value.copy(email = email, password = password)
         }
-    }
-
-    private fun updateUiState(isLoading: Boolean = false) {
-        _uiState.value = _uiState.value.copy(isLoading = isLoading)
     }
 
     private fun mapErrorToMessage(error: Throwable): String {
@@ -184,9 +189,5 @@ class LoginViewModel @Inject constructor(
             is FirebaseAuthUserCollisionException -> "Ya existe una cuenta con este email."
             else -> "Error inesperado. Intenta de nuevo más tarde"
         }
-    }
-
-    private fun isValidEmail(email: String): Boolean {
-        return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
     }
 }

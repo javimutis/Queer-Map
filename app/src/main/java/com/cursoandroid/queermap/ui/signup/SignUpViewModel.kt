@@ -3,6 +3,7 @@ package com.cursoandroid.queermap.ui.signup
 import android.content.Intent
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.cursoandroid.queermap.common.InputValidator
 import com.cursoandroid.queermap.data.source.remote.FacebookSignInDataSource
 import com.cursoandroid.queermap.data.source.remote.GoogleSignInDataSource
 import com.cursoandroid.queermap.domain.model.User
@@ -37,7 +38,7 @@ class SignUpViewModel @Inject constructor(
     private val facebookCallbackManager: CallbackManager,
     private val authRepository: AuthRepository,
     private val firebaseAuth: FirebaseAuth,
-    private val signUpValidator: SignUpValidator
+    private val signUpValidator: InputValidator
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SignUpUiState())

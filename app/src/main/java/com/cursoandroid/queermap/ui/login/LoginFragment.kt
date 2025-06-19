@@ -1,5 +1,3 @@
-// app/src/main/java/com/cursoandroid/queermap/ui/login/LoginFragment.kt
-
 package com.cursoandroid.queermap.ui.login
 
 import android.app.Activity
@@ -8,13 +6,11 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ScrollView // Importante: Asumiendo que tu root es un ScrollView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.Lifecycle
-// Importar `repeatOnLifecycle` para una observación más segura
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.cursoandroid.queermap.R
@@ -33,7 +29,6 @@ import javax.inject.Inject
 class LoginFragment : Fragment() {
 
     private var _binding: FragmentLoginBinding? = null
-    // Haz que el getter sea nullable, y todos los usos deberán ser safe-called
     private val binding get() = _binding
 
     internal val viewModel: LoginViewModel by viewModels()
@@ -44,13 +39,12 @@ class LoginFragment : Fragment() {
     private lateinit var googleSignInLauncher: androidx.activity.result.ActivityResultLauncher<Intent>
     private lateinit var callbackManager: CallbackManager
 
-    // Lifecycle methods
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View { // Cambiado a View en lugar de ScrollView? si root no siempre es ScrollView
+    ): View {
         _binding = FragmentLoginBinding.inflate(inflater, container, false)
-        return binding?.root ?: View(context) // Proporcionar una vista por defecto si binding es nulo (poco probable aquí)
+        return binding?.root ?: View(context)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -70,13 +64,11 @@ class LoginFragment : Fragment() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        // Solo si callbackManager está inicializado
         if (::callbackManager.isInitialized) {
             callbackManager.onActivityResult(requestCode, resultCode, data)
         }
     }
 
-    // Setup and Initialization
     private fun initGoogleSignInLauncher() {
         googleSignInLauncher = registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
@@ -93,7 +85,6 @@ class LoginFragment : Fragment() {
         callbackManager = CallbackManager.Factory.create()
         facebookSignInDataSource.registerCallback(callbackManager)
 
-        // Acceso seguro a binding
         binding?.btnFacebookLogin?.setOnClickListener {
             facebookSignInDataSource.logInWithReadPermissions(
                 this,
@@ -102,19 +93,11 @@ class LoginFragment : Fragment() {
         }
     }
 
-    // UI Interaction Handling
     private fun setupListeners() {
-        // Acceso seguro a binding en todos los listeners
         binding?.btnLogin?.setOnClickListener {
-            val email = binding?.etEmailLogin?.text.toString() // Safe call
-            val password = binding?.etPassword?.text.toString() // Safe call
-            if (!isValidEmail(email)) {
-                showSnackbar("Por favor ingresa un email válido")
-            } else if (!isValidPassword(password)) {
-                showSnackbar("La contraseña debe tener al menos 6 caracteres")
-            } else {
-                viewModel.loginWithEmail(email, password)
-            }
+            val email = binding?.etEmailLogin?.text.toString()
+            val password = binding?.etPassword?.text.toString()
+            viewModel.loginWithEmail(email, password)
         }
 
         binding?.btnGoogleSignIn?.setOnClickListener {
@@ -133,32 +116,19 @@ class LoginFragment : Fragment() {
         }
     }
 
-    // State and Event Observation
     private fun observeState() {
-        // CAMBIO CLAVE: Usar repeatOnLifecycle(Lifecycle.State.STARTED)
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect { state ->
-                    // El error KotlinNothingValueException ocurre aquí si binding es null
-                    // con el getter `binding get() = _binding!!`.
-                    // Con el cambio a `binding get() = _binding`, ahora es nullable.
-                    // Usar `binding?.let { ... }` es la forma más robusta.
                     binding?.let { currentBinding ->
                         if (state.isLoading) {
                             currentBinding.progressBar.visibility = View.VISIBLE
                         } else {
                             currentBinding.progressBar.visibility = View.GONE
                         }
-                        if (state.isEmailInvalid) {
-                            showSnackbar("Por favor ingresa un email válido")
-                        }
-                        if (state.isPasswordInvalid) {
-                            showSnackbar("La contraseña debe tener al menos 6 caracteres")
-                        }
                         if (state.errorMessage != null) {
                             showSnackbar(state.errorMessage)
                         }
-                        // Asegúrate de que email y password también son non-null si se van a setear.
                         state.email?.let { emailText ->
                             currentBinding.etEmailLogin.setText(emailText)
                         }
@@ -172,7 +142,6 @@ class LoginFragment : Fragment() {
     }
 
     private fun observeEvents() {
-        // CAMBIO CLAVE: Usar repeatOnLifecycle(Lifecycle.State.STARTED) para eventos también
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.event.collect { event ->
@@ -180,13 +149,10 @@ class LoginFragment : Fragment() {
                         is LoginEvent.ShowMessage -> showSnackbar(event.message)
                         is LoginEvent.NavigateToHome ->
                             findNavController().navigate(R.id.action_loginFragment_to_mapFragment)
-
                         is LoginEvent.NavigateToForgotPassword ->
                             findNavController().navigate(R.id.action_loginFragment_to_forgotPasswordFragment)
-
                         is LoginEvent.NavigateBack ->
                             findNavController().popBackStack()
-
                         is LoginEvent.NavigateToSignupWithArgs -> {
                             val directions =
                                 LoginFragmentDirections.actionLoginFragmentToSignupFragment(
@@ -201,7 +167,6 @@ class LoginFragment : Fragment() {
             }
         }
 
-        // También para el canal de acceso de Facebook
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 facebookSignInDataSource.accessTokenChannel.collectLatest { result ->
@@ -216,7 +181,7 @@ class LoginFragment : Fragment() {
     }
 
     internal fun handleGoogleSignInResult(data: Intent?) {
-        lifecycleScope.launch { // Esto NO usa viewLifecycleOwner, así que está bien
+        lifecycleScope.launch { // Este launch también usará el TestDispatcher gracias al módulo.
             googleSignInDataSource.handleSignInResult(data)
                 .onSuccess { idToken ->
                     if (idToken != null) {
@@ -231,19 +196,10 @@ class LoginFragment : Fragment() {
         }
     }
 
-    // Utilities
     private fun showSnackbar(message: String) {
-        // Acceso seguro a binding para el Snackbar
         binding?.root?.let {
             Snackbar.make(it, message, Snackbar.LENGTH_SHORT).show()
         }
     }
 
-    private fun isValidEmail(email: String): Boolean {
-        return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
-    }
-
-    private fun isValidPassword(password: String): Boolean {
-        return password.length >= 6
-    }
 }
