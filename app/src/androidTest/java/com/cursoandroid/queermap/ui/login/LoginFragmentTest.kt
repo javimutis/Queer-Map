@@ -272,7 +272,6 @@ fun when_invalid_email_is_entered_then_shows_error_message() = runTest(testDispa
         uiStateFlow.emit(uiStateFlow.value.copy(isLoading = false, isEmailInvalid = true))
         eventFlow.emit(LoginEvent.ShowMessage("Por favor ingresa un email válido"))
     }
-
     onView(withId(R.id.etEmailLogin)).perform(typeText(email), closeSoftKeyboard())
     onView(withId(R.id.etPassword)).perform(typeText(password), closeSoftKeyboard())
     onView(withId(R.id.btnLogin)).perform(click())
