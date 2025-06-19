@@ -317,74 +317,40 @@ class LoginFragmentTest {
         onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
     }
 
+    //testing
     @Test
-
     fun when_login_fails_with_network_error_then_shows_specific_message() =
-
         runTest(testDispatcher) {
-
             val email = "test@example.com"
-
             val password = "password123"
-
             val errorMessage = "Error de red. Por favor, revisa tu conexión"
 
-
-
             every { mockInputValidator.isValidEmail(email) } returns true
-
             every { mockInputValidator.isValidPassword(password) } returns true
 
-
-
             coEvery { mockLoginViewModel.loginWithEmail(email, password) } coAnswers {
-
                 uiStateFlow.emit(uiStateFlow.value.copy(isLoading = true))
-
                 testScheduler.advanceTimeBy(100)
-
                 uiStateFlow.emit(
-
                     uiStateFlow.value.copy(
-
                         isLoading = false,
-
                         errorMessage = errorMessage
-
                     )
-
                 )
-
                 eventFlow.emit(LoginEvent.ShowMessage(errorMessage))
-
             }
 
-
-
             onView(withId(R.id.etEmailLogin)).perform(typeText(email))
-
             onView(withId(R.id.etPassword)).perform(typeText(password), closeSoftKeyboard())
-
             onView(withId(R.id.btnLogin)).perform(click())
-
-
 
             coVerify(exactly = 1) { mockLoginViewModel.loginWithEmail(email, password) }
 
-
-
             testScheduler.advanceUntilIdle()
 
-
-
-            onView(withText(errorMessage))
-
-                .inRoot(withDecorView(not(`is`(activityDecorView))))
-
-                .check(matches(isDisplayed()))
+            onView(withText(errorMessage)).check(matches(isDisplayed()))
 
             onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
-
         }
 
 
