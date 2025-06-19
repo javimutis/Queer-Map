@@ -2,9 +2,6 @@
 <project version="4">
   <component name="deploymentTargetSelector">
     <selectionStates>
-      <SelectionState runConfigName="when_password_field_is_typed_then_text_is_updated()">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
       <SelectionState runConfigName="when_valid_credentials_are_entered_and_login_clicked_then_navigates_to_home()">
         <option name="selectionMode" value="DROPDOWN" />
         <DropdownSelection timestamp="2025-06-18T15:29:40.151505700Z">

@@ -317,7 +317,7 @@ class LoginFragmentTest {
         onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
     }
 
-    //testing
+    //passed
     @Test
     fun when_login_fails_with_network_error_then_shows_specific_message() =
         runTest(testDispatcher) {
@@ -353,7 +353,7 @@ class LoginFragmentTest {
             onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
         }
 
-
+//testing
     @Test
 
     fun when_google_sign_in_button_is_clicked_then_getSignInIntent_is_called() =
