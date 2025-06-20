@@ -121,11 +121,10 @@ class LoginFragment : Fragment() {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect { state ->
                     binding?.let { currentBinding ->
-                        if (state.isLoading) {
-                            currentBinding.progressBar.visibility = View.VISIBLE
-                        } else {
-                            currentBinding.progressBar.visibility = View.GONE
-                        }
+                        // Usar currentBinding.progressBar.isInvisible para que el espacio se mantenga
+                        // aunque no esté visible, evitando posibles reflows de layout.
+                        currentBinding.progressBar.visibility = if (state.isLoading) View.VISIBLE else View.GONE
+
                         if (state.errorMessage != null) {
                             showSnackbar(state.errorMessage)
                         }
@@ -181,7 +180,7 @@ class LoginFragment : Fragment() {
     }
 
     internal fun handleGoogleSignInResult(data: Intent?) {
-        lifecycleScope.launch { // Este launch también usará el TestDispatcher gracias al módulo.
+        lifecycleScope.launch {
             googleSignInDataSource.handleSignInResult(data)
                 .onSuccess { idToken ->
                     if (idToken != null) {
@@ -201,5 +200,4 @@ class LoginFragment : Fragment() {
             Snackbar.make(it, message, Snackbar.LENGTH_SHORT).show()
         }
     }
-
 }

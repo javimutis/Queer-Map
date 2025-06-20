@@ -2,17 +2,6 @@
 <project version="4">
   <component name="deploymentTargetSelector">
     <selectionStates>
-      <SelectionState runConfigName="when_valid_credentials_are_entered_and_login_clicked_then_navigates_to_home()">
-        <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-06-18T15:29:40.151505700Z">
-          <Target type="DEFAULT_BOOT">
-            <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\javie\.android\avd\QueerMap_Test_API30.avd" />
-            </handle>
-          </Target>
-        </DropdownSelection>
-        <DialogSelection />
-      </SelectionState>
       <SelectionState runConfigName="when_invalid_email_is_entered_then_shows_error_message()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
@@ -20,6 +9,12 @@
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
       <SelectionState runConfigName="when_login_fails_with_network_error_then_shows_specific_message()">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="when_valid_credentials_are_entered_and_login_clicked_then_navigates_to_home()">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="when_google_sign_in_button_is_clicked_then_getSignInIntent_is_called()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>
