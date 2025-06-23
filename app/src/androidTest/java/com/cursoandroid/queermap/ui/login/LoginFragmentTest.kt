@@ -30,7 +30,6 @@ import com.cursoandroid.queermap.R
 import com.cursoandroid.queermap.common.InputValidator
 import com.cursoandroid.queermap.data.source.remote.FacebookSignInDataSource
 import com.cursoandroid.queermap.data.source.remote.GoogleSignInDataSource
-import com.cursoandroid.queermap.fakes.FakeGoogleSignInDataSource
 import com.cursoandroid.queermap.ui.forgotpassword.ForgotPasswordFragment
 import com.cursoandroid.queermap.ui.map.MapFragment
 import com.cursoandroid.queermap.ui.signup.SignUpFragment
@@ -127,6 +126,7 @@ class LoginFragmentTest {
         }
     }
 
+    // **AHORA VUELVE A INYECTAR mockGoogleSignInDataSource**. Hilt lo proveerá desde TestSocialLoginDataSourceModule
     @Inject
     lateinit var mockGoogleSignInDataSource: GoogleSignInDataSource
 
@@ -147,23 +147,22 @@ class LoginFragmentTest {
     @Before
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
-        hiltRule.inject() // Esto ahora inyectará los mocks de DataSources desde TestSocialLoginDataSourceModule
+        hiltRule.inject() // Esto inyectará los mocks definidos en tus módulos de test
 
         uiStateFlow = MutableStateFlow(LoginUiState())
         eventFlow = MutableSharedFlow()
         accessTokenChannelFlow = MutableSharedFlow()
 
-        clearAllMocks() // Asegúrate de limpiar los mocks antes de cada test
+        clearAllMocks() // Muy importante para limpiar los mocks entre tests
 
         every { mockLoginViewModel.uiState } returns uiStateFlow
         every { mockLoginViewModel.event } returns eventFlow
 
-        coEvery {
-            mockLoginViewModel.loginWithEmail(
-                any(),
-                any()
-            )
-        } coAnswers { /* handled in specific tests */ }
+        // CONFIGURACIÓN DEL MOCK INYECTADO: Stub el comportamiento del mockGoogleSignInDataSource
+        // Asegúrate de que getSignInIntent() retorne un Intent para evitar el ActivityNotFoundException
+        every { mockGoogleSignInDataSource.getSignInIntent() } returns Intent(Intent.ACTION_VIEW, Uri.parse("https://example.com/oauth"))
+        coEvery { mockGoogleSignInDataSource.handleSignInResult(any()) } returns Result.success("fake_google_id_token")
+
         coEvery { mockLoginViewModel.loginWithGoogle(any()) } coAnswers { /* handled in specific tests */ }
         coEvery { mockLoginViewModel.loginWithFacebook(any()) } coAnswers { /* handled in specific tests */ }
         coEvery { mockLoginViewModel.onForgotPasswordClicked() } coAnswers { /* handled in specific tests */ }
@@ -184,7 +183,6 @@ class LoginFragmentTest {
         every { mockInputValidator.isValidBirthday(any()) } returns true
 
         val mockSignInIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://example.com"))
-        coEvery { mockGoogleSignInDataSource.getSignInIntent() } returns mockSignInIntent
 
         every { mockFacebookSignInDataSource.accessTokenChannel } returns accessTokenChannelFlow
         every { mockFacebookSignInDataSource.registerCallback(any()) } answers { /* do nothing */ }
@@ -194,6 +192,7 @@ class LoginFragmentTest {
                 any()
             )
         } answers { /* do nothing */ }
+
 
         IdlingRegistry.getInstance().register(EspressoIdlingResource.countingIdlingResource)
 
@@ -222,10 +221,11 @@ class LoginFragmentTest {
             activity.supportFragmentManager.beginTransaction()
                 .replace(android.R.id.content, fragment, null)
                 .commitNow()
-            testScheduler.advanceUntilIdle() // Asegurar que todo el setup del fragmento se complete
+            testScheduler.advanceUntilIdle()
             activityDecorView = activity.window.decorView
         }
     }
+
 
     @After
     fun tearDown() {
@@ -242,6 +242,7 @@ class LoginFragmentTest {
 
         testScheduler.advanceUntilIdle()
     }
+
 
 
     @Test
@@ -390,6 +391,7 @@ class LoginFragmentTest {
         }
 
     //testing p
+
     @Test
     fun when_google_sign_in_button_is_clicked_then_getSignInIntent_is_called() =
         runTest(testDispatcher) {
@@ -399,51 +401,51 @@ class LoginFragmentTest {
             onView(withId(R.id.btnGoogleSignIn)).perform(scrollTo(), closeSoftKeyboard())
 
             testScheduler.advanceTimeBy(500)
-            testScheduler.advanceUntilIdle()
 
             onView(withId(R.id.btnGoogleSignIn))
                 .perform(waitForViewToBeClickable(), click())
 
-            // Verifica que se llamó
-            assertTrue((mockGoogleSignInDataSource as FakeGoogleSignInDataSource).wasCalled)
+            testScheduler.advanceUntilIdle()
+
+            // Esto funcionará porque mockGoogleSignInDataSource es un mock de MockK inyectado por Hilt
+            coVerify(exactly = 1) { mockGoogleSignInDataSource.getSignInIntent() }
+        }
+
+    @Test
+    fun when_google_sign_in_result_is_success_for_existing_user_then_navigates_to_home() =
+        runTest(testDispatcher) {
+            val intentData = mockk<Intent>()
+            val idToken = "some_google_id_token"
+
+            coEvery { mockGoogleSignInDataSource.handleSignInResult(intentData) } returns Result.success(
+                idToken
+            )
+            coEvery { mockLoginViewModel.loginWithGoogle(idToken) } coAnswers {
+                uiStateFlow.emit(uiStateFlow.value.copy(isLoading = true))
+                testScheduler.advanceTimeBy(100)
+                uiStateFlow.emit(uiStateFlow.value.copy(isLoading = false, isSuccess = true))
+                eventFlow.emit(LoginEvent.NavigateToHome)
+                eventFlow.emit(LoginEvent.ShowMessage("Inicio de sesión con Google exitoso"))
+            }
+
+            activityScenario.onActivity { activity ->
+                val fragment =
+                    activity.supportFragmentManager.findFragmentById(android.R.id.content) as LoginFragment
+                fragment.handleGoogleSignInResult(intentData)
+            }
+            testScheduler.advanceUntilIdle()
+
+            coVerify(exactly = 1) { mockGoogleSignInDataSource.handleSignInResult(intentData) }
+            coVerify(exactly = 1) { mockLoginViewModel.loginWithGoogle(idToken) }
+
+            onView(withText("Inicio de sesión con Google exitoso"))
+                .inRoot(withDecorView(not(`is`(activityDecorView))))
+                .check(matches(isDisplayed()))
+            onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
+            assertThat(navController.currentDestination?.id).isEqualTo(R.id.mapFragment)
         }
 
 
-//    @Test
-//    fun when_google_sign_in_result_is_success_for_existing_user_then_navigates_to_home() =
-//        runTest(testDispatcher) {
-//            val intentData = mockk<Intent>()
-//            val idToken = "some_google_id_token"
-//
-//            coEvery { mockGoogleSignInDataSource.handleSignInResult(intentData) } returns Result.success(
-//                idToken
-//            )
-//            coEvery { mockLoginViewModel.loginWithGoogle(idToken) } coAnswers {
-//                uiStateFlow.emit(uiStateFlow.value.copy(isLoading = true))
-//                testScheduler.advanceTimeBy(100)
-//                uiStateFlow.emit(uiStateFlow.value.copy(isLoading = false, isSuccess = true))
-//                eventFlow.emit(LoginEvent.NavigateToHome)
-//                eventFlow.emit(LoginEvent.ShowMessage("Inicio de sesión con Google exitoso"))
-//            }
-//
-//            activityScenario.onActivity { activity ->
-//                val fragment =
-//                    activity.supportFragmentManager.findFragmentById(android.R.id.content) as LoginFragment
-//                fragment.handleGoogleSignInResult(intentData)
-//            }
-//            testScheduler.advanceUntilIdle()
-//
-//            coVerify(exactly = 1) { mockGoogleSignInDataSource.handleSignInResult(intentData) }
-//            coVerify(exactly = 1) { mockLoginViewModel.loginWithGoogle(idToken) }
-//
-//            onView(withText("Inicio de sesión con Google exitoso"))
-//                .inRoot(withDecorView(not(`is`(activityDecorView))))
-//                .check(matches(isDisplayed()))
-//            onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
-//            assertThat(navController.currentDestination?.id).isEqualTo(R.id.mapFragment)
-//        }
-//
-//
 //    @Test
 //    fun when_google_sign_in_result_is_success_for_new_user_then_navigates_to_signup_with_args() =
 //        runTest(testDispatcher) {
