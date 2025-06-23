@@ -14,16 +14,15 @@ import javax.inject.Singleton // Necesario para el scope Singleton
 @Module
 @TestInstallIn(
     components = [SingletonComponent::class],
-    replaces = [DataSourceModule::class] // Asumiendo que DataSourceModule es tu módulo real que provee estas dependencias
+    replaces = [DataSourceModule::class]
 )
 object TestSocialLoginDataSourceModule {
 
-    // **NUEVA MODIFICACIÓN:** Provee un mockk de GoogleSignInDataSource para que Hilt pueda inyectarlo globalmente
     @Provides
-    @Singleton // Asegúrate de que sea Singleton si la implementación real lo es, para consistencia
+    @Singleton
     fun provideGoogleSignInDataSource(): GoogleSignInDataSource = mockk(relaxed = true)
 
     @Provides
-    @Singleton // Asegúrate de que sea Singleton si la implementación real lo es
+    @Singleton
     fun provideFacebookSignInDataSource(): FacebookSignInDataSource = mockk(relaxed = true)
 }
