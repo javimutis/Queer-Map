@@ -1,5 +1,6 @@
 package com.cursoandroid.queermap.ui.login
 
+import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.view.View
@@ -9,6 +10,7 @@ import androidx.navigation.Navigation
 import androidx.navigation.testing.TestNavHostController
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
+import androidx.test.espresso.Espresso
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.IdlingRegistry
 import androidx.test.espresso.PerformException
@@ -19,6 +21,7 @@ import androidx.test.espresso.action.ViewActions.closeSoftKeyboard
 import androidx.test.espresso.action.ViewActions.scrollTo
 import androidx.test.espresso.action.ViewActions.typeText
 import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.matcher.RootMatchers.withDecorView
 import androidx.test.espresso.matcher.ViewMatchers.isClickable
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.isEnabled
@@ -53,6 +56,7 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.hamcrest.CoreMatchers.allOf
+import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.CoreMatchers.not
 import org.hamcrest.Matcher
 import org.junit.After
@@ -65,11 +69,19 @@ import org.junit.runners.MethodSorters
 import java.util.concurrent.TimeoutException
 import javax.inject.Inject
 import org.junit.Assert.assertTrue
+import androidx.test.espresso.action.ViewActions.click
+import androidx.test.espresso.intent.Intents
+import androidx.test.espresso.intent.matcher.IntentMatchers.hasAction
+import androidx.test.espresso.intent.matcher.IntentMatchers.hasData
+import androidx.test.espresso.intent.Intents.intended
+import androidx.test.espresso.intent.Intents.intending
+import androidx.activity.result.ActivityResult // Necesario para crear el resultado de la actividad
 
 
+// Custom ViewAction para esperar a que una vista sea clickable
 fun waitForViewToBeClickable(): ViewAction {
     return object : ViewAction {
-        override fun getConstraints(): Matcher<View> {
+        override fun getConstraints(): org.hamcrest.Matcher<View> {
             return allOf(isDisplayed(), isEnabled(), isClickable())
         }
 
@@ -95,6 +107,7 @@ fun waitForViewToBeClickable(): ViewAction {
     }
 }
 
+
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @RunWith(AndroidJUnit4::class)
 @HiltAndroidTest
@@ -104,20 +117,28 @@ class LoginFragmentTest {
     @get:Rule(order = 0)
     val hiltRule = HiltAndroidRule(this)
 
+    // BindValue para inyectar un mock de LoginViewModel
     @BindValue
     @JvmField
     val mockLoginViewModel: LoginViewModel = mockk(relaxed = true)
 
+    // BindValue para inyectar un mock de InputValidator
     @BindValue
     @JvmField
     val mockInputValidator: InputValidator = mockk(relaxed = true)
 
+    // Custom FragmentFactory para asegurar que el LoginFragment reciba el mock de ViewModel
     @BindValue
     @JvmField
     val fragmentFactory: FragmentFactory = object : FragmentFactory() {
         override fun instantiate(classLoader: ClassLoader, className: String): Fragment {
             return when (className) {
-                LoginFragment::class.java.name -> LoginFragment()
+                LoginFragment::class.java.name -> LoginFragment().apply {
+                    testViewModel =
+                        mockLoginViewModel // Asigna el mock al testViewModel del fragment
+                }
+                // Añade otros fragments si son parte del grafo de navegación y necesarios para el test
+                // Por ejemplo, para navegación a otras pantallas
                 SignUpFragment::class.java.name -> SignUpFragment()
                 ForgotPasswordFragment::class.java.name -> ForgotPasswordFragment()
                 MapFragment::class.java.name -> MapFragment()
@@ -126,64 +147,79 @@ class LoginFragmentTest {
         }
     }
 
-    // **AHORA VUELVE A INYECTAR mockGoogleSignInDataSource**. Hilt lo proveerá desde TestSocialLoginDataSourceModule
+    // Inyección de los mocks de DataSources, también controlados por Hilt
     @Inject
     lateinit var mockGoogleSignInDataSource: GoogleSignInDataSource
 
     @Inject
     lateinit var mockFacebookSignInDataSource: FacebookSignInDataSource
 
+    // Flows para controlar el estado y eventos del ViewModel mock
     private lateinit var uiStateFlow: MutableStateFlow<LoginUiState>
     private lateinit var eventFlow: MutableSharedFlow<LoginEvent>
     private lateinit var accessTokenChannelFlow: MutableSharedFlow<Result<String>>
 
+    // Configuracion de coroutines para pruebas
     private val testScheduler = TestCoroutineScheduler()
     private val testDispatcher = UnconfinedTestDispatcher(testScheduler)
 
+    // Variables para Espresso y Navigation Testing
     private lateinit var activityDecorView: View
     private lateinit var activityScenario: ActivityScenario<HiltTestActivity>
     private lateinit var navController: TestNavHostController
 
     @Before
     fun setUp() {
-        Dispatchers.setMain(testDispatcher)
-        hiltRule.inject() // Esto inyectará los mocks definidos en tus módulos de test
+        Dispatchers.setMain(testDispatcher) // Establece el dispatcher principal para coroutines
+        hiltRule.inject() // Inyecta las dependencias, incluyendo los mocks @BindValue
 
+        // Inicializa Intents antes de cada test que interactúe con actividades
+        Intents.init()
+
+        // Inicializa los flows con un estado inicial
         uiStateFlow = MutableStateFlow(LoginUiState())
         eventFlow = MutableSharedFlow()
         accessTokenChannelFlow = MutableSharedFlow()
 
-        clearAllMocks() // Muy importante para limpiar los mocks entre tests
+        clearAllMocks() // Limpia todos los mocks antes de cada test para evitar interferencias
 
+        // Stub del comportamiento del mockLoginViewModel
         every { mockLoginViewModel.uiState } returns uiStateFlow
         every { mockLoginViewModel.event } returns eventFlow
 
-        // CONFIGURACIÓN DEL MOCK INYECTADO: Stub el comportamiento del mockGoogleSignInDataSource
-        // Asegúrate de que getSignInIntent() retorne un Intent para evitar el ActivityNotFoundException
-        every { mockGoogleSignInDataSource.getSignInIntent() } returns Intent(Intent.ACTION_VIEW, Uri.parse("https://example.com/oauth"))
+        // Stub para GoogleSignInDataSource: getSignInIntent debe retornar un Intent válido
+        every { mockGoogleSignInDataSource.getSignInIntent() } returns Intent(
+            Intent.ACTION_VIEW,
+            Uri.parse("https://example.com/oauth")
+        )
+        // handleSignInResult será mockeado en el test específico para devolver el ID token
         coEvery { mockGoogleSignInDataSource.handleSignInResult(any()) } returns Result.success("fake_google_id_token")
 
-        coEvery { mockLoginViewModel.loginWithGoogle(any()) } coAnswers { /* handled in specific tests */ }
-        coEvery { mockLoginViewModel.loginWithFacebook(any()) } coAnswers { /* handled in specific tests */ }
-        coEvery { mockLoginViewModel.onForgotPasswordClicked() } coAnswers { /* handled in specific tests */ }
-        coEvery { mockLoginViewModel.onBackPressed() } coAnswers { /* handled in specific tests */ }
+
+        // Stub del comportamiento general del mockLoginViewModel
+        coEvery { mockLoginViewModel.loginWithEmail(any(), any()) } coAnswers { /* do nothing */ }
+        // loginWithGoogle será mockeado en el test específico
+        coEvery { mockLoginViewModel.loginWithGoogle(any()) } coAnswers { /* will be defined in specific test */ }
+        coEvery { mockLoginViewModel.loginWithFacebook(any()) } coAnswers { /* do nothing */ }
+        coEvery { mockLoginViewModel.onForgotPasswordClicked() } coAnswers { /* do nothing */ }
+        coEvery { mockLoginViewModel.onBackPressed() } coAnswers { /* do nothing */ }
         coEvery {
             mockLoginViewModel.saveUserCredentials(
                 any(),
                 any()
             )
-        } coAnswers { /* handled in specific tests */ }
-        coEvery { mockLoginViewModel.loadUserCredentials() } coAnswers { /* handled in specific tests */ }
+        } coAnswers { /* do nothing */ }
+        coEvery { mockLoginViewModel.loadUserCredentials() } coAnswers { /* do nothing */ } // Llamado en onViewCreated
 
+        // Stub para InputValidator
         every { mockInputValidator.isValidEmail(any()) } returns true
         every { mockInputValidator.isValidPassword(any()) } returns true
-        every { mockInputValidator.isStrongPassword(any()) } returns true
-        every { mockInputValidator.isValidUsername(any()) } returns true
         every { mockInputValidator.isValidFullName(any()) } returns true
+        every { mockInputValidator.isValidUsername(any()) } returns true
+        every { mockInputValidator.isStrongPassword(any()) } returns true
         every { mockInputValidator.isValidBirthday(any()) } returns true
 
-        val mockSignInIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://example.com"))
-
+        // Stub para FacebookSignInDataSource
         every { mockFacebookSignInDataSource.accessTokenChannel } returns accessTokenChannelFlow
         every { mockFacebookSignInDataSource.registerCallback(any()) } answers { /* do nothing */ }
         every {
@@ -193,7 +229,6 @@ class LoginFragmentTest {
             )
         } answers { /* do nothing */ }
 
-
         IdlingRegistry.getInstance().register(EspressoIdlingResource.countingIdlingResource)
 
         navController = TestNavHostController(ApplicationProvider.getApplicationContext())
@@ -202,6 +237,7 @@ class LoginFragmentTest {
 
         activityScenario.onActivity { activity ->
             activity.supportFragmentManager.fragmentFactory = fragmentFactory
+
             val fragment = fragmentFactory.instantiate(
                 activity.classLoader,
                 LoginFragment::class.java.name
@@ -221,29 +257,93 @@ class LoginFragmentTest {
             activity.supportFragmentManager.beginTransaction()
                 .replace(android.R.id.content, fragment, null)
                 .commitNow()
+
+            // Asegura que todas las coroutines iniciales del fragmento se completen
             testScheduler.advanceUntilIdle()
             activityDecorView = activity.window.decorView
         }
     }
 
-
     @After
     fun tearDown() {
-        Dispatchers.resetMain()
-        IdlingRegistry.getInstance().unregister(EspressoIdlingResource.countingIdlingResource)
+        Dispatchers.resetMain() // Restablece el dispatcher principal
+        IdlingRegistry.getInstance()
+            .unregister(EspressoIdlingResource.countingIdlingResource) // Desregistra el IdlingResource
+
+        // Libera Intents después de cada test
+        Intents.release()
 
         if (this::activityScenario.isInitialized) {
-            activityScenario.close()
+            activityScenario.close() // Cierra el escenario de la actividad
         }
 
+        // Restablece el estado de los flows para el siguiente test
         if (this::uiStateFlow.isInitialized) {
             uiStateFlow.value = LoginUiState()
         }
 
-        testScheduler.advanceUntilIdle()
+        testScheduler.advanceUntilIdle() // Asegura que todas las coroutines pendientes se completen
     }
+    @Test
+    fun when_google_sign_in_button_clicked_and_result_is_success_then_navigates_to_home() =
+        runTest(testDispatcher) {
+            // Arrange
+            val fakeIdToken = "some_google_id_token"
+            val successMessage = "Inicio de sesión con Google exitoso"
 
+            // Prepara el Intent y ActivityResult que simularán el resultado del inicio de sesión de Google
+            val resultData =
+                Intent() // Puedes agregar datos reales si tu handleSignInResult los lee del Intent
+            val activityResult = ActivityResult(Activity.RESULT_OK, resultData)
 
+            // Define el comportamiento de intending: cuando se lance un Intent con esta acción/datos, responde con activityResult
+            intending(hasAction(Intent.ACTION_VIEW) and hasData(Uri.parse("https://example.com/oauth")))
+                .respondWith(activityResult)
+
+            // Mockear el método handleSignInResult de GoogleSignInDataSource para que devuelva el token falso.
+            // Esto se llamará cuando el ActivityResultLauncher procese el resultado mockeado.
+            coEvery { mockGoogleSignInDataSource.handleSignInResult(any()) } returns Result.success(
+                fakeIdToken
+            )
+
+            // Define el comportamiento del mockLoginViewModel.loginWithGoogle
+            // Esto se ejecutará cuando el fragmento (a través de handleGoogleSignInResult) llame a loginWithGoogle
+            coEvery { mockLoginViewModel.loginWithGoogle(fakeIdToken) } coAnswers {
+                uiStateFlow.emit(uiStateFlow.value.copy(isLoading = true))
+                testScheduler.advanceTimeBy(100) // Simula un pequeño retraso
+                uiStateFlow.emit(uiStateFlow.value.copy(isLoading = false, isSuccess = true))
+                eventFlow.emit(LoginEvent.NavigateToHome)
+                eventFlow.emit(LoginEvent.ShowMessage(successMessage))
+            }
+
+            // Act
+            // Realiza un click en el botón de Google Sign-In
+            onView(withId(R.id.btnGoogleSignIn)).perform(click())
+
+            // Asegura que Espresso y todas las coroutines activadas por el click y el resultado del Intent se ejecuten
+            Espresso.onIdle() // Espera a que el hilo principal de Espresso esté inactivo
+            testScheduler.advanceUntilIdle() // Avanza el tiempo para que todas las coroutines pendientes finalicen
+
+            // Assert
+            // Verifica que el Intent de inicio de sesión de Google fue lanzado
+            intended(hasAction(Intent.ACTION_VIEW) and hasData(Uri.parse("https://example.com/oauth")))
+
+            // Verifica que handleSignInResult fue llamado en el mock de GoogleSignInDataSource
+            coVerify(exactly = 1) { mockGoogleSignInDataSource.handleSignInResult(any()) }
+            // Verifica que loginWithGoogle fue llamado en el mock de LoginViewModel con el token esperado
+            coVerify(exactly = 1) { mockLoginViewModel.loginWithGoogle(fakeIdToken) }
+
+            // Verifica que el Snackbar con el mensaje de éxito se muestre
+            onView(withText(successMessage))
+                .inRoot(withDecorView(not(`is`(activityDecorView)))) // Verifica en una ventana diferente para el Snackbar
+                .check(matches(isDisplayed()))
+
+            // Verifica que la barra de progreso no esté visible
+            onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
+
+            // Verifica la navegación a la pantalla de inicio (MapFragment)
+            assertThat(navController.currentDestination?.id).isEqualTo(R.id.mapFragment)
+        }
 
     @Test
     fun a_very_basic_test_to_check_setup() {
@@ -390,8 +490,7 @@ class LoginFragmentTest {
             onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
         }
 
-    //testing p
-
+    //passed
     @Test
     fun when_google_sign_in_button_is_clicked_then_getSignInIntent_is_called() =
         runTest(testDispatcher) {
@@ -407,44 +506,10 @@ class LoginFragmentTest {
 
             testScheduler.advanceUntilIdle()
 
-            // Esto funcionará porque mockGoogleSignInDataSource es un mock de MockK inyectado por Hilt
             coVerify(exactly = 1) { mockGoogleSignInDataSource.getSignInIntent() }
         }
-
-    @Test
-    fun when_google_sign_in_result_is_success_for_existing_user_then_navigates_to_home() =
-        runTest(testDispatcher) {
-            val intentData = mockk<Intent>()
-            val idToken = "some_google_id_token"
-
-            coEvery { mockGoogleSignInDataSource.handleSignInResult(intentData) } returns Result.success(
-                idToken
-            )
-            coEvery { mockLoginViewModel.loginWithGoogle(idToken) } coAnswers {
-                uiStateFlow.emit(uiStateFlow.value.copy(isLoading = true))
-                testScheduler.advanceTimeBy(100)
-                uiStateFlow.emit(uiStateFlow.value.copy(isLoading = false, isSuccess = true))
-                eventFlow.emit(LoginEvent.NavigateToHome)
-                eventFlow.emit(LoginEvent.ShowMessage("Inicio de sesión con Google exitoso"))
-            }
-
-            activityScenario.onActivity { activity ->
-                val fragment =
-                    activity.supportFragmentManager.findFragmentById(android.R.id.content) as LoginFragment
-                fragment.handleGoogleSignInResult(intentData)
-            }
-            testScheduler.advanceUntilIdle()
-
-            coVerify(exactly = 1) { mockGoogleSignInDataSource.handleSignInResult(intentData) }
-            coVerify(exactly = 1) { mockLoginViewModel.loginWithGoogle(idToken) }
-
-            onView(withText("Inicio de sesión con Google exitoso"))
-                .inRoot(withDecorView(not(`is`(activityDecorView))))
-                .check(matches(isDisplayed()))
-            onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
-            assertThat(navController.currentDestination?.id).isEqualTo(R.id.mapFragment)
-        }
-
+}
+//aqui va el test que etsamos probando
 
 //    @Test
 //    fun when_google_sign_in_result_is_success_for_new_user_then_navigates_to_signup_with_args() =
@@ -621,4 +686,3 @@ class LoginFragmentTest {
 //        coVerify(exactly = 1) { mockLoginViewModel.onBackPressed() }
 //        assertThat(navController.currentDestination?.id).isEqualTo(R.id.loginFragment)
 //    }
-}

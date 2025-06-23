@@ -7,10 +7,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.VisibleForTesting
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.cursoandroid.queermap.R
@@ -31,7 +33,15 @@ class LoginFragment : Fragment() {
     private var _binding: FragmentLoginBinding? = null
     private val binding get() = _binding
 
-    internal val viewModel: LoginViewModel by viewModels()
+    // Inyecta viewModel factory para crear viewModels con Hilt
+    @Inject lateinit var viewModelFactory: ViewModelProvider.Factory
+
+    internal val viewModel: LoginViewModel
+        get() = testViewModel ?: ViewModelProvider(this, viewModelFactory)[LoginViewModel::class.java]
+
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    internal var testViewModel: LoginViewModel? = null
 
     @Inject internal lateinit var googleSignInDataSource: GoogleSignInDataSource
     @Inject internal lateinit var facebookSignInDataSource: FacebookSignInDataSource
