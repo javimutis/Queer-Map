@@ -2,9 +2,6 @@
 <project version="4">
   <component name="deploymentTargetSelector">
     <selectionStates>
-      <SelectionState runConfigName="when_invalid_password_is_entered_then_shows_error_message()">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
       <SelectionState runConfigName="when_google_sign_in_button_is_clicked_then_getSignInIntent_is_called()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
@@ -12,6 +9,9 @@
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
       <SelectionState runConfigName="when_google_sign_in_result_is_success_for_new_user_then_navigates_to_signup_with_args()">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="when_google_sign_in_result_is_failure_then_shows_error_message()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>
