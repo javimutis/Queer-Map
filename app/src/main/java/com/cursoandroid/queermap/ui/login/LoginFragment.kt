@@ -6,20 +6,19 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.VisibleForTesting
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.cursoandroid.queermap.R
 import com.cursoandroid.queermap.data.source.remote.FacebookSignInDataSource
 import com.cursoandroid.queermap.data.source.remote.GoogleSignInDataSource
 import com.cursoandroid.queermap.databinding.FragmentLoginBinding
-import com.facebook.AccessToken
 import com.facebook.CallbackManager
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
@@ -46,7 +45,12 @@ class LoginFragment : Fragment() {
     @Inject internal lateinit var googleSignInDataSource: GoogleSignInDataSource
     @Inject internal lateinit var facebookSignInDataSource: FacebookSignInDataSource
 
-    private lateinit var googleSignInLauncher: androidx.activity.result.ActivityResultLauncher<Intent>
+    // MODIFICATION: Make googleSignInLauncher internal and add test version
+    internal lateinit var googleSignInLauncher: ActivityResultLauncher<Intent> // Change from private
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    internal var testGoogleSignInLauncher: ActivityResultLauncher<Intent>? = null
+    // END MODIFICATION
+
     private lateinit var callbackManager: CallbackManager
 
     override fun onCreateView(
@@ -60,7 +64,17 @@ class LoginFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel.loadUserCredentials()
-        initGoogleSignInLauncher()
+        // MODIFICATION START: Use testGoogleSignInLauncher if provided
+        googleSignInLauncher = testGoogleSignInLauncher ?: registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                handleGoogleSignInResult(result.data)
+            } else {
+                showSnackbar("Inicio de sesión cancelado")
+            }
+        }
+        // MODIFICATION END
         initFacebookLogin()
         setupListeners()
         observeState()
@@ -76,18 +90,6 @@ class LoginFragment : Fragment() {
         super.onActivityResult(requestCode, resultCode, data)
         if (::callbackManager.isInitialized) {
             callbackManager.onActivityResult(requestCode, resultCode, data)
-        }
-    }
-
-    private fun initGoogleSignInLauncher() {
-        googleSignInLauncher = registerForActivityResult(
-            ActivityResultContracts.StartActivityForResult()
-        ) { result ->
-            if (result.resultCode == Activity.RESULT_OK) {
-                handleGoogleSignInResult(result.data)
-            } else {
-                showSnackbar("Inicio de sesión cancelado")
-            }
         }
     }
 
