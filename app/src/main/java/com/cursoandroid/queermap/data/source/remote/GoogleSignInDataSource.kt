@@ -11,9 +11,17 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
+// ¡¡¡CAMBIO CRÍTICO: Importa tu clase Result personalizada!!!
+import com.cursoandroid.queermap.util.Result // <--- ESTA LÍNEA ES FUNDAMENTAL
+// Si por alguna razón Android Studio no la encuentra, asegúrate de que el paquete sea correcto
+// (por ejemplo, si tu archivo Result.kt está en 'com.cursoandroid.queermap.common.Result',
+// entonces la importación debería ser `import com.cursoandroid.queermap.common.Result`)
+
+
 interface GoogleSignInDataSource {
+    // CAMBIO: Asegura que el tipo de retorno use tu Result personalizado
     fun getSignInIntent(): Intent
-    suspend fun handleSignInResult(data: Intent?): Result<String>
+    suspend fun handleSignInResult(data: Intent?): Result<String> // <--- CAMBIO AQUÍ
 }
 
 @Singleton
@@ -33,16 +41,19 @@ class GoogleSignInDataSourceImpl @Inject constructor(
         return signInClient.signInIntent
     }
 
-    override suspend fun handleSignInResult(data: Intent?): Result<String> {
+    override suspend fun handleSignInResult(data: Intent?): Result<String> { // <--- CAMBIO AQUÍ
         return try {
             val task = GoogleSignIn.getSignedInAccountFromIntent(data)
             val account = task.getResult(ApiException::class.java)
-            account?.idToken?.let { Result.success(it) }
-                ?: Result.failure(Exception("Google ID token es nulo."))
+
+            // ¡¡¡CAMBIO CRÍTICO: Usa el constructor de tu clase Success/Failure!!!
+            account?.idToken?.let {
+                Result.Success(it) // <--- Usa el constructor de tu Result.Success
+            } ?: Result.Failure(Exception("Google ID token es nulo.")) // <--- Usa el constructor de tu Result.Failure
         } catch (e: ApiException) {
-            Result.failure(Exception("Error de Google Sign-In: ${e.statusCode} - ${e.message}"))
+            Result.Failure(e, "Error de Google Sign-In: ${e.statusCode} - ${e.message}") // <--- Usa el constructor de tu Result.Failure
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.Failure(e) // <--- Usa el constructor de tu Result.Failure
         }
     }
 }

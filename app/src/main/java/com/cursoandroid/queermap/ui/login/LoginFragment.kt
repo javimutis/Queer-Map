@@ -3,6 +3,7 @@ package com.cursoandroid.queermap.ui.login
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log // <--- ASEGÚRATE DE QUE ESTA IMPORTACIÓN ESTÉ AQUÍ
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,12 +20,13 @@ import com.cursoandroid.queermap.R
 import com.cursoandroid.queermap.data.source.remote.FacebookSignInDataSource
 import com.cursoandroid.queermap.data.source.remote.GoogleSignInDataSource
 import com.cursoandroid.queermap.databinding.FragmentLoginBinding
+import com.cursoandroid.queermap.util.Result // ¡¡¡Asegúrate de que esta sea la importación correcta a tu clase Result personalizada!!!
 import com.facebook.CallbackManager
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
 
 @AndroidEntryPoint
 class LoginFragment : Fragment() {
@@ -33,20 +35,38 @@ class LoginFragment : Fragment() {
     private val binding get() = _binding
 
     // Inyecta viewModel factory para crear viewModels con Hilt
-    @Inject lateinit var viewModelFactory: ViewModelProvider.Factory
+    @Inject
+    lateinit var viewModelFactory: ViewModelProvider.Factory
 
     internal val viewModel: LoginViewModel
-        get() = testViewModel ?: ViewModelProvider(this, viewModelFactory)[LoginViewModel::class.java]
+        get() = testViewModel ?: ViewModelProvider(
+            this,
+            viewModelFactory
+        )[LoginViewModel::class.java]
 
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     internal var testViewModel: LoginViewModel? = null
 
-    @Inject internal lateinit var googleSignInDataSource: GoogleSignInDataSource
-    @Inject internal lateinit var facebookSignInDataSource: FacebookSignInDataSource
+    // --- CAMBIOS AQUÍ para permitir inyección de mocks en tests ---
+    @Inject
+    internal lateinit var _googleSignInDataSource: GoogleSignInDataSource
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    internal var testGoogleSignInDataSource: GoogleSignInDataSource? = null
+    internal val googleSignInDataSource: GoogleSignInDataSource
+        get() = testGoogleSignInDataSource ?: _googleSignInDataSource
+
+    @Inject
+    internal lateinit var _facebookSignInDataSource: FacebookSignInDataSource
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    internal var testFacebookSignInDataSource: FacebookSignInDataSource? = null
+    internal val facebookSignInDataSource: FacebookSignInDataSource
+        get() = testFacebookSignInDataSource ?: _facebookSignInDataSource
+    // --- FIN CAMBIOS AQUÍ ---
 
     // MODIFICATION: Make googleSignInLauncher internal and add test version
     internal lateinit var googleSignInLauncher: ActivityResultLauncher<Intent> // Change from private
+
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     internal var testGoogleSignInLauncher: ActivityResultLauncher<Intent>? = null
     // END MODIFICATION
@@ -128,14 +148,54 @@ class LoginFragment : Fragment() {
         }
     }
 
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    internal fun handleGoogleSignInResult(data: Intent?) {
+        // Breakpoint 1: Justo al inicio de la función handleGoogleSignInResult
+        // Aquí verás que la función fue llamada.
+        lifecycleScope.launch {
+            Log.d("LoginFragment", "Inside handleGoogleSignInResult, data: $data") // LOG 1
+            // Breakpoint 2: Antes de llamar a handleSignInResult del DataSource
+            // Observa el valor de 'data' aquí.
+            val result: com.cursoandroid.queermap.util.Result<String> = googleSignInDataSource.handleSignInResult(data)
+            Log.d("LoginFragment", "Result from handleSignInResult: $result") // LOG 2
+            // Breakpoint 3: Después de obtener el 'result' y antes del 'when'
+            // Observa el valor de 'result' aquí.
+            when (result) {
+                is com.cursoandroid.queermap.util.Result.Success<String> -> {
+                    val idToken = result.data
+                    Log.d("LoginFragment", "Entering Success branch, idToken: $idToken") // LOG 3
+                    Log.d("LoginFragment", "About to call viewModel.loginWithGoogle with idToken: $idToken") // LOG 4
+                    // Breakpoint 4: Justo antes de la llamada a viewModel.loginWithGoogle
+                    // Observa 'idToken'. Esta es la llamada crítica.
+                    viewModel.loginWithGoogle(idToken)
+                    Log.d("LoginFragment", "Finished calling viewModel.loginWithGoogle") // LOG 5
+                    // Breakpoint 5: Después de la llamada a viewModel.loginWithGoogle
+                    // Si llegas aquí, la llamada se ejecutó.
+                }
+
+                is com.cursoandroid.queermap.util.Result.Failure -> {
+                    val errorMessage = result.exception.message ?: "Error desconocido"
+                    Log.e("LoginFragment", "Google Sign-In failed: $errorMessage") // LOG 6
+                    showSnackbar(errorMessage)
+                }
+            }
+            Log.d("LoginFragment", "Exiting handleGoogleSignInResult coroutine") // LOG 7
+        }
+    }
+
+    private fun showSnackbar(message: String) {
+        binding?.root?.let {
+            Snackbar.make(it, message, Snackbar.LENGTH_LONG).show()
+        }
+    }
+
     private fun observeState() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect { state ->
                     binding?.let { currentBinding ->
-                        // Usar currentBinding.progressBar.isInvisible para que el espacio se mantenga
-                        // aunque no esté visible, evitando posibles reflows de layout.
-                        currentBinding.progressBar.visibility = if (state.isLoading) View.VISIBLE else View.GONE
+                        currentBinding.progressBar.visibility =
+                            if (state.isLoading) View.VISIBLE else View.GONE
 
                         if (state.errorMessage != null) {
                             showSnackbar(state.errorMessage)
@@ -160,10 +220,13 @@ class LoginFragment : Fragment() {
                         is LoginEvent.ShowMessage -> showSnackbar(event.message)
                         is LoginEvent.NavigateToHome ->
                             findNavController().navigate(R.id.action_loginFragment_to_mapFragment)
+
                         is LoginEvent.NavigateToForgotPassword ->
                             findNavController().navigate(R.id.action_loginFragment_to_forgotPasswordFragment)
+
                         is LoginEvent.NavigateBack ->
                             findNavController().popBackStack()
+
                         is LoginEvent.NavigateToSignupWithArgs -> {
                             val directions =
                                 LoginFragmentDirections.actionLoginFragmentToSignupFragment(
@@ -176,40 +239,6 @@ class LoginFragment : Fragment() {
                     }
                 }
             }
-        }
-
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                facebookSignInDataSource.accessTokenChannel.collectLatest { result ->
-                    result.onSuccess { token ->
-                        viewModel.loginWithFacebook(token)
-                    }.onFailure { exception ->
-                        showSnackbar("Error: ${exception.message}")
-                    }
-                }
-            }
-        }
-    }
-
-    internal fun handleGoogleSignInResult(data: Intent?) {
-        lifecycleScope.launch {
-            googleSignInDataSource.handleSignInResult(data)
-                .onSuccess { idToken ->
-                    if (idToken != null) {
-                        viewModel.loginWithGoogle(idToken)
-                    } else {
-                        showSnackbar("ID token no disponible")
-                    }
-                }
-                .onFailure { exception ->
-                    showSnackbar("Error en Sign-In: ${exception.message}")
-                }
-        }
-    }
-
-    private fun showSnackbar(message: String) {
-        binding?.root?.let {
-            Snackbar.make(it, message, Snackbar.LENGTH_SHORT).show()
         }
     }
 }

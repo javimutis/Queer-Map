@@ -26,6 +26,12 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+// ¡¡¡IMPORTANTE!!! Asegúrate de que esta importación sea a tu clase Result personalizada
+import com.cursoandroid.queermap.util.Result
+// ¡¡¡IMPORTANTE!!! Asegúrate de importar las funciones de extensión onSuccess y onFailure
+import com.cursoandroid.queermap.util.onFailure
+import com.cursoandroid.queermap.util.onSuccess
+
 const val RC_GOOGLE_SIGN_IN = 9001
 
 @HiltViewModel
@@ -55,17 +61,18 @@ class SignUpViewModel @Inject constructor(
 
         viewModelScope.launch {
             facebookSignInDataSource.accessTokenChannel.collectLatest { result ->
+                // Asumiendo que accessTokenChannel emite tu `com.cursoandroid.queermap.util.Result`
                 if (_uiState.value.isSocialLoginFlow) {
                     _uiState.update { it.copy(isLoading = false) }
                     _event.emit(SignUpEvent.ShowMessage("Ya autenticado socialmente. Completa tu perfil."))
                     return@collectLatest
                 }
 
-                if (result.isSuccess) {
-                    handleFacebookAuthWithFirebase(result.getOrThrow())
-                } else {
-                    val exception = result.exceptionOrNull()
-                    val errorMessage = exception?.message ?: "Inicio de sesión con Facebook fallido."
+                // Aquí usamos tus funciones de extensión onSuccess/onFailure
+                result.onSuccess { accessToken ->
+                    handleFacebookAuthWithFirebase(accessToken)
+                }.onFailure { exception ->
+                    val errorMessage = exception.message ?: "Inicio de sesión con Facebook fallido."
                     _uiState.update { it.copy(isLoading = false, errorMessage = errorMessage) }
                     _event.emit(SignUpEvent.ShowMessage(errorMessage))
                 }
@@ -152,7 +159,7 @@ class SignUpViewModel @Inject constructor(
     }
 
     private fun onSignupClicked() {
-        viewModelScope.launch {
+        viewModelScope.launch { // Esto ya es un scope de coroutine
             val email = _uiState.value.email.orEmpty()
             val password = _uiState.value.password.orEmpty()
             val confirmPassword = _uiState.value.confirmPassword.orEmpty()
@@ -211,27 +218,36 @@ class SignUpViewModel @Inject constructor(
                 birthday = birthday
             )
 
+            // Usa tus funciones de extensión onSuccess/onFailure
             createUserUseCase(newUser, password)
                 .onSuccess {
-                    _uiState.update { it.copy(isLoading = false, isSuccess = true, errorMessage = null) }
-                    _event.emit(SignUpEvent.NavigateToHome)
-                    _event.emit(SignUpEvent.ShowMessage("Registro exitoso. ¡Bienvenido/a!"))
+                    // Envuelve las llamadas suspend en un nuevo launch block si fuera necesario.
+                    // En este caso, ya estamos dentro de un viewModelScope.launch,
+                    // y las lambdas de onSuccess/onFailure no son suspend,
+                    // por lo que las llamadas a emit/update deben estar en un nuevo launch.
+                    viewModelScope.launch { // Nuevo launch para llamadas suspend
+                        _uiState.update { it.copy(isLoading = false, isSuccess = true, errorMessage = null) }
+                        _event.emit(SignUpEvent.NavigateToHome)
+                        _event.emit(SignUpEvent.ShowMessage("Registro exitoso. ¡Bienvenido/a!"))
+                    }
                 }
                 .onFailure { exception ->
-                    val errorMessage = when (exception) {
-                        is FirebaseAuthUserCollisionException -> "El correo electrónico ya está registrado."
-                        is FirebaseAuthWeakPasswordException -> "La contraseña es demasiado débil. Usa una combinación de letras, números y símbolos."
-                        is FirebaseAuthInvalidCredentialsException -> "El formato del correo electrónico es inválido."
-                        else -> "Error de registro: ${exception.message ?: "desconocido"}."
+                    viewModelScope.launch { // Nuevo launch para llamadas suspend
+                        val errorMessage = when (exception) {
+                            is FirebaseAuthUserCollisionException -> "El correo electrónico ya está registrado."
+                            is FirebaseAuthWeakPasswordException -> "La contraseña es demasiado débil. Usa una combinación de letras, números y símbolos."
+                            is FirebaseAuthInvalidCredentialsException -> "El formato del correo electrónico es inválido."
+                            else -> "Error de registro: ${exception.message ?: "desconocido"}."
+                        }
+                        _uiState.update { it.copy(isLoading = false, isSuccess = false, errorMessage = errorMessage) }
+                        _event.emit(SignUpEvent.ShowMessage(errorMessage))
                     }
-                    _uiState.update { it.copy(isLoading = false, isSuccess = false, errorMessage = errorMessage) }
-                    _event.emit(SignUpEvent.ShowMessage(errorMessage))
                 }
         }
     }
 
     private fun completeUserProfile() {
-        viewModelScope.launch {
+        viewModelScope.launch { // Esto ya es un scope de coroutine
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
             val currentUser = firebaseAuth.currentUser
@@ -270,16 +286,21 @@ class SignUpViewModel @Inject constructor(
                 birthday = birthday
             )
 
+            // Usa tus funciones de extensión onSuccess/onFailure
             authRepository.updateUserProfile(uid, updatedUser)
                 .onSuccess {
-                    _uiState.update { it.copy(isLoading = false, isSuccess = true, errorMessage = null) }
-                    _event.emit(SignUpEvent.NavigateToHome)
-                    _event.emit(SignUpEvent.ShowMessage("Perfil completado exitosamente."))
+                    viewModelScope.launch { // Nuevo launch para llamadas suspend
+                        _uiState.update { it.copy(isLoading = false, isSuccess = true, errorMessage = null) }
+                        _event.emit(SignUpEvent.NavigateToHome)
+                        _event.emit(SignUpEvent.ShowMessage("Perfil completado exitosamente."))
+                    }
                 }
                 .onFailure { exception ->
-                    val errorMessage = exception.message ?: "Error al completar el perfil."
-                    _uiState.update { it.copy(isLoading = false, isSuccess = false, errorMessage = errorMessage) }
-                    _event.emit(SignUpEvent.ShowMessage(errorMessage))
+                    viewModelScope.launch { // Nuevo launch para llamadas suspend
+                        val errorMessage = exception.message ?: "Error al completar el perfil."
+                        _uiState.update { it.copy(isLoading = false, isSuccess = false, errorMessage = errorMessage) }
+                        _event.emit(SignUpEvent.ShowMessage(errorMessage))
+                    }
                 }
         }
     }
@@ -297,35 +318,47 @@ class SignUpViewModel @Inject constructor(
     }
 
     private fun handleGoogleSignInResult(data: Intent?) {
-        viewModelScope.launch {
+        viewModelScope.launch { // Esto ya es un scope de coroutine
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+
+            // Usa tus funciones de extensión onSuccess/onFailure
             googleSignInDataSource.handleSignInResult(data)
                 .onSuccess { idToken ->
-                    registerWithGoogleUseCase(idToken)
-                        .onSuccess {
-                            _uiState.update { it.copy(isLoading = false, isSuccess = true, errorMessage = null) }
-                            _event.emit(SignUpEvent.NavigateToHome)
-                            _event.emit(SignUpEvent.ShowMessage("Registro con Google exitoso. ¡Bienvenido/a!"))
-                        }
-                        .onFailure { exception ->
-                            val errorMessage = when (exception) {
-                                is FirebaseAuthUserCollisionException -> "El correo electrónico ya está registrado con otra cuenta."
-                                else -> exception.message ?: "Autenticación de Google con Firebase fallida."
+                    viewModelScope.launch { // Nuevo launch para llamadas suspend
+                        // Aquí, registerWithGoogleUseCase(idToken) es una suspend function
+                        // Por eso, la llamada y sus onSuccess/onFailure deben estar dentro de un launch
+                        registerWithGoogleUseCase(idToken)
+                            .onSuccess {
+                                viewModelScope.launch { // Nuevo launch para llamadas suspend
+                                    _uiState.update { it.copy(isLoading = false, isSuccess = true, errorMessage = null) }
+                                    _event.emit(SignUpEvent.NavigateToHome)
+                                    _event.emit(SignUpEvent.ShowMessage("Registro con Google exitoso. ¡Bienvenido/a!"))
+                                }
                             }
-                            _uiState.update {
-                                it.copy(
-                                    isLoading = false,
-                                    errorMessage = errorMessage,
-                                    isSuccess = false
-                                )
+                            .onFailure { exception ->
+                                viewModelScope.launch { // Nuevo launch para llamadas suspend
+                                    val errorMessage = when (exception) {
+                                        is FirebaseAuthUserCollisionException -> "El correo electrónico ya está registrado con otra cuenta."
+                                        else -> exception.message ?: "Autenticación de Google con Firebase fallida."
+                                    }
+                                    _uiState.update {
+                                        it.copy(
+                                            isLoading = false,
+                                            errorMessage = errorMessage,
+                                            isSuccess = false
+                                        )
+                                    }
+                                    _event.emit(SignUpEvent.ShowMessage(errorMessage))
+                                }
                             }
-                            _event.emit(SignUpEvent.ShowMessage(errorMessage))
-                        }
+                    }
                 }
                 .onFailure { exception ->
-                    val errorMessage = exception.message ?: "Error de inicio de sesión de Google."
-                    _uiState.update { it.copy(isLoading = false, errorMessage = errorMessage, isSuccess = false) }
-                    _event.emit(SignUpEvent.ShowMessage(errorMessage))
+                    viewModelScope.launch { // Nuevo launch para llamadas suspend
+                        val errorMessage = exception.message ?: "Error de inicio de sesión de Google."
+                        _uiState.update { it.copy(isLoading = false, errorMessage = errorMessage, isSuccess = false) }
+                        _event.emit(SignUpEvent.ShowMessage(errorMessage))
+                    }
                 }
         }
     }
@@ -342,20 +375,28 @@ class SignUpViewModel @Inject constructor(
     }
 
     private suspend fun handleFacebookAuthWithFirebase(accessToken: String) {
+        // Esta función ya es suspend, por lo que las llamadas directas a _uiState.update y _event.emit están bien.
+        // Solo las lambdas de onSuccess/onFailure de registerWithFacebookUseCase necesitan su propio launch.
         _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+
+        // Usa tus funciones de extensión onSuccess/onFailure
         registerWithFacebookUseCase(accessToken)
             .onSuccess {
-                _uiState.update { it.copy(isLoading = false, isSuccess = true, errorMessage = null) }
-                _event.emit(SignUpEvent.NavigateToHome)
-                _event.emit(SignUpEvent.ShowMessage("Registro con Facebook exitoso. ¡Bienvenido/a!"))
+                viewModelScope.launch { // Nuevo launch para llamadas suspend
+                    _uiState.update { it.copy(isLoading = false, isSuccess = true, errorMessage = null) }
+                    _event.emit(SignUpEvent.NavigateToHome)
+                    _event.emit(SignUpEvent.ShowMessage("Registro con Facebook exitoso. ¡Bienvenido/a!"))
+                }
             }
             .onFailure { exception ->
-                val errorMessage = when (exception) {
-                    is FirebaseAuthUserCollisionException -> "El correo electrónico ya está registrado con otra cuenta."
-                    else -> exception.message ?: "Autenticación de Facebook con Firebase fallida."
+                viewModelScope.launch { // Nuevo launch para llamadas suspend
+                    val errorMessage = when (exception) {
+                        is FirebaseAuthUserCollisionException -> "El correo electrónico ya está registrado con otra cuenta."
+                        else -> exception.message ?: "Autenticación de Facebook con Firebase fallida."
+                    }
+                    _uiState.update { it.copy(isLoading = false, errorMessage = errorMessage, isSuccess = false) }
+                    _event.emit(SignUpEvent.ShowMessage(errorMessage))
                 }
-                _uiState.update { it.copy(isLoading = false, errorMessage = errorMessage, isSuccess = false) }
-                _event.emit(SignUpEvent.ShowMessage(errorMessage))
             }
     }
 }
