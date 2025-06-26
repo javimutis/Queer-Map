@@ -1,8 +1,8 @@
 [versions]
 # Versiones del SDK y herramientas
-kotlin = "1.9.0"
-agp = "8.1.0"
-hilt = "2.51.1"
+kotlin = "1.9.22" # <--- ¡ACTUALIZADO para Narwhal!
+agp = "8.4.0"     # <--- ¡ACTUALIZADO para Narwhal!
+hilt = "2.51.1"   # Esta es una buena versión reciente
 coroutines = "1.8.1"
 
 # Versiones de bibliotecas principales
@@ -59,7 +59,6 @@ secrets = { id = "com.google.android.libraries.mapsplatform.secrets-gradle-plugi
 
 [libraries]
 # AndroidX Core y UI
-# AGREGADO: Formato completo con group y name
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 cardview = { group = "androidx.cardview", name = "cardview", version.ref = "cardview" }
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
@@ -117,7 +116,7 @@ arch-core-testing = { module = "androidx.arch.core:core-testing", version.ref = 
 
 # Espresso
 androidx-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "espresso" }
-androidx-espresso-intents = { module = "androidx.test.espresso:espresso-intents", version.ref = "espresso" }
+androidx-espresso-intents = { module = "androidx.test.espresso:espresso-intents", version = "3.5.1" } # Corregido para usar la versión de espresso
 androidx-espresso-contrib = { module = "androidx.test.espresso:espresso-contrib", version.ref = "espresso" }
 espresso-idling-resource = { module = "androidx.test.espresso:espresso-idling-resource", version.ref = "espresso" }
 
@@ -135,4 +134,5 @@ androidx-fragment-testing = { module = "androidx.fragment:fragment-testing", ver
 
 # Kotest (si la usas)
 kotest-assertions = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
-androidx-espresso-idling-resource = { group = "androidx.test.espresso", name = "espresso-idling-resource", version.ref = "espresso-idling-resource" }
+# androidx-espresso-idling-resource = { group = "androidx.test.espresso", name = "espresso-idling-resource", version.ref = "espresso-idling-resource" } # Duplicada, ya definida arriba como espresso-idling-resource
+
