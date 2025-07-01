@@ -7,8 +7,19 @@
       </SelectionState>
       <SelectionState runConfigName="when_google_sign_in_result_is_success_for_new_user_then_navigates_to_signup_with_args()">
         <option name="selectionMode" value="DROPDOWN" />
+        <DropdownSelection timestamp="2025-06-28T20:18:45.997056200Z">
+          <Target type="DEFAULT_BOOT">
+            <handle>
+              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\javie\.android\avd\QueerMap_Test_API30.avd" />
+            </handle>
+          </Target>
+        </DropdownSelection>
+        <DialogSelection />
       </SelectionState>
       <SelectionState runConfigName="z_debug_simple_login_button_click()">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="when_login_fragment_is_launched_all_essential_ui_elements_are_displayed()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>
