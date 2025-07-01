@@ -12,6 +12,9 @@ import com.cursoandroid.queermap.domain.usecase.auth.CreateUserUseCase
 import com.cursoandroid.queermap.domain.usecase.auth.RegisterWithFacebookUseCase
 import com.cursoandroid.queermap.domain.usecase.auth.RegisterWithGoogleUseCase
 import com.facebook.CallbackManager
+import com.facebook.FacebookCallback
+import com.facebook.FacebookException
+import com.facebook.login.LoginResult
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
@@ -41,7 +44,7 @@ class SignUpViewModel @Inject constructor(
     private val registerWithFacebookUseCase: RegisterWithFacebookUseCase,
     private val googleSignInDataSource: GoogleSignInDataSource,
     private val facebookSignInDataSource: FacebookSignInDataSource,
-    private val facebookCallbackManager: CallbackManager,
+    private val facebookCallbackManager: CallbackManager, // Este es el CallbackManager de Facebook SDK
     private val authRepository: AuthRepository,
     private val firebaseAuth: FirebaseAuth,
     private val signUpValidator: InputValidator
@@ -57,18 +60,61 @@ class SignUpViewModel @Inject constructor(
     val launchGoogleSignIn = _launchGoogleSignIn.asSharedFlow()
 
     init {
-        facebookSignInDataSource.registerCallback(facebookCallbackManager)
+        // CORRECCIÓN: Pasa también la implementación de FacebookCallback
+        facebookSignInDataSource.registerCallback(facebookCallbackManager, object : FacebookCallback<LoginResult> {
+            override fun onSuccess(result: LoginResult) {
+                viewModelScope.launch {
+                    result.accessToken?.let {
+                        // Emitir el token de acceso al canal del DataSource
+                        // Esto activará el collectLatest en este mismo ViewModel
+                        // que luego llamará a handleFacebookAuthWithFirebase(it.token)
+                        facebookSignInDataSource.accessTokenChannel.collectLatest { channelResult ->
+                            channelResult.onSuccess { accessToken ->
+                                handleFacebookAuthWithFirebase(accessToken)
+                            }.onFailure { exception ->
+                                val errorMessage = exception.message ?: "Inicio de sesión con Facebook fallido."
+                                _uiState.update { it.copy(isLoading = false, errorMessage = errorMessage) }
+                                _event.emit(SignUpEvent.ShowMessage(errorMessage))
+                            }
+                        }
+                    } ?: run {
+                        val errorMessage = "Token de acceso de Facebook nulo."
+                        _uiState.update { it.copy(isLoading = false, errorMessage = errorMessage) }
+                        _event.emit(SignUpEvent.ShowMessage(errorMessage))
+                    }
+                }
+            }
 
+            override fun onCancel() {
+                viewModelScope.launch {
+                    val errorMessage = "Inicio de sesión con Facebook cancelado."
+                    _uiState.update { it.copy(isLoading = false, errorMessage = errorMessage) }
+                    _event.emit(SignUpEvent.ShowMessage(errorMessage))
+                }
+            }
+
+            override fun onError(error: FacebookException) {
+                viewModelScope.launch {
+                    val errorMessage = error.message ?: "Error desconocido en Facebook Login."
+                    _uiState.update { it.copy(isLoading = false, errorMessage = errorMessage) }
+                    _event.emit(SignUpEvent.ShowMessage("Error: $errorMessage"))
+                }
+            }
+        })
+
+        // ELIMINAMOS este block de collectLatest ya que la lógica ahora reside
+        // en el callback que acabamos de definir arriba.
+        // No debes tener dos lugares manejando el resultado del accessTokenChannel
+        // porque el `registerCallback` ya maneja el flujo de éxito/error/cancelación.
+        /*
         viewModelScope.launch {
             facebookSignInDataSource.accessTokenChannel.collectLatest { result ->
-                // Asumiendo que accessTokenChannel emite tu `com.cursoandroid.queermap.util.Result`
                 if (_uiState.value.isSocialLoginFlow) {
                     _uiState.update { it.copy(isLoading = false) }
                     _event.emit(SignUpEvent.ShowMessage("Ya autenticado socialmente. Completa tu perfil."))
                     return@collectLatest
                 }
 
-                // Aquí usamos tus funciones de extensión onSuccess/onFailure
                 result.onSuccess { accessToken ->
                     handleFacebookAuthWithFirebase(accessToken)
                 }.onFailure { exception ->
@@ -78,6 +124,7 @@ class SignUpViewModel @Inject constructor(
                 }
             }
         }
+        */
     }
 
     fun setSocialLoginData(isSocialLogin: Boolean, email: String?, name: String?) {
@@ -221,10 +268,6 @@ class SignUpViewModel @Inject constructor(
             // Usa tus funciones de extensión onSuccess/onFailure
             createUserUseCase(newUser, password)
                 .onSuccess {
-                    // Envuelve las llamadas suspend en un nuevo launch block si fuera necesario.
-                    // En este caso, ya estamos dentro de un viewModelScope.launch,
-                    // y las lambdas de onSuccess/onFailure no son suspend,
-                    // por lo que las llamadas a emit/update deben estar en un nuevo launch.
                     viewModelScope.launch { // Nuevo launch para llamadas suspend
                         _uiState.update { it.copy(isLoading = false, isSuccess = true, errorMessage = null) }
                         _event.emit(SignUpEvent.NavigateToHome)
@@ -371,25 +414,24 @@ class SignUpViewModel @Inject constructor(
             }
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             _event.emit(SignUpEvent.ShowMessage("Iniciando sesión con Facebook..."))
+            // Aquí no llamas directamente a logInWithReadPermissions porque el Fragmento/Activity es quien lo hace.
+            // Solo actualizas el UIState y emites un mensaje.
         }
     }
 
     private suspend fun handleFacebookAuthWithFirebase(accessToken: String) {
-        // Esta función ya es suspend, por lo que las llamadas directas a _uiState.update y _event.emit están bien.
-        // Solo las lambdas de onSuccess/onFailure de registerWithFacebookUseCase necesitan su propio launch.
         _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
-        // Usa tus funciones de extensión onSuccess/onFailure
         registerWithFacebookUseCase(accessToken)
             .onSuccess {
-                viewModelScope.launch { // Nuevo launch para llamadas suspend
+                viewModelScope.launch {
                     _uiState.update { it.copy(isLoading = false, isSuccess = true, errorMessage = null) }
                     _event.emit(SignUpEvent.NavigateToHome)
                     _event.emit(SignUpEvent.ShowMessage("Registro con Facebook exitoso. ¡Bienvenido/a!"))
                 }
             }
             .onFailure { exception ->
-                viewModelScope.launch { // Nuevo launch para llamadas suspend
+                viewModelScope.launch {
                     val errorMessage = when (exception) {
                         is FirebaseAuthUserCollisionException -> "El correo electrónico ya está registrado con otra cuenta."
                         else -> exception.message ?: "Autenticación de Facebook con Firebase fallida."
