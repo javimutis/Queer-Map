@@ -296,7 +296,7 @@ class LoginFragmentTest {
         onView(withId(R.id.etEmailLogin)).perform(typeText("test@example.com"), closeSoftKeyboard())
         onView(withId(R.id.etEmailLogin)).check(matches(withText("test@example.com")))
     }
-
+//passed
     @Test
     fun when_typing_in_password_field_text_is_updated() {
         onView(withId(R.id.etPassword)).perform(typeText("password123"), closeSoftKeyboard())
