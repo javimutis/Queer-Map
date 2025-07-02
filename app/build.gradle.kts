@@ -93,6 +93,7 @@ dependencies {
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.multidex)
+    implementation(libs.androidx.fragment.ktx)
 
     // Firebase (usando la BoM para gestionar versiones)
     implementation(platform(libs.firebase.bom))
@@ -162,6 +163,8 @@ dependencies {
 
     // Fragment Testing
     androidTestImplementation(libs.androidx.fragment.testing)
+    debugImplementation(libs.androidx.fragment.testing)
+
 
     // Navigation Testing (for TestNavHostController)
     androidTestImplementation(libs.androidx.navigation.testing)

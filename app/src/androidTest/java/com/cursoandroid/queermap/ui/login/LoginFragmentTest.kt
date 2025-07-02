@@ -5,11 +5,9 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import androidx.activity.result.ActivityResultLauncher
-import androidx.fragment.app.testing.FragmentScenario
-import androidx.fragment.app.testing.launchFragmentInContainer
-import androidx.lifecycle.Lifecycle
 import androidx.navigation.Navigation
 import androidx.navigation.testing.TestNavHostController
+import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso
 import androidx.test.espresso.Espresso.onView
@@ -30,6 +28,7 @@ import androidx.test.espresso.matcher.ViewMatchers.isEnabled
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.cursoandroid.queermap.HiltTestActivity
 import com.cursoandroid.queermap.R
 import com.cursoandroid.queermap.common.InputValidator
 import com.cursoandroid.queermap.data.source.remote.FacebookSignInDataSource
@@ -74,11 +73,8 @@ import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
 import java.util.concurrent.TimeoutException
 
-// --- UTILIDADES DE ESPRESSO PERSONALIZADAS ---
+// --- UTILIDADES DE ESPRESSO PERSONALIZADAS (sin cambios) ---
 
-/**
- * [ViewAction] que espera hasta que una vista sea visible, habilitada y clicable.
- */
 fun waitForViewToBeClickable(): ViewAction {
     return object : ViewAction {
         override fun getConstraints(): Matcher<View> {
@@ -107,9 +103,6 @@ fun waitForViewToBeClickable(): ViewAction {
     }
 }
 
-/**
- * [ViewAction] que espera hasta que una vista sea visible, habilitada y completamente dibujada.
- */
 fun waitUntilVisibleAndEnabledAndCompletelyDisplayed(): ViewAction {
     return object : ViewAction {
         override fun getConstraints(): Matcher<View> {
@@ -121,8 +114,8 @@ fun waitUntilVisibleAndEnabledAndCompletelyDisplayed(): ViewAction {
         }
 
         override fun perform(uiController: UiController, view: View) {
-            val timeout = 5000L // 5 segundos de timeout
-            val interval = 50L // Revisa cada 50ms
+            val timeout = 5000L
+            val interval = 50L
             var waited = 0L
             while (!constraints.matches(view) && waited < timeout) {
                 uiController.loopMainThreadForAtLeast(interval)
@@ -139,7 +132,6 @@ fun waitUntilVisibleAndEnabledAndCompletelyDisplayed(): ViewAction {
     }
 }
 
-// Custom matcher para verificar Toasts/Snackbars
 fun withDecorView(matcher: Matcher<View>): Matcher<View> {
     return object : org.hamcrest.TypeSafeMatcher<View>() {
         override fun describeTo(description: org.hamcrest.Description) {
@@ -167,6 +159,7 @@ class LoginFragmentTest {
     @get:Rule(order = 1)
     val mainDispatcherRule = MainDispatcherRule()
 
+    // @BindValue asegura que este mock sea proporcionado cuando Hilt inyecte LoginViewModel
     @BindValue
     @JvmField
     val mockLoginViewModel: LoginViewModel = mockk(relaxed = true)
@@ -179,8 +172,7 @@ class LoginFragmentTest {
     private lateinit var mockGoogleSignInDataSource: GoogleSignInDataSource
     private lateinit var mockFacebookSignInDataSource: FacebookSignInDataSource
 
-    private lateinit var loginFragmentScenario: FragmentScenario<LoginFragment>
-
+    private lateinit var activityScenario: ActivityScenario<HiltTestActivity>
     private lateinit var mockNavController: TestNavHostController
 
     private lateinit var uiStateFlow: MutableStateFlow<LoginUiState>
@@ -191,9 +183,7 @@ class LoginFragmentTest {
     private val FAKE_GOOGLE_ID_TOKEN = "fake_google_id_token"
     private lateinit var mockGoogleSignInResultIntent: Intent
 
-    // CORRECCIÓN 1 & 2: Inicializa el slot con el tipo genérico explícito
     private lateinit var facebookCallbackSlot: CapturingSlot<FacebookCallback<LoginResult>>
-
 
     @Before
     fun setUp() {
@@ -222,22 +212,21 @@ class LoginFragmentTest {
 
         every { mockGoogleSignInLauncher.launch(any()) } answers {
             mainDispatcherRule.testDispatcher.scheduler.runCurrent()
-            loginFragmentScenario.onFragment { fragment ->
+            activityScenario.onActivity { activity ->
                 mainDispatcherRule.testScope.launch {
-                    fragment.handleGoogleSignInResult(mockGoogleSignInResultIntent)
+                    val fragment =
+                        activity.supportFragmentManager.findFragmentById(android.R.id.content) as? LoginFragment
+                    fragment?.handleGoogleSignInResult(mockGoogleSignInResultIntent)
                 }
             }
         }
 
-        // CORRECCIÓN 2 (parte de la inicialización): Usa el constructor de CapturingSlot
-        facebookCallbackSlot = CapturingSlot() // Aquí se inicializa correctamente
+        facebookCallbackSlot = CapturingSlot()
 
-
-        // Mockeamos la función registerCallback de FacebookSignInDataSource para capturar el callback
         every {
             mockFacebookSignInDataSource.registerCallback(
-                any(), // Argumento para CallbackManager
-                capture(facebookCallbackSlot) // CORRECCIÓN 3: captura el slot
+                any(),
+                capture(facebookCallbackSlot)
             )
         } just Runs
 
@@ -245,25 +234,33 @@ class LoginFragmentTest {
 
         mockNavController = TestNavHostController(ApplicationProvider.getApplicationContext())
 
-        loginFragmentScenario = launchFragmentInContainer<LoginFragment>(
-            themeResId = R.style.Theme_QueerMap
-        )
+        activityScenario = ActivityScenario.launch(HiltTestActivity::class.java)
 
-        loginFragmentScenario.onFragment { fragment ->
+        activityScenario.onActivity { activity ->
             mockNavController.setGraph(R.navigation.nav_graph)
             mockNavController.setCurrentDestination(R.id.loginFragment)
-            Navigation.setViewNavController(fragment.requireView(), mockNavController)
 
-            activityDecorView = fragment.requireActivity().window.decorView
+            val fragment = LoginFragment() // Hilt will provide the mock ViewModel to this instance
 
-            fragment.testViewModel = mockLoginViewModel
-            fragment.testGoogleSignInLauncher = mockGoogleSignInLauncher
-            fragment.testGoogleSignInDataSource = mockGoogleSignInDataSource
-            fragment.testFacebookSignInDataSource = mockFacebookSignInDataSource
-            fragment.testCallbackManager = mockk(relaxed = true)
+            activity.supportFragmentManager.beginTransaction()
+                .add(android.R.id.content, fragment)
+                .commitNow()
+
+            val currentFragment =
+                activity.supportFragmentManager.findFragmentById(android.R.id.content) as LoginFragment
+            Navigation.setViewNavController(currentFragment.requireView(), mockNavController)
+
+            activityDecorView = activity.window.decorView
+
+            // REMOVIDO: No necesitas asignar testViewModel aquí. Hilt lo manejará.
+            // currentFragment.testViewModel = mockLoginViewModel
+
+            // Mantén las asignaciones para otros mocks que no son ViewModels
+            currentFragment.testGoogleSignInLauncher = mockGoogleSignInLauncher
+            currentFragment.testGoogleSignInDataSource = mockGoogleSignInDataSource
+            currentFragment.testFacebookSignInDataSource = mockFacebookSignInDataSource
+            currentFragment.testCallbackManager = mockk(relaxed = true)
         }
-
-        loginFragmentScenario.moveToState(Lifecycle.State.RESUMED)
         Espresso.onIdle()
     }
 
@@ -271,13 +268,12 @@ class LoginFragmentTest {
     fun tearDown() {
         IdlingRegistry.getInstance().unregister(EspressoIdlingResource.countingIdlingResource)
         Intents.release()
-        if (this::loginFragmentScenario.isInitialized) {
-            loginFragmentScenario.close()
+        if (this::activityScenario.isInitialized) {
+            activityScenario.close()
         }
         clearAllMocks()
     }
-    /* Pruebas de Estado Inicial de la UI */
-
+//passed
     @Test
     fun when_login_fragment_is_launched_all_essential_ui_elements_are_displayed() {
         onView(withId(R.id.tvTitle)).check(matches(isDisplayed()))
@@ -291,6 +287,7 @@ class LoginFragmentTest {
         onView(withId(R.id.ivBack)).check(matches(isDisplayed()))
         onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
     }
+
 
     /* Pruebas de Interacción de Usuario y Actualizaciones de UI */
 
@@ -313,10 +310,7 @@ class LoginFragmentTest {
 
         coEvery { mockLoginViewModel.loadUserCredentials() } coAnswers {
             uiStateFlow.emit(uiStateFlow.value.copy(email = savedEmail, password = savedPassword))
-        }
 
-        loginFragmentScenario.onFragment { fragment ->
-            // No necesitas hacer nada adicional aquí.
         }
 
         advanceUntilIdle()

@@ -1,8 +1,8 @@
 [versions]
 # Versiones del SDK y herramientas
-kotlin = "1.9.22" # <--- ¡ACTUALIZADO para Narwhal!
-agp = "8.4.0"     # <--- ¡ACTUALIZADO para Narwhal!
-hilt = "2.51.1"   # Esta es una buena versión reciente
+kotlin = "1.9.22"
+agp = "8.4.0"
+hilt = "2.51.1"
 coroutines = "1.8.1"
 
 # Versiones de bibliotecas principales
@@ -47,7 +47,7 @@ fragment-testing = "1.7.0"
 test-runner = "1.5.2"
 test-rules = "1.5.0"
 kotest = "5.6.2"
-espresso-idling-resource = "3.6.1"
+androidx-fragment-ktx = "1.7.0"
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -67,7 +67,7 @@ androidx-activity = { group = "androidx.activity", name = "activity-ktx", versio
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 androidx-multidex = { group = "androidx.multidex", name = "multidex", version.ref = "multidex" }
 core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "core-splashscreen" }
-
+androidx-fragment-ktx = { group = "androidx.fragment", name = "fragment-ktx", version.ref = "androidx-fragment-ktx" }
 
 # Firebase
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebase-bom" }
@@ -134,5 +134,5 @@ androidx-fragment-testing = { module = "androidx.fragment:fragment-testing", ver
 
 # Kotest (si la usas)
 kotest-assertions = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
-# androidx-espresso-idling-resource = { group = "androidx.test.espresso", name = "espresso-idling-resource", version.ref = "espresso-idling-resource" } # Duplicada, ya definida arriba como espresso-idling-resource
+
 
