@@ -290,7 +290,7 @@ class LoginFragmentTest {
 
 
     /* Pruebas de Interacción de Usuario y Actualizaciones de UI */
-
+//passed
     @Test
     fun when_typing_in_email_field_text_is_updated() {
         onView(withId(R.id.etEmailLogin)).perform(typeText("test@example.com"), closeSoftKeyboard())
