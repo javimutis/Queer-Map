@@ -11,7 +11,7 @@
 
         <activity android:name="androidx.fragment.app.testing.EmptyFragmentActivity"
             android:exported="true"
-            tools:node="merge" />
+            tools:node="replace" />
 
     </application>
 </manifest>

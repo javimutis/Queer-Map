@@ -11,8 +11,9 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.VisibleForTesting
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProvider // Keep for other ViewModels if any
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
@@ -37,18 +38,15 @@ class LoginFragment : Fragment() {
     private var _binding: FragmentLoginBinding? = null
     private val binding get() = _binding
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
+    // CAMBIO CLAVE: Permite que Hilt inyecte directamente el ViewModel.
+    // En tests con @BindValue, Hilt inyectará el mock.
+    // Para producción, Hilt inyectará la implementación real.
+    // Esto es el patrón estándar para ViewModels inyectados por Hilt.
+    private val viewModel: LoginViewModel by viewModels() // Use KTX viewModels() extension function
 
-    internal val viewModel: LoginViewModel
-        get() = testViewModel ?: ViewModelProvider(
-            this,
-            viewModelFactory
-        )[LoginViewModel::class.java]
-
-    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    internal var testViewModel: LoginViewModel? = null
-
+    // Puedes mantener estas para DataSources si las inyectas aquí y quieres mockear
+    // Si tus DataSources ya son parte del constructor del ViewModel,
+    // y el ViewModel es el que las usa, no necesitas inyectarlas directamente en el fragmento.
     @Inject
     internal lateinit var _googleSignInDataSource: GoogleSignInDataSource
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
@@ -63,8 +61,9 @@ class LoginFragment : Fragment() {
     internal val facebookSignInDataSource: FacebookSignInDataSource
         get() = testFacebookSignInDataSource ?: _facebookSignInDataSource
 
-    internal lateinit var googleSignInLauncher: ActivityResultLauncher<Intent>
 
+    // Mantén esto si necesitas mockear el launcher en el fragmento, si no, lo remueves
+    internal lateinit var googleSignInLauncher: ActivityResultLauncher<Intent>
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     internal var testGoogleSignInLauncher: ActivityResultLauncher<Intent>? = null
 
@@ -87,8 +86,10 @@ class LoginFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel.loadUserCredentials()
+        viewModel.loadUserCredentials() // Ahora esto llamará al ViewModel inyectado (real o mock)
 
+        // Asegúrate de usar 'googleSignInLauncher' del fragmento, no 'testGoogleSignInLauncher' para la inicialización normal
+        // El 'testGoogleSignInLauncher' se usará si lo asignas en el test.
         googleSignInLauncher = testGoogleSignInLauncher ?: registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
         ) { result ->
@@ -111,13 +112,10 @@ class LoginFragment : Fragment() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        // Elimina la comprobación `::callbackManager.isInitialized`
-        // La propiedad lazy garantiza que ya está inicializada al ser accedida.
         callbackManager.onActivityResult(requestCode, resultCode, data)
     }
 
     private fun initFacebookLogin() {
-        // Pasa el FacebookCallback directamente al DataSource
         facebookSignInDataSource.registerCallback(callbackManager, object : FacebookCallback<LoginResult> {
             override fun onSuccess(result: LoginResult) {
                 Log.d("LoginFragment", "Facebook Login Success: ${result.accessToken.token}")
