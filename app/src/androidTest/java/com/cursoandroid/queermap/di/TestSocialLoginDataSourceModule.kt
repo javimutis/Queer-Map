@@ -20,7 +20,7 @@ object TestSocialLoginDataSourceModule {
 
     @Provides
     @Singleton
-    fun provideGoogleSignInDataSource(): GoogleSignInDataSource = mockk(relaxed = true)
+    fun provideGoogleSignInDataSource(): GoogleSignInDataSource = mockk() // ¡IMPORTANTE: SIN relaxed = true!
 
     @Provides
     @Singleton
