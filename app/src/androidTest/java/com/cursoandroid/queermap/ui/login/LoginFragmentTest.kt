@@ -22,6 +22,7 @@ import androidx.test.espresso.action.ViewActions.scrollTo
 import androidx.test.espresso.action.ViewActions.typeText
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.intent.Intents
+import androidx.test.espresso.matcher.RootMatchers.withDecorView
 import androidx.test.espresso.matcher.ViewMatchers.isClickable
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.isEnabled
@@ -58,6 +59,7 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.hamcrest.CoreMatchers.allOf
+import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.CoreMatchers.not
 import org.hamcrest.Matcher
 import org.junit.After
@@ -69,7 +71,6 @@ import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
 import java.util.concurrent.TimeoutException
 import javax.inject.Inject
-
 
 // Custom ViewAction to wait until a view is clickable (visible, enabled, clickable)
 fun waitForViewToBeClickable(): ViewAction {
@@ -147,7 +148,7 @@ class LoginFragmentTest {
         }
     }
 
-    // Inyección del mock de GoogleSignInDataSource. Hilt lo proveerá desde TestSocialLoginDataSourceModule.
+    // Inyección de los mocks de DataSources, también controlados por Hilt
     @Inject
     lateinit var mockGoogleSignInDataSource: GoogleSignInDataSource
 
@@ -156,7 +157,7 @@ class LoginFragmentTest {
 
     // Flows para controlar el estado y eventos del ViewModel mock
     private lateinit var uiStateFlow: MutableStateFlow<LoginUiState>
-    private lateinit var eventFlow: MutableSharedFlow<LoginEvent> // Este es el MutableSharedFlow REAL que controlamos
+    private lateinit var eventFlow: MutableSharedFlow<LoginEvent>
     private lateinit var accessTokenChannelFlow: MutableSharedFlow<Result<String>>
 
     // Configuracion de coroutines para pruebas
@@ -174,21 +175,20 @@ class LoginFragmentTest {
     @Before
     fun setUp() {
         Dispatchers.setMain(testDispatcher) // Set the main dispatcher for coroutines
-        hiltRule.inject() // Inject dependencies, including @BindValue mocks and @Inject fields
+        hiltRule.inject() // Inject dependencies, including @BindValue mocks
 
         // Initialize Intents before each test that interacts with activities.
         Intents.init()
 
         // Initialize flows with an initial state
         uiStateFlow = MutableStateFlow(LoginUiState())
-        eventFlow = MutableSharedFlow() // Inicializado aquí
+        eventFlow = MutableSharedFlow()
         accessTokenChannelFlow = MutableSharedFlow()
 
         clearAllMocks() // Clear all mocks before each test to avoid interferences
 
         // Stub the behavior of mockLoginViewModel
         every { mockLoginViewModel.uiState } returns uiStateFlow
-        // *** IMPORTANTE: Stub el getter de `event` para devolver nuestro `eventFlow` REAL. ***
         every { mockLoginViewModel.event } returns eventFlow
 
         // Stub for GoogleSignInDataSource: getSignInIntent must return a valid Intent
@@ -197,19 +197,15 @@ class LoginFragmentTest {
             Uri.parse("https://example.com/oauth")
         )
 
-        // Comportamiento POR DEFECTO para handleSignInResult.
-        // Esto será sobrescrito en los tests que necesiten un comportamiento diferente.
-        coEvery { mockGoogleSignInDataSource.handleSignInResult(any()) } returns Result.success(FAKE_GOOGLE_ID_TOKEN)
-
-
+        // Stub general behavior of mockLoginViewModel
+        coEvery { mockLoginViewModel.loginWithEmail(any(), any()) } coAnswers { /* do nothing */ }
         // The default loginWithGoogle behavior for old user, for the general setUp.
         // This will be overridden by specific tests when needed.
         coEvery { mockLoginViewModel.loginWithGoogle(FAKE_GOOGLE_ID_TOKEN) } coAnswers {
             uiStateFlow.emit(uiStateFlow.value.copy(isLoading = true))
             uiStateFlow.emit(uiStateFlow.value.copy(isLoading = false, isSuccess = true))
             eventFlow.emit(LoginEvent.NavigateToHome)
-            // No mockeamos event.emit aquí si ya lo hicimos con `every { mockLoginViewModel.event } returns eventFlow`
-            // El `LoginEvent.ShowMessage` lo emitirá el `eventFlow` real.
+            eventFlow.emit(LoginEvent.ShowMessage("Inicio de sesión con Google exitoso"))
         }
 
         coEvery { mockLoginViewModel.loginWithFacebook(any()) } coAnswers { /* do nothing */ }
@@ -305,65 +301,32 @@ class LoginFragmentTest {
         testScheduler.advanceUntilIdle() // Ensure all pending coroutines complete
     }
 
-    // testing
         @Test
     fun when_google_sign_in_result_is_failure_then_shows_error_message() = runTest(testDispatcher) {
-        // Arrange
-        val cancellationMessage = "Inicio de sesión con Google cancelado."
+        val intentData = mockk<Intent>()
+        val exceptionMessage = "Fallo de Google"
+        val expectedSnackbarMessage = "Error en Sign-In: $exceptionMessage"
 
-        // No es necesario un coEvery para eventFlow.emit si ya está configurado para devolver el flow real en setUp.
-        // Simplemente nos aseguramos de que el `answers` del launcher lo emita.
+        coEvery { mockGoogleSignInDataSource.handleSignInResult(intentData) } returns Result.failure(
+            Exception(exceptionMessage)
+        )
 
-        // Mockeamos el lanzamiento del ActivityResultLauncher.
-        val intentSlot = slot<Intent>()
-        every { mockGoogleSignInLauncher.launch(capture(intentSlot)) } answers {
-            assertThat(intentSlot.captured.action).isEqualTo(Intent.ACTION_VIEW)
-            assertThat(intentSlot.captured.data).isEqualTo(Uri.parse("https://example.com/oauth"))
-
-            // *** CAMBIO CLAVE AQUÍ: Simulamos que el `registerForActivityResult` del fragmento
-            // recibe un resultado CANCELADO. Esto activará la rama `else` en el fragmento. ***
-            backgroundScope.launch(testDispatcher) {
-                // Notificamos directamente al fragmento el resultado simulado.
-                // Usamos la propiedad `testGoogleSignInLauncher` para invocar su callback de forma simulada.
-                // NOTA: Esto solo funciona si el `registerForActivityResult` del fragmento
-                // es invocado internamente con el resultado.
-                // En lugar de intentar acceder al internal `ActivityResultRegistry`,
-                // simulamos el efecto de que el callback del launcher del fragmento se dispara.
-                // Dado que mockGoogleSignInLauncher es un mockk, podemos "simular" su efecto.
-                // Asumimos que el fragmento llamaría a `handleGoogleSignInResult` con el resultado.
-                // PERO para el caso de CANCELLED, NO queremos que se llame a `handleGoogleSignInResult`.
-                // Queremos que la rama `else` de `registerForActivityResult` se ejecute.
-
-                // Lo más directo para simular la CANCELACIÓN y que el fragmento lo maneje:
-                // Directamente hacemos que el ViewModel emita el mensaje de cancelación,
-                // ya que en el fragmento, si el resultado es CANCELED, el fragmento emitiría
-                // un mensaje a través del ViewModel.
-                eventFlow.emit(LoginEvent.ShowMessage(cancellationMessage))
-            }
+        activityScenario.onActivity { activity ->
+            val fragment =
+                activity.supportFragmentManager.findFragmentById(android.R.id.content) as LoginFragment
+            fragment.handleGoogleSignInResult(intentData)
         }
-
-        // Act
-        onView(withId(R.id.btnGoogleSignIn)).perform(click())
-
-        Espresso.onIdle()
         testScheduler.advanceUntilIdle()
 
-
-        // Assert
-        coVerify(exactly = 1) { mockGoogleSignInLauncher.launch(any()) }
-
-        // Verificamos que el evento de mensaje de cancelación fue emitido.
-        coVerify(exactly = 1) { eventFlow.emit(LoginEvent.ShowMessage(cancellationMessage)) }
-
-        // Muy importante: Verificamos que `handleSignInResult` de GoogleSignInDataSource NO fue llamado,
-        // porque en el caso de cancelación (RESULT_CANCELED), el fragmento NO debería llamarlo.
-        coVerify(exactly = 0) { mockGoogleSignInDataSource.handleSignInResult(any()) }
-
-        // Verificamos que `loginWithGoogle` del ViewModel NO fue llamado.
+        coVerify(exactly = 1) { mockGoogleSignInDataSource.handleSignInResult(intentData) }
         coVerify(exactly = 0) { mockLoginViewModel.loginWithGoogle(any()) }
 
+        onView(withText(expectedSnackbarMessage))
+            .inRoot(withDecorView(not(`is`(activityDecorView))))
+            .check(matches(isDisplayed()))
         onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
     }
+
 
     //passed
     @Test

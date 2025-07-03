@@ -6,7 +6,7 @@ plugins {
     alias(libs.plugins.hilt) // Asegúrate de que este plugin esté aplicado
     alias(libs.plugins.google.services)
     alias(libs.plugins.secrets)
-    kotlin("kapt") // Este también es crucial para Hilt
+    kotlin("kapt") // Este plugin sigue siendo crucial para Hilt
     id("androidx.navigation.safeargs.kotlin")
 }
 
@@ -48,12 +48,17 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_17 // Mantener en 17 es seguro y compatible con JDK 21
+        targetCompatibility = JavaVersion.VERSION_17 // Debe ser el mismo que sourceCompatibility
     }
 
     kotlinOptions {
-        jvmTarget = "17"
+        jvmTarget = "17" // Mantener en 17
+        freeCompilerArgs += listOf(
+            "-Xjvm-default=all", // Para Default Method support en interfaces
+            "-opt-in=kotlin.RequiresOptIn" // Para anotaciones @OptIn
+            // ¡Las banderas -Xadd-exports y -Xadd-opens han sido ELIMINADAS de aquí!
+        )
     }
 
     buildFeatures {
@@ -88,6 +93,7 @@ dependencies {
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.multidex)
+    implementation(libs.androidx.fragment.ktx)
 
     // Firebase (usando la BoM para gestionar versiones)
     implementation(platform(libs.firebase.bom))
@@ -157,8 +163,10 @@ dependencies {
 
     // Fragment Testing
     androidTestImplementation(libs.androidx.fragment.testing)
+    debugImplementation(libs.androidx.fragment.testing)
 
-// Navigation Testing (for TestNavHostController)
+
+    // Navigation Testing (for TestNavHostController)
     androidTestImplementation(libs.androidx.navigation.testing)
     // Google Truth for assertions
     androidTestImplementation(libs.google.truth)
