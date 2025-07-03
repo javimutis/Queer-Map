@@ -11,7 +11,7 @@ import dagger.hilt.android.AndroidEntryPoint
 class HiltTestActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-     val frameLayout = FrameLayout(this)
+        val frameLayout = FrameLayout(this)
         frameLayout.id = android.R.id.content // Usar un ID estándar o uno custom
         setContentView(frameLayout)
     }

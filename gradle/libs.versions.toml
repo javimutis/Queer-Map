@@ -134,5 +134,3 @@ androidx-fragment-testing = { module = "androidx.fragment:fragment-testing", ver
 
 # Kotest (si la usas)
 kotest-assertions = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
-
-

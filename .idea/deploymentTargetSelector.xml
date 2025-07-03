@@ -2,12 +2,6 @@
 <project version="4">
   <component name="deploymentTargetSelector">
     <selectionStates>
-      <SelectionState runConfigName="when_google_sign_in_button_is_clicked_then_getSignInIntent_is_called()">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
-      <SelectionState runConfigName="when_google_sign_in_button_clicked_and_result_is_success_then_navigates_to_home()">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
       <SelectionState runConfigName="when_google_sign_in_result_is_success_for_new_user_then_navigates_to_signup_with_args()">
         <option name="selectionMode" value="DROPDOWN" />
         <DropdownSelection timestamp="2025-06-28T20:18:45.997056200Z">
@@ -18,9 +12,6 @@
           </Target>
         </DropdownSelection>
         <DialogSelection />
-      </SelectionState>
-      <SelectionState runConfigName="when_google_sign_in_result_is_failure_then_shows_error_message()">
-        <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
       <SelectionState runConfigName="when_login_fragment_is_launched_all_essential_ui_elements_are_displayed()">
         <option name="selectionMode" value="DROPDOWN" />
