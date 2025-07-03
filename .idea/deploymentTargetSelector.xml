@@ -16,6 +16,9 @@
       <SelectionState runConfigName="when_login_fragment_is_launched_all_essential_ui_elements_are_displayed()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
+      <SelectionState runConfigName="when_login_loads_credentials_email_and_password_fields_are_updated()">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
     </selectionStates>
   </component>
 </project>
