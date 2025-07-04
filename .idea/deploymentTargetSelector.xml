@@ -5,9 +5,6 @@
       <SelectionState runConfigName="when_login_loads_credentials_email_and_password_fields_are_updated()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="when_typing_in_email_field_text_is_updated()">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
       <SelectionState runConfigName="when_typing_in_password_field_text_is_updated()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
@@ -15,6 +12,9 @@
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
       <SelectionState runConfigName="when_login_button_is_clicked_and_email_is_invalid_error_message_is_shown()">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="when_login_button_is_clicked_and_password_is_invalid_error_message_is_shown()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>

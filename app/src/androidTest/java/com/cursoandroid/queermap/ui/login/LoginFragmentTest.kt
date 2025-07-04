@@ -1,18 +1,8 @@
 package com.cursoandroid.queermap.ui.login
 
-import android.content.Context
-import com.cursoandroid.queermap.util.isToastMessageDisplayed
-import com.cursoandroid.queermap.util.waitFor
-import com.cursoandroid.queermap.util.waitForViewToBeClickable
-import com.cursoandroid.queermap.util.waitUntilVisibleAndEnabledAndCompletelyDisplayed
-import com.cursoandroid.queermap.util.withDecorView
-import org.junit.Assert.assertTrue
 import android.content.Intent
 import android.net.Uri
 import android.view.View
-import org.junit.Assert.assertTrue
-import android.view.accessibility.AccessibilityNodeInfo
-import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.navigation.Navigation
 import androidx.navigation.testing.TestNavHostController
@@ -21,24 +11,16 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.IdlingRegistry
-import androidx.test.espresso.PerformException
-import androidx.test.espresso.Root
-import androidx.test.espresso.UiController
-import androidx.test.espresso.ViewAction
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.closeSoftKeyboard
 import androidx.test.espresso.action.ViewActions.typeText
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.intent.Intents
-import androidx.test.espresso.matcher.ViewMatchers.isClickable
-import androidx.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
-import androidx.test.espresso.matcher.ViewMatchers.isEnabled
 import androidx.test.espresso.matcher.ViewMatchers.isRoot
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.platform.app.InstrumentationRegistry
 import com.cursoandroid.queermap.HiltTestActivity
 import com.cursoandroid.queermap.R
 import com.cursoandroid.queermap.common.InputValidator
@@ -46,6 +28,8 @@ import com.cursoandroid.queermap.data.source.remote.FacebookSignInDataSource
 import com.cursoandroid.queermap.data.source.remote.GoogleSignInDataSource
 import com.cursoandroid.queermap.util.EspressoIdlingResource
 import com.cursoandroid.queermap.util.MainDispatcherRule
+import com.cursoandroid.queermap.util.isToastMessageDisplayed
+import com.cursoandroid.queermap.util.waitFor
 import com.facebook.FacebookCallback
 import com.facebook.login.LoginResult
 import com.google.common.truth.Truth.assertThat
@@ -60,31 +44,20 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.withContext
-import org.hamcrest.Description
-import org.hamcrest.Matcher
-import org.hamcrest.Matchers.allOf
 import org.hamcrest.Matchers.not
-import org.hamcrest.TypeSafeMatcher
 import org.junit.After
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.FixMethodOrder
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
-import java.util.concurrent.TimeoutException
 
-/* Clase de Test del Fragmento de Login */
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @RunWith(AndroidJUnit4::class)
@@ -311,6 +284,7 @@ class LoginFragmentTest {
         assertThat(mockNavController.currentDestination?.id).isEqualTo(R.id.mapFragment)
     }
 
+    //passed
     @Test
     fun when_login_button_is_clicked_and_email_is_invalid_error_message_is_shown() {
         val email = "invalid-email"
@@ -337,33 +311,39 @@ class LoginFragmentTest {
         onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
     }
 
+    //passed
+    @Test
+    fun when_login_button_is_clicked_and_password_is_invalid_error_message_is_shown() {
+        val email = "valid@example.com"
+        val password = "short"
+        val errorMessage = "La contraseña debe tener al menos 6 caracteres"
+
+        // Simula el evento que modifica el UIState y emite el mensaje
+        coEvery { mockLoginViewModel.loginWithEmail(email, password) } coAnswers {
+            uiStateFlow.value = uiStateFlow.value.copy(isPasswordInvalid = true)
+            mainDispatcherRule.testScope.launch {
+                eventFlow.emit(LoginEvent.ShowMessage(errorMessage))
+            }
+        }
+
+        // Simula ingreso de credenciales inválidas
+        onView(withId(R.id.etEmailLogin)).perform(typeText(email), closeSoftKeyboard())
+        onView(withId(R.id.etPassword)).perform(typeText(password), closeSoftKeyboard())
+        onView(withId(R.id.btnLogin)).perform(click())
+
+        // Espera que el Toast aparezca
+        onView(isRoot()).perform(waitFor(1500))
+
+        // Verifica llamada al ViewModel
+        coVerify(exactly = 1) { mockLoginViewModel.loginWithEmail(email, password) }
+
+        // Verifica que el Toast se muestre
+        assertTrue("Toast con mensaje no encontrado", isToastMessageDisplayed(errorMessage))
+
+        // Verifica que el ProgressBar no esté visible
+        onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
+    }
 }
-//    @Test
-//    fun when_login_button_is_clicked_and_password_is_invalid_error_message_is_shown() = runTest {
-//        val email = "valid@example.com"
-//        val password = "short"
-//        val errorMessage = "La contraseña debe tener al menos 6 caracteres"
-//
-//        coEvery { mockLoginViewModel.loginWithEmail(email, password) } coAnswers {
-//            uiStateFlow.emit(uiStateFlow.value.copy(isPasswordInvalid = true))
-//            eventFlow.emit(LoginEvent.ShowMessage(errorMessage))
-//        }
-//
-//        onView(withId(R.id.etEmailLogin)).perform(typeText(email))
-//        onView(withId(R.id.etPassword)).perform(typeText(password), closeSoftKeyboard())
-//        onView(withId(R.id.btnLogin)).perform(click())
-//
-//        advanceUntilIdle()
-//
-//        coVerify(exactly = 1) { mockLoginViewModel.loginWithEmail(email, password) }
-//
-//        onView(withText(errorMessage))
-//            .inRoot(withDecorView(not(activityDecorView)))
-//            .check(matches(isDisplayed()))
-//
-//        onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
-//    }
-//
 //    @Test
 //    fun when_login_fails_due_to_general_error_error_message_is_shown() = runTest {
 //        val email = "test@example.com"
