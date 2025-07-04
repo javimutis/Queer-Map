@@ -170,4 +170,5 @@ dependencies {
     androidTestImplementation(libs.androidx.navigation.testing)
     // Google Truth for assertions
     androidTestImplementation(libs.google.truth)
+    testImplementation(kotlin("test"))
 }

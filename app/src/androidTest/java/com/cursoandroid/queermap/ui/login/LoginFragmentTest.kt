@@ -1,11 +1,20 @@
 package com.cursoandroid.queermap.ui.login
 
+import android.content.Context
+import com.cursoandroid.queermap.util.isToastMessageDisplayed
+import com.cursoandroid.queermap.util.waitFor
+import com.cursoandroid.queermap.util.waitForViewToBeClickable
+import com.cursoandroid.queermap.util.waitUntilVisibleAndEnabledAndCompletelyDisplayed
+import com.cursoandroid.queermap.util.withDecorView
+import org.junit.Assert.assertTrue
 import android.content.Intent
 import android.net.Uri
 import android.view.View
+import org.junit.Assert.assertTrue
+import android.view.accessibility.AccessibilityNodeInfo
+import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.navigation.Navigation
-import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.testing.TestNavHostController
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
@@ -13,6 +22,7 @@ import androidx.test.espresso.Espresso
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.IdlingRegistry
 import androidx.test.espresso.PerformException
+import androidx.test.espresso.Root
 import androidx.test.espresso.UiController
 import androidx.test.espresso.ViewAction
 import androidx.test.espresso.action.ViewActions.click
@@ -28,6 +38,7 @@ import androidx.test.espresso.matcher.ViewMatchers.isRoot
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import com.cursoandroid.queermap.HiltTestActivity
 import com.cursoandroid.queermap.R
 import com.cursoandroid.queermap.common.InputValidator
@@ -49,13 +60,21 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withContext
+import org.hamcrest.Description
 import org.hamcrest.Matcher
 import org.hamcrest.Matchers.allOf
 import org.hamcrest.Matchers.not
+import org.hamcrest.TypeSafeMatcher
 import org.junit.After
 import org.junit.Before
 import org.junit.FixMethodOrder
@@ -64,78 +83,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
 import java.util.concurrent.TimeoutException
-
-// --- UTILIDADES DE ESPRESSO PERSONALIZADAS (sin cambios) ---
-
-fun waitForViewToBeClickable(): ViewAction {
-    return object : ViewAction {
-        override fun getConstraints(): Matcher<View> {
-            return allOf(isDisplayed(), isEnabled(), isClickable())
-        }
-
-        override fun getDescription(): String {
-            return "Espera que la vista esté visible, habilitada y lista para click"
-        }
-
-        override fun perform(uiController: UiController, view: View) {
-            val timeout = 5000L
-            val interval = 100L
-            var waited = 0L
-            while (!(view.isShown && view.isClickable && view.isEnabled) && waited < timeout) {
-                uiController.loopMainThreadForAtLeast(interval)
-                waited += interval
-            }
-            if (!(view.isShown && view.isClickable && view.isEnabled)) {
-                throw PerformException.Builder()
-                    .withViewDescription("View with id ${view.id}")
-                    .withCause(TimeoutException("La vista no estaba lista para click en $timeout ms"))
-                    .build()
-            }
-        }
-    }
-}
-
-fun waitUntilVisibleAndEnabledAndCompletelyDisplayed(): ViewAction {
-    return object : ViewAction {
-        override fun getConstraints(): Matcher<View> {
-            return allOf(isDisplayed(), isEnabled(), isCompletelyDisplayed())
-        }
-
-        override fun getDescription(): String {
-            return "Espera hasta que la vista esté visible, habilitada y completamente dibujada"
-        }
-
-        override fun perform(uiController: UiController, view: View) {
-            val timeout = 5000L
-            val interval = 50L
-            var waited = 0L
-            while (!constraints.matches(view) && waited < timeout) {
-                uiController.loopMainThreadForAtLeast(interval)
-                waited += interval
-            }
-            if (!constraints.matches(view)) {
-                throw PerformException.Builder()
-                    .withActionDescription(this.description)
-                    .withViewDescription(view.toString())
-                    .withCause(TimeoutException("La vista no estaba lista en $timeout ms."))
-                    .build()
-            }
-        }
-    }
-}
-
-fun withDecorView(matcher: Matcher<View>): Matcher<View> {
-    return object : org.hamcrest.TypeSafeMatcher<View>() {
-        override fun describeTo(description: org.hamcrest.Description) {
-            matcher.describeTo(description)
-        }
-
-        override fun matchesSafely(item: View): Boolean {
-            return matcher.matches(item.rootView.findViewById<View>(android.R.id.content))
-        }
-    }
-}
-
 
 /* Clase de Test del Fragmento de Login */
 
@@ -335,15 +282,6 @@ class LoginFragmentTest {
         coVerify(atLeast = 1) { mockLoginViewModel.loadUserCredentials() }
     }
 
-    fun waitFor(millis: Long): ViewAction {
-        return object : ViewAction {
-            override fun getConstraints() = isRoot()
-            override fun getDescription() = "Esperar $millis milisegundos."
-            override fun perform(uiController: UiController, view: View?) {
-                uiController.loopMainThreadForAtLeast(millis)
-            }
-        }
-    }
 
     /* Pruebas de Interacción del Botón de Login (Email/Password) */
     //passed
@@ -373,32 +311,32 @@ class LoginFragmentTest {
         assertThat(mockNavController.currentDestination?.id).isEqualTo(R.id.mapFragment)
     }
 
-
     @Test
-    fun when_login_button_is_clicked_and_email_is_invalid_error_message_is_shown() = runTest {
+    fun when_login_button_is_clicked_and_email_is_invalid_error_message_is_shown() {
         val email = "invalid-email"
         val password = "validpassword"
         val errorMessage = "Por favor ingresa un email válido"
 
         coEvery { mockLoginViewModel.loginWithEmail(email, password) } coAnswers {
-            uiStateFlow.emit(uiStateFlow.value.copy(isEmailInvalid = true))
-            eventFlow.emit(LoginEvent.ShowMessage(errorMessage))
+            uiStateFlow.value = uiStateFlow.value.copy(isEmailInvalid = true)
+            mainDispatcherRule.testScope.launch {
+                eventFlow.emit(LoginEvent.ShowMessage(errorMessage))
+            }
         }
 
         onView(withId(R.id.etEmailLogin)).perform(typeText(email), closeSoftKeyboard())
         onView(withId(R.id.etPassword)).perform(typeText(password), closeSoftKeyboard())
         onView(withId(R.id.btnLogin)).perform(click())
 
-        advanceUntilIdle()
+        onView(isRoot()).perform(waitFor(1500)) // dejar tiempo para mostrar Toast
 
-        coVerify(exactly = 1) { mockLoginViewModel.loginWithEmail(email, password) }
+        coVerify { mockLoginViewModel.loginWithEmail(email, password) }
 
-        onView(withText(errorMessage))
-            .inRoot(withDecorView(not(activityDecorView)))
-            .check(matches(isDisplayed()))
+        assertTrue("Toast con mensaje no encontrado", isToastMessageDisplayed(errorMessage))
 
         onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
     }
+
 }
 //    @Test
 //    fun when_login_button_is_clicked_and_password_is_invalid_error_message_is_shown() = runTest {

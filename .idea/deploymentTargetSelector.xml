@@ -2,9 +2,6 @@
 <project version="4">
   <component name="deploymentTargetSelector">
     <selectionStates>
-      <SelectionState runConfigName="when_login_fragment_is_launched_all_essential_ui_elements_are_displayed()">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
       <SelectionState runConfigName="when_login_loads_credentials_email_and_password_fields_are_updated()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
@@ -15,6 +12,9 @@
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
       <SelectionState runConfigName="when_login_button_is_clicked_loginWithEmail_is_called_with_correct_data_and_navigates_to_home_on_success()">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="when_login_button_is_clicked_and_email_is_invalid_error_message_is_shown()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>
