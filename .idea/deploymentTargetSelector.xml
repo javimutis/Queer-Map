@@ -2,12 +2,6 @@
 <project version="4">
   <component name="deploymentTargetSelector">
     <selectionStates>
-      <SelectionState runConfigName="when_login_loads_credentials_email_and_password_fields_are_updated()">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
-      <SelectionState runConfigName="when_typing_in_password_field_text_is_updated()">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
       <SelectionState runConfigName="when_login_button_is_clicked_loginWithEmail_is_called_with_correct_data_and_navigates_to_home_on_success()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
@@ -15,6 +9,12 @@
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
       <SelectionState runConfigName="when_login_button_is_clicked_and_password_is_invalid_error_message_is_shown()">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="when_login_fails_due_to_general_error_error_message_is_shown()">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="when_google_button_is_clicked_launcher_is_invoked_and_navigates_to_home_on_success()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>

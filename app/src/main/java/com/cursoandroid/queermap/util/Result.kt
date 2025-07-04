@@ -1,5 +1,4 @@
-package com.cursoandroid.queermap.util // Asegúrate de que este paquete coincida con la ruta real del archivo
-
+package com.cursoandroid.queermap.util
 /**
  * Una clase sellada para representar el resultado de una operación que puede
  * ser exitosa o fallar.

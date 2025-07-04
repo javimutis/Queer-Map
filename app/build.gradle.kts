@@ -128,7 +128,8 @@ dependencies {
     implementation(libs.picasso)
 
     // Hilt **¡Asegúrate de que estas dos líneas estén presentes y correctas!**
-    implementation(libs.hilt.core) // Esta es la dependencia que busca el plugin.
+    implementation(libs.hilt.core)
+    implementation(libs.androidx.navigation.common.android) // Esta es la dependencia que busca el plugin.
     kapt(libs.hilt.compiler)       // El procesador de anotaciones.
 
     // --- DEPENDENCIAS DE PRUEBAS ---
