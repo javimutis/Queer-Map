@@ -4,8 +4,8 @@ import android.content.Intent
 import android.net.Uri
 import android.view.View
 import androidx.activity.result.ActivityResultLauncher
-import androidx.lifecycle.Lifecycle
 import androidx.navigation.Navigation
+import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.testing.TestNavHostController
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
@@ -15,6 +15,7 @@ import androidx.test.espresso.IdlingRegistry
 import androidx.test.espresso.PerformException
 import androidx.test.espresso.UiController
 import androidx.test.espresso.ViewAction
+import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.closeSoftKeyboard
 import androidx.test.espresso.action.ViewActions.typeText
 import androidx.test.espresso.assertion.ViewAssertions.matches
@@ -36,6 +37,7 @@ import com.cursoandroid.queermap.util.EspressoIdlingResource
 import com.cursoandroid.queermap.util.MainDispatcherRule
 import com.facebook.FacebookCallback
 import com.facebook.login.LoginResult
+import com.google.common.truth.Truth.assertThat
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -149,7 +151,6 @@ class LoginFragmentTest {
     @get:Rule(order = 1)
     val mainDispatcherRule = MainDispatcherRule()
 
-    // @BindValue asegura que este mock sea proporcionado cuando Hilt inyecte LoginViewModel
     @BindValue
     @JvmField
     val mockLoginViewModel: LoginViewModel = mockk(relaxed = true)
@@ -178,9 +179,7 @@ class LoginFragmentTest {
     @Before
     fun setUp() {
         hiltRule.inject()
-
         Intents.init()
-
         clearAllMocks()
 
         uiStateFlow = MutableStateFlow(LoginUiState())
@@ -222,37 +221,33 @@ class LoginFragmentTest {
 
         IdlingRegistry.getInstance().register(EspressoIdlingResource.countingIdlingResource)
 
-        mockNavController = TestNavHostController(ApplicationProvider.getApplicationContext())
-
         activityScenario = ActivityScenario.launch(HiltTestActivity::class.java)
 
         activityScenario.onActivity { activity ->
+            mockNavController = TestNavHostController(ApplicationProvider.getApplicationContext())
             mockNavController.setGraph(R.navigation.nav_graph)
-            mockNavController.setCurrentDestination(R.id.loginFragment)
+            mockNavController.setCurrentDestination(R.id.loginFragment) // 👈 Navegar directamente
 
-            val fragment = LoginFragment() // Hilt will provide the mock ViewModel to this instance
+            val fragment = LoginFragment() // 👈 Carga explícita del fragmento a testear
 
             activity.supportFragmentManager.beginTransaction()
-                .add(android.R.id.content, fragment)
+                .replace(android.R.id.content, fragment)
                 .commitNow()
 
-            val currentFragment =
-                activity.supportFragmentManager.findFragmentById(android.R.id.content) as LoginFragment
-            Navigation.setViewNavController(currentFragment.requireView(), mockNavController)
+            Navigation.setViewNavController(fragment.requireView(), mockNavController)
 
             activityDecorView = activity.window.decorView
 
-            // REMOVIDO: No necesitas asignar testViewModel aquí. Hilt lo manejará.
-            // currentFragment.testViewModel = mockLoginViewModel
-
-            // Mantén las asignaciones para otros mocks que no son ViewModels
-            currentFragment.testGoogleSignInLauncher = mockGoogleSignInLauncher
-            currentFragment.testGoogleSignInDataSource = mockGoogleSignInDataSource
-            currentFragment.testFacebookSignInDataSource = mockFacebookSignInDataSource
-            currentFragment.testCallbackManager = mockk(relaxed = true)
+            fragment.testGoogleSignInLauncher = mockGoogleSignInLauncher
+            fragment.testGoogleSignInDataSource = mockGoogleSignInDataSource
+            fragment.testFacebookSignInDataSource = mockFacebookSignInDataSource
+            fragment.testCallbackManager = mockk(relaxed = true)
         }
+
+
         Espresso.onIdle()
     }
+
 
     @After
     fun tearDown() {
@@ -281,7 +276,7 @@ class LoginFragmentTest {
 
 
     /* Pruebas de Interacción de Usuario y Actualizaciones de UI */
-//passed
+    //passed
     @Test
     fun when_typing_in_email_field_text_is_updated() {
         onView(withId(R.id.etEmailLogin)).perform(typeText("test@example.com"), closeSoftKeyboard())
@@ -295,6 +290,7 @@ class LoginFragmentTest {
         onView(withId(R.id.etPassword)).check(matches(withText("password123")))
     }
 
+    //passed
     @Test
     fun when_login_loads_credentials_email_and_password_fields_are_updated() {
         val savedEmail = "saved@example.com"
@@ -349,66 +345,61 @@ class LoginFragmentTest {
         }
     }
 
+    /* Pruebas de Interacción del Botón de Login (Email/Password) */
+    //passed
+    @Test
+    fun when_login_button_is_clicked_loginWithEmail_is_called_with_correct_data_and_navigates_to_home_on_success() {
+        val email = "valid@example.com"
+        val password = "validpassword"
 
+        coEvery { mockLoginViewModel.loginWithEmail(email, password) } coAnswers {
+            uiStateFlow.value = uiStateFlow.value.copy(isLoading = true)
+            uiStateFlow.value = uiStateFlow.value.copy(isLoading = false, isSuccess = true)
+            eventFlow.emit(LoginEvent.NavigateToHome)
+        }
+
+        onView(withId(R.id.etEmailLogin)).perform(typeText(email), closeSoftKeyboard())
+        onView(withId(R.id.etPassword)).perform(typeText(password), closeSoftKeyboard())
+        onView(withId(R.id.btnLogin)).perform(click())
+
+        // Esperar que cambie la UI
+        onView(isRoot()).perform(waitFor(500))
+
+        coVerify { mockLoginViewModel.loginWithEmail(email, password) }
+
+        onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
+
+        // Afirmamos que el NavController cambió de destino
+        assertThat(mockNavController.currentDestination?.id).isEqualTo(R.id.mapFragment)
+    }
+
+
+    @Test
+    fun when_login_button_is_clicked_and_email_is_invalid_error_message_is_shown() = runTest {
+        val email = "invalid-email"
+        val password = "validpassword"
+        val errorMessage = "Por favor ingresa un email válido"
+
+        coEvery { mockLoginViewModel.loginWithEmail(email, password) } coAnswers {
+            uiStateFlow.emit(uiStateFlow.value.copy(isEmailInvalid = true))
+            eventFlow.emit(LoginEvent.ShowMessage(errorMessage))
+        }
+
+        onView(withId(R.id.etEmailLogin)).perform(typeText(email), closeSoftKeyboard())
+        onView(withId(R.id.etPassword)).perform(typeText(password), closeSoftKeyboard())
+        onView(withId(R.id.btnLogin)).perform(click())
+
+        advanceUntilIdle()
+
+        coVerify(exactly = 1) { mockLoginViewModel.loginWithEmail(email, password) }
+
+        onView(withText(errorMessage))
+            .inRoot(withDecorView(not(activityDecorView)))
+            .check(matches(isDisplayed()))
+
+        onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
+    }
 }
-/* Pruebas de Interacción del Botón de Login (Email/Password) */
-
-//    @Test
-//    fun when_login_button_is_clicked_loginWithEmail_is_called_with_correct_data_and_navigates_to_home_on_success() =
-//        runTest {
-//            val email = "valid@example.com"
-//            val password = "validpassword"
-//
-//            coEvery { mockLoginViewModel.loginWithEmail(email, password) } coAnswers {
-//                uiStateFlow.emit(uiStateFlow.value.copy(isLoading = true))
-//                this@runTest.advanceUntilIdle()
-//                uiStateFlow.emit(uiStateFlow.value.copy(isLoading = false, isSuccess = true))
-//                eventFlow.emit(LoginEvent.NavigateToHome)
-//                eventFlow.emit(LoginEvent.ShowMessage("Inicio de sesión exitoso"))
-//            }
-//
-//            every { mockNavController.navigate(R.id.action_loginFragment_to_mapFragment) } just Runs
-//
-//            onView(withId(R.id.etEmailLogin)).perform(typeText(email))
-//            onView(withId(R.id.etPassword)).perform(typeText(password), closeSoftKeyboard())
-//            onView(withId(R.id.btnLogin)).perform(click())
-//
-//            advanceUntilIdle()
-//
-//            coVerify(exactly = 1) { mockLoginViewModel.loginWithEmail(email, password) }
-//
-//            onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
-//
-//            assertThat(mockNavController.currentDestination?.id).isEqualTo(R.id.loginFragment)
-//            coVerify(exactly = 1) { mockNavController.navigate(R.id.action_loginFragment_to_mapFragment) }
-//        }
-//
-//    @Test
-//    fun when_login_button_is_clicked_and_email_is_invalid_error_message_is_shown() = runTest {
-//        val email = "invalid-email"
-//        val password = "validpassword"
-//        val errorMessage = "Por favor ingresa un email válido"
-//
-//        coEvery { mockLoginViewModel.loginWithEmail(email, password) } coAnswers {
-//            uiStateFlow.emit(uiStateFlow.value.copy(isEmailInvalid = true))
-//            eventFlow.emit(LoginEvent.ShowMessage(errorMessage))
-//        }
-//
-//        onView(withId(R.id.etEmailLogin)).perform(typeText(email), closeSoftKeyboard())
-//        onView(withId(R.id.etPassword)).perform(typeText(password), closeSoftKeyboard())
-//        onView(withId(R.id.btnLogin)).perform(click())
-//
-//        advanceUntilIdle()
-//
-//        coVerify(exactly = 1) { mockLoginViewModel.loginWithEmail(email, password) }
-//
-//        onView(withText(errorMessage))
-//            .inRoot(withDecorView(not(activityDecorView)))
-//            .check(matches(isDisplayed()))
-//
-//        onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
-//    }
-//
 //    @Test
 //    fun when_login_button_is_clicked_and_password_is_invalid_error_message_is_shown() = runTest {
 //        val email = "valid@example.com"
