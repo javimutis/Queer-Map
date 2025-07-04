@@ -343,35 +343,47 @@ class LoginFragmentTest {
         // Verifica que el ProgressBar no esté visible
         onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
     }
+
+    @Test
+    fun when_login_fails_due_to_general_error_error_message_is_shown() {
+        val email = "test@example.com"
+        val password = "password123"
+        val errorMessage = "Error inesperado. Intenta de nuevo más tarde"
+
+        coEvery { mockLoginViewModel.loginWithEmail(email, password) } coAnswers {
+            uiStateFlow.value = uiStateFlow.value.copy(isLoading = true)
+
+            // Simular que termina el loading y ocurre un error
+            uiStateFlow.value = uiStateFlow.value.copy(
+                isLoading = false,
+                errorMessage = errorMessage
+            )
+
+            // Emitir evento del mensaje de error
+            mainDispatcherRule.testScope.launch {
+                eventFlow.emit(LoginEvent.ShowMessage(errorMessage))
+            }
+        }
+
+        // Simular ingreso de credenciales válidas
+        onView(withId(R.id.etEmailLogin)).perform(typeText(email), closeSoftKeyboard())
+        onView(withId(R.id.etPassword)).perform(typeText(password), closeSoftKeyboard())
+        onView(withId(R.id.btnLogin)).perform(click())
+
+        // Esperar aparición del Toast
+        onView(isRoot()).perform(waitFor(1500))
+
+        // Verificación del método del ViewModel
+        coVerify(exactly = 1) { mockLoginViewModel.loginWithEmail(email, password) }
+
+        // Verificar que el mensaje Toast se muestre
+        assertTrue("Toast con mensaje no encontrado", isToastMessageDisplayed(errorMessage))
+
+        // Verificar que el ProgressBar ya no esté visible
+        onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
+    }
+
 }
-//    @Test
-//    fun when_login_fails_due_to_general_error_error_message_is_shown() = runTest {
-//        val email = "test@example.com"
-//        val password = "password123"
-//        val errorMessage = "Error inesperado. Intenta de nuevo más tarde"
-//
-//        coEvery { mockLoginViewModel.loginWithEmail(email, password) } coAnswers {
-//            uiStateFlow.emit(uiStateFlow.value.copy(isLoading = true))
-//            this@runTest.advanceUntilIdle()
-//            uiStateFlow.emit(uiStateFlow.value.copy(isLoading = false, errorMessage = errorMessage))
-//            eventFlow.emit(LoginEvent.ShowMessage(errorMessage))
-//        }
-//
-//        onView(withId(R.id.etEmailLogin)).perform(typeText(email))
-//        onView(withId(R.id.etPassword)).perform(typeText(password), closeSoftKeyboard())
-//        onView(withId(R.id.btnLogin)).perform(click())
-//
-//        advanceUntilIdle()
-//
-//        coVerify(exactly = 1) { mockLoginViewModel.loginWithEmail(email, password) }
-//
-//        onView(withText(errorMessage))
-//            .inRoot(withDecorView(not(activityDecorView)))
-//            .check(matches(isDisplayed()))
-//
-//        onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
-//    }
-//
 //    /* Pruebas de Interacción de Login Social (Google) */
 //
 //    @Test
