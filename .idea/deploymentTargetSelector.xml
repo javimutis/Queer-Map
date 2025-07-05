@@ -2,9 +2,6 @@
 <project version="4">
   <component name="deploymentTargetSelector">
     <selectionStates>
-      <SelectionState runConfigName="when_login_button_is_clicked_loginWithEmail_is_called_with_correct_data_and_navigates_to_home_on_success()">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
       <SelectionState runConfigName="when_login_button_is_clicked_and_email_is_invalid_error_message_is_shown()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
@@ -15,6 +12,9 @@
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
       <SelectionState runConfigName="when_google_button_is_clicked_launcher_is_invoked_and_navigates_to_home_on_success()">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="when_google_login_is_for_new_user_navigates_to_signup_with_args()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>

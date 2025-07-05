@@ -38,17 +38,11 @@ class LoginFragment : Fragment() {
     private var _binding: FragmentLoginBinding? = null
     private val binding get() = _binding
 
-    // CAMBIO CLAVE: Permite que Hilt inyecte directamente el ViewModel.
-    // En tests con @BindValue, Hilt inyectará el mock.
-    // Para producción, Hilt inyectará la implementación real.
-    // Esto es el patrón estándar para ViewModels inyectados por Hilt.
     private val viewModel: LoginViewModel by viewModels() // Use KTX viewModels() extension function
 
-    // Puedes mantener estas para DataSources si las inyectas aquí y quieres mockear
-    // Si tus DataSources ya son parte del constructor del ViewModel,
-    // y el ViewModel es el que las usa, no necesitas inyectarlas directamente en el fragmento.
     @Inject
     internal lateinit var _googleSignInDataSource: GoogleSignInDataSource
+
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     internal var testGoogleSignInDataSource: GoogleSignInDataSource? = null
     internal val googleSignInDataSource: GoogleSignInDataSource
@@ -56,6 +50,7 @@ class LoginFragment : Fragment() {
 
     @Inject
     internal lateinit var _facebookSignInDataSource: FacebookSignInDataSource
+
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     internal var testFacebookSignInDataSource: FacebookSignInDataSource? = null
     internal val facebookSignInDataSource: FacebookSignInDataSource
@@ -64,6 +59,7 @@ class LoginFragment : Fragment() {
 
     // Mantén esto si necesitas mockear el launcher en el fragmento, si no, lo remueves
     internal lateinit var googleSignInLauncher: ActivityResultLauncher<Intent>
+
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     internal var testGoogleSignInLauncher: ActivityResultLauncher<Intent>? = null
 
@@ -116,25 +112,27 @@ class LoginFragment : Fragment() {
     }
 
     private fun initFacebookLogin() {
-        facebookSignInDataSource.registerCallback(callbackManager, object : FacebookCallback<LoginResult> {
-            override fun onSuccess(result: LoginResult) {
-                Log.d("LoginFragment", "Facebook Login Success: ${result.accessToken.token}")
-                lifecycleScope.launch {
-                    viewModel.loginWithFacebook(result.accessToken.token)
+        facebookSignInDataSource.registerCallback(
+            callbackManager,
+            object : FacebookCallback<LoginResult> {
+                override fun onSuccess(result: LoginResult) {
+                    Log.d("LoginFragment", "Facebook Login Success: ${result.accessToken.token}")
+                    lifecycleScope.launch {
+                        viewModel.loginWithFacebook(result.accessToken.token)
+                    }
                 }
-            }
 
-            override fun onCancel() {
-                Log.d("LoginFragment", "Facebook Login Cancelled")
-                showSnackbar("Inicio de sesión con Facebook cancelado.")
-            }
+                override fun onCancel() {
+                    Log.d("LoginFragment", "Facebook Login Cancelled")
+                    showSnackbar("Inicio de sesión con Facebook cancelado.")
+                }
 
-            override fun onError(error: FacebookException) {
-                val errorMessage = error.message ?: "Error desconocido en Facebook Login."
-                Log.e("LoginFragment", "Facebook Login Error: $errorMessage", error)
-                showSnackbar("Error: $errorMessage")
-            }
-        })
+                override fun onError(error: FacebookException) {
+                    val errorMessage = error.message ?: "Error desconocido en Facebook Login."
+                    Log.e("LoginFragment", "Facebook Login Error: $errorMessage", error)
+                    showSnackbar("Error: $errorMessage")
+                }
+            })
 
         binding?.btnFacebookLogin?.setOnClickListener {
             facebookSignInDataSource.logInWithReadPermissions(
@@ -172,13 +170,17 @@ class LoginFragment : Fragment() {
     internal fun handleGoogleSignInResult(data: Intent?) {
         lifecycleScope.launch {
             Log.d("LoginFragment", "Inside handleGoogleSignInResult, data: $data")
-            val result: com.cursoandroid.queermap.util.Result<String> = googleSignInDataSource.handleSignInResult(data)
+            val result: com.cursoandroid.queermap.util.Result<String> =
+                googleSignInDataSource.handleSignInResult(data)
             Log.d("LoginFragment", "Result from handleSignInResult: $result")
             when (result) {
                 is com.cursoandroid.queermap.util.Result.Success<String> -> {
                     val idToken = result.data
                     Log.d("LoginFragment", "Entering Success branch, idToken: $idToken")
-                    Log.d("LoginFragment", "About to call viewModel.loginWithGoogle with idToken: $idToken")
+                    Log.d(
+                        "LoginFragment",
+                        "About to call viewModel.loginWithGoogle with idToken: $idToken"
+                    )
                     viewModel.loginWithGoogle(idToken)
                     Log.d("LoginFragment", "Finished calling viewModel.loginWithGoogle")
                 }

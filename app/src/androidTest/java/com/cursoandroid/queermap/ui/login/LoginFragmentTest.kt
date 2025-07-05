@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.activity.result.ActivityResultLauncher
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.Navigation
@@ -20,10 +21,8 @@ import androidx.test.espresso.action.ViewActions.closeSoftKeyboard
 import androidx.test.espresso.action.ViewActions.typeText
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.intent.Intents
-import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
-import androidx.test.espresso.matcher.ViewMatchers.isRoot
-import androidx.test.espresso.matcher.ViewMatchers.withId
-import androidx.test.espresso.matcher.ViewMatchers.withText
+import androidx.test.espresso.matcher.RootMatchers.isSystemAlertWindow
+import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.cursoandroid.queermap.HiltTestActivity
@@ -42,17 +41,7 @@ import com.google.common.truth.Truth.assertThat
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.CapturingSlot
-import io.mockk.Runs
-import io.mockk.clearAllMocks
-import io.mockk.coEvery
-import io.mockk.coVerify
-import io.mockk.every
-import io.mockk.just
-import io.mockk.mockk
-import io.mockk.spyk
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import io.mockk.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -62,6 +51,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withTimeout
+import org.hamcrest.CoreMatchers.not
 import org.hamcrest.Matchers.not
 import org.junit.After
 import org.junit.Assert.assertTrue
@@ -71,8 +61,8 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
+import java.util.concurrent.CountDownLatch
 import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
 
 suspend fun waitForNavigationTo(
     navController: NavController,
@@ -102,7 +92,6 @@ suspend fun waitForNavigationTo(
         }
     }
 }
-
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @RunWith(AndroidJUnit4::class)
@@ -164,27 +153,31 @@ class LoginFragmentTest {
         mockGoogleSignInLauncher = mockk<ActivityResultLauncher<Intent>>(relaxed = true)
         mockGoogleSignInResultIntent = mockk<Intent>(relaxed = true)
 
+        // *** CAMBIO CLAVE 1: Asegurar que el fragmento esté listo antes de llamar handleGoogleSignInResult ***
+        // Usar un `runOnUiThread` y `onView(isRoot()).perform(waitFor(millis))`
+        // o `waitUntilVisibleAndEnabledAndCompletelyDisplayed()` puede ser necesario para sincronización
         every { mockGoogleSignInLauncher.launch(any()) } answers {
             activityScenario.onActivity { activity ->
+                // Asegúrate de que el fragmento esté completamente en pantalla y con el foco
                 val fragment =
                     activity.supportFragmentManager.findFragmentById(android.R.id.content) as? LoginFragment
                 if (fragment != null && fragment.isAdded && fragment.view != null) {
-                    // Ejecutar en el hilo principal sincronizado
                     InstrumentationRegistry.getInstrumentation().runOnMainSync {
                         runBlocking {
+                            // Añadir una pequeña espera para asegurar que la UI se asiente si es necesario
+                            // Aunque para handleGoogleSignInResult, el fragmento ya debería estar listo.
+                            // Si sigues viendo problemas, podrías añadir un waitFor aquí, pero no es lo ideal.
                             fragment.handleGoogleSignInResult(mockGoogleSignInResultIntent)
                         }
                     }
                 } else {
                     Log.w(
                         "TEST",
-                        "Fragment ya no está activo, no se puede lanzar handleGoogleSignInResult"
+                        "Fragment no está listo o ya no está activo. No se puede lanzar handleGoogleSignInResult"
                     )
                 }
             }
         }
-
-
 
         facebookCallbackSlot = CapturingSlot()
 
@@ -202,28 +195,41 @@ class LoginFragmentTest {
         activityScenario.onActivity { activity ->
             mockNavController = TestNavHostController(ApplicationProvider.getApplicationContext())
             mockNavController.setGraph(R.navigation.nav_graph)
-            mockNavController.setCurrentDestination(R.id.loginFragment) // 👈 Navegar directamente
-
-            val fragment = LoginFragment() // 👈 Carga explícita del fragmento a testear
-
+            // Navegamos y aseguramos que el fragmento se cargue correctamente.
+            // Asegúrate de que tu `HiltTestActivity` tenga un `FragmentContainerView` o similar con `android.R.id.content`
+            // o el ID de tu FragmentContainerView.
+            val fragment = LoginFragment()
             activity.supportFragmentManager.beginTransaction()
                 .replace(android.R.id.content, fragment)
                 .commitNow()
 
-            Navigation.setViewNavController(fragment.requireView(), mockNavController)
-
-            activityDecorView = activity.window.decorView
+            // Esperar que el Fragmento esté en estado `STARTED` y su vista esté disponible
+            // Esto es crucial para que el NavController se asocie correctamente
+            // y para que Espresso pueda interactuar con las vistas del fragmento.
+            val fragmentViewReadyLatch = CountDownLatch(1)
+            fragment.viewLifecycleOwnerLiveData.observeForever { viewLifecycleOwner ->
+                if (viewLifecycleOwner != null && fragment.view != null && fragment.lifecycle.currentState.isAtLeast(
+                        Lifecycle.State.STARTED
+                    )
+                ) {
+                    Navigation.setViewNavController(fragment.requireView(), mockNavController)
+                    fragmentViewReadyLatch.countDown()
+                }
+            }
+            // Esperar un poco más para asegurar que el NavController esté completamente configurado
+            // Esto es más robusto que solo setViewNavController.
+            InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+            Espresso.onIdle()
 
             fragment.testGoogleSignInLauncher = mockGoogleSignInLauncher
             fragment.testGoogleSignInDataSource = mockGoogleSignInDataSource
             fragment.testFacebookSignInDataSource = mockFacebookSignInDataSource
             fragment.testCallbackManager = mockk(relaxed = true)
+
+            activityDecorView = activity.window.decorView
         }
-
-
-        Espresso.onIdle()
+        Espresso.onIdle() // Asegurarse de que todas las operaciones de UI pendientes han terminado
     }
-
 
     @After
     fun tearDown() {
@@ -310,7 +316,6 @@ class LoginFragmentTest {
 
         coVerify(atLeast = 1) { mockLoginViewModel.loadUserCredentials() }
     }
-
 
     /* Pruebas de Interacción del Botón de Login (Email/Password) */
     //passed
@@ -440,7 +445,6 @@ class LoginFragmentTest {
         onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
     }
 
-
     /* Pruebas de Interacción de Login Social (Google) */
     //Passed
     @Test
@@ -510,69 +514,93 @@ class LoginFragmentTest {
                 )
             }
         }
+
+    @Test
+    fun when_google_login_is_for_new_user_navigates_to_signup_with_args() = runTest {
+        val idToken = "some_new_google_id_token"
+        val socialEmail = "new.user@example.com"
+        val socialName = "New Google User"
+        val messageForNewUser = "Completa tu perfil para continuar"
+
+        // Mock resultado exitoso del datasource
+        coEvery {
+            mockGoogleSignInDataSource.handleSignInResult(mockGoogleSignInResultIntent)
+        } returns Result.Success(idToken)
+
+        // Mock comportamiento ViewModel con evento de navegación y mensaje
+        coEvery { mockLoginViewModel.loginWithGoogle(idToken) } coAnswers {
+            uiStateFlow.value = uiStateFlow.value.copy(isLoading = false, isSuccess = true)
+            launch {
+                eventFlow.emit(
+                    LoginEvent.NavigateToSignupWithArgs(
+                        socialUserEmail = socialEmail,
+                        socialUserName = socialName,
+                        isSocialLoginFlow = true
+                    )
+                )
+                eventFlow.emit(LoginEvent.ShowMessage(messageForNewUser))
+            }
+        }
+
+        // NO necesitas esta sección aquí, ya está en setUp y se ejecuta antes de cada test.
+        // Forzar que el NavController mock esté asignado al fragmento y visible ANTES del click
+        // activityScenario.onActivity { activity ->
+        //     val fragment =
+        //         activity.supportFragmentManager.findFragmentById(android.R.id.content) as LoginFragment
+        //     Navigation.setViewNavController(fragment.requireView(), mockNavController)
+        // }
+
+        // Limpieza y sincronización previa
+        Espresso.onIdle()
+
+        // Ejecutar click que dispara la lógica
+        onView(withId(R.id.btnGoogleSignIn)).perform(click())
+
+        // Esperar que la navegación al signup ocurra con timeout razonable
+        waitForNavigationTo(mockNavController, R.id.signupFragment, timeoutMs = 5000L)
+
+        // Verificar que el launcher se invocó para lanzar intent de login Google
+        coVerify { mockGoogleSignInLauncher.launch(any()) }
+
+        // Verificar que datasource procesó resultado
+        coVerify { mockGoogleSignInDataSource.handleSignInResult(mockGoogleSignInResultIntent) }
+
+        // Verificar que ViewModel manejó el token
+        coVerify { mockLoginViewModel.loginWithGoogle(idToken) }
+
+        // Verificar que los argumentos en navegación son correctos
+        val backStackEntry = mockNavController.getBackStackEntry(R.id.signupFragment)
+        val args = backStackEntry.arguments
+
+        assertThat(args?.getString("socialUserEmail")).isEqualTo(socialEmail)
+        assertThat(args?.getString("socialUserName")).isEqualTo(socialName)
+        assertThat(args?.getBoolean("isSocialLoginFlow")).isEqualTo(true)
+
+        // Confirmar que ProgressBar no está visible
+        onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
+
+        // *** CAMBIO CLAVE 2: Verificación de Toast usando isSystemAlertWindow() ***
+        // Los Toasts se muestran en un tipo de ventana diferente (TYPE_TOAST o TYPE_SYSTEM_ALERT)
+        // que no es el mismo que el DecorView de tu actividad.
+        // Por eso, la condición `not(activityDecorView)` es correcta, pero la forma de acceder a esa Root
+        // debe ser más general, usando `isSystemAlertWindow()` o `isDialog()`
+        onView(withText(messageForNewUser))
+            .inRoot(isSystemAlertWindow()) // O RootMatchers.isDialog() si el Toast se emite como diálogo
+            .check(matches(isDisplayed()))
+
+        // Alternativa si el toast no es detectado con isSystemAlertWindow (puede variar con el SDK o personalizaciones):
+        // onView(withText(messageForNewUser))
+        //    .inRoot(RootMatchers.withDecorView(not(activityDecorView))) // Mantener esta si es tu DecorView el que no tiene foco
+        //    .check(matches(isDisplayed()));
+
+        // Otra alternativa más genérica para Toasts:
+        // onView(withText(messageForNewUser))
+        //    .inRoot(RootMatchers.isFocusable()) // Los Toasts suelen ser focusable temporalmente
+        //    .check(matches(isDisplayed()));
+    }
 }
 
-//    @Test
-//    fun when_google_login_is_for_new_user_navigates_to_signup_with_args() = runTest {
-//        val idToken = "some_new_google_id_token"
-//        val socialEmail = "new.user@example.com"
-//        val socialName = "New Google User"
-//        val messageForNewUser = "Completa tu perfil para continuar"
-//
-//        coEvery { mockGoogleSignInDataSource.handleSignInResult(mockGoogleSignInResultIntent) } returns Result.Success(
-//            idToken
-//        )
-//
-//        coEvery { mockLoginViewModel.loginWithGoogle(idToken) } coAnswers {
-//            uiStateFlow.emit(uiStateFlow.value.copy(isLoading = false, isSuccess = true))
-//            eventFlow.emit(
-//                LoginEvent.NavigateToSignupWithArgs(
-//                    socialUserEmail = socialEmail,
-//                    socialUserName = socialName,
-//                    isSocialLoginFlow = true
-//                )
-//            )
-//            eventFlow.emit(LoginEvent.ShowMessage(messageForNewUser))
-//        }
-//
-//        val navArgsSlot = slot<Bundle>()
-//        every {
-//            mockNavController.navigate(
-//                R.id.action_loginFragment_to_signupFragment,
-//                capture(navArgsSlot)
-//            )
-//        } just Runs
-//
-//        onView(withId(R.id.btnGoogleSignIn)).perform(click())
-//
-//        advanceUntilIdle()
-//
-//        coVerify(exactly = 1) { mockGoogleSignInLauncher.launch(any()) }
-//        coVerify(exactly = 1) {
-//            mockGoogleSignInDataSource.handleSignInResult(
-//                mockGoogleSignInResultIntent
-//            )
-//        }
-//        coVerify(exactly = 1) { mockLoginViewModel.loginWithGoogle(idToken) }
-//
-//        onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
-//
-//        assertThat(mockNavController.currentDestination?.id).isEqualTo(R.id.loginFragment)
-//        coVerify(exactly = 1) {
-//            mockNavController.navigate(
-//                R.id.action_loginFragment_to_signupFragment,
-//                any()
-//            )
-//        }
-//        assertThat(navArgsSlot.captured.getString("socialUserEmail")).isEqualTo(socialEmail)
-//        assertThat(navArgsSlot.captured.getString("socialUserName")).isEqualTo(socialName)
-//        assertThat(navArgsSlot.captured.getBoolean("isSocialLoginFlow")).isTrue()
-//
-//        onView(withText(messageForNewUser))
-//            .inRoot(withDecorView(not(activityDecorView)))
-//            .check(matches(isDisplayed()))
-//    }
-//
+
 //    @Test
 //    fun when_google_login_fails_error_message_is_shown() = runTest {
 //        val exceptionMessage = "Error de autenticación de Google"
