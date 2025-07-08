@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.VisibleForTesting
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -237,14 +238,14 @@ class LoginFragment : Fragment() {
                             findNavController().popBackStack()
 
                         is LoginEvent.NavigateToSignupWithArgs -> {
-                            val directions =
-                                LoginFragmentDirections.actionLoginFragmentToSignupFragment(
-                                    socialUserEmail = event.socialUserEmail,
-                                    socialUserName = event.socialUserName,
-                                    isSocialLoginFlow = event.isSocialLoginFlow
-                                )
-                            findNavController().navigate(directions)
+                            val bundle = bundleOf(
+                                "socialUserEmail" to event.socialUserEmail,
+                                "socialUserName" to event.socialUserName,
+                                "isSocialLoginFlow" to event.isSocialLoginFlow
+                            )
+                            findNavController().navigate(R.id.signupFragment, bundle)
                         }
+
                     }
                 }
             }
