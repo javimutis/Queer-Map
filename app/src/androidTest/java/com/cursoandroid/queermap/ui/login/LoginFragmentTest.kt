@@ -480,7 +480,8 @@ class LoginFragmentTest {
                 .inRoot(isSystemAlertWindow())
                 .check(matches(isDisplayed()))
         }
-//passed
+
+    //passed
     @Test
     fun when_google_login_is_for_new_user_navigates_to_signup_with_args() = runTest {
         val idToken = "some_new_google_id_token"
@@ -488,7 +489,9 @@ class LoginFragmentTest {
         val socialName = FAKE_GOOGLE_NAME
         val messageForNewUser = "Completa tu perfil para continuar"
 
-        coEvery { mockGoogleSignInDataSource.handleSignInResult(any()) } returns Result.Success(idToken)
+        coEvery { mockGoogleSignInDataSource.handleSignInResult(any()) } returns Result.Success(
+            idToken
+        )
 
         coEvery { mockLoginViewModel.loginWithGoogle(idToken) } coAnswers {
             uiStateFlow.value = uiStateFlow.value.copy(isLoading = false, isSuccess = true)
@@ -539,37 +542,38 @@ class LoginFragmentTest {
         onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
     }
 
+    //passed
+    @Test
+    fun when_google_login_fails_error_message_is_shown() = runTest {
+        val exceptionMessage = "Error de autenticación de Google"
+        val expectedDisplayMessage = "Error en Sign-In: $exceptionMessage"
+
+        coEvery { mockGoogleSignInDataSource.handleSignInResult(any()) } returns Result.Failure(
+            Exception(exceptionMessage)
+        )
+
+        activityScenario.onActivity { activity ->
+            val fragment = activity.supportFragmentManager
+                .findFragmentById(android.R.id.content) as LoginFragment
+            fragment.handleGoogleSignInResult(Intent())
+        }
+
+        // 🔧 Dale tiempo a la coroutine para emitir el mensaje
+        advanceUntilIdle()
+        delay(500) // Dale tiempo a Snackbar
+        Espresso.onIdle()
+
+        // Verificaciones
+        coVerify(exactly = 1) { mockGoogleSignInDataSource.handleSignInResult(any()) }
+        coVerify(exactly = 0) { mockLoginViewModel.loginWithGoogle(any()) }
+
+        onView(withText(expectedDisplayMessage))
+            .check(matches(isDisplayed()))
+
+        onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
+    }
+
 }
-//    @Test
-//    fun when_google_login_fails_error_message_is_shown() = runTest {
-//        val exceptionMessage = "Error de autenticación de Google"
-//        val expectedDisplayMessage =
-//            "Error en Sign-In: $exceptionMessage"
-//
-//        coEvery { mockGoogleSignInDataSource.handleSignInResult(mockGoogleSignInResultIntent) } returns Result.Failure(
-//            Exception(exceptionMessage)
-//        )
-//
-//        coEvery { eventFlow.emit(LoginEvent.ShowMessage(expectedDisplayMessage)) } just Runs
-//
-//        onView(withId(R.id.btnGoogleSignIn)).perform(click())
-//
-//        advanceUntilIdle()
-//
-//        coVerify(exactly = 1) { mockGoogleSignInLauncher.launch(any()) }
-//        coVerify(exactly = 1) {
-//            mockGoogleSignInDataSource.handleSignInResult(
-//                mockGoogleSignInResultIntent
-//            )
-//        }
-//        coVerify(exactly = 0) { mockLoginViewModel.loginWithGoogle(any()) }
-//
-//        onView(withText(expectedDisplayMessage))
-//            .inRoot(withDecorView(not(activityDecorView)))
-//            .check(matches(isDisplayed()))
-//        onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
-//    }
-//
 //    /* Pruebas de Interacción de Login Social (Facebook) */
 //
 //    @Test
