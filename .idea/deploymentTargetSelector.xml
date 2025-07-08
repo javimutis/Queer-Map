@@ -2,9 +2,6 @@
 <project version="4">
   <component name="deploymentTargetSelector">
     <selectionStates>
-      <SelectionState runConfigName="when_login_button_is_clicked_and_password_is_invalid_error_message_is_shown()">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
       <SelectionState runConfigName="when_login_fails_due_to_general_error_error_message_is_shown()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
@@ -15,6 +12,9 @@
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
       <SelectionState runConfigName="when_google_login_fails_error_message_is_shown()">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="when_facebook_button_is_clicked_logInWithReadPermissions_is_called()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>
