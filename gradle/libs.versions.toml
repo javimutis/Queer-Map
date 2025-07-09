@@ -49,6 +49,7 @@ test-rules = "1.5.0"
 kotest = "5.6.2"
 androidx-fragment-ktx = "1.7.0"
 navigation-common-android = "2.9.1"
+espresso-core = "3.6.1"
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -136,3 +137,4 @@ androidx-fragment-testing = { module = "androidx.fragment:fragment-testing", ver
 # Kotest (si la usas)
 kotest-assertions = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
 androidx-navigation-common-android = { group = "androidx.navigation", name = "navigation-common-android", version.ref = "navigation-common-android" }
+espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso-core" }

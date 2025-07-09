@@ -1,10 +1,9 @@
 package com.cursoandroid.queermap.ui.login
 
-// IMPORTS
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.View
 import androidx.activity.result.ActivityResultLauncher
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleRegistry
@@ -16,8 +15,6 @@ import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.Espresso
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.IdlingRegistry
-import androidx.test.espresso.PerformException
-import androidx.test.espresso.ViewAction
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.closeSoftKeyboard
 import androidx.test.espresso.action.ViewActions.scrollTo
@@ -27,10 +24,8 @@ import androidx.test.espresso.intent.Intents
 import androidx.test.espresso.matcher.RootMatchers.isSystemAlertWindow
 import androidx.test.espresso.matcher.RootMatchers.withDecorView
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
-import androidx.test.espresso.matcher.ViewMatchers.isRoot
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
-import androidx.test.espresso.util.HumanReadables
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.cursoandroid.queermap.HiltTestActivity
@@ -45,6 +40,7 @@ import com.facebook.AccessToken
 import com.facebook.AuthenticationToken
 import com.facebook.CallbackManager
 import com.facebook.FacebookCallback
+import com.facebook.FacebookException
 import com.facebook.login.LoginResult
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.common.truth.Truth.assertThat
@@ -59,7 +55,6 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
-import io.mockk.slot
 import io.mockk.spyk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -73,7 +68,6 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import org.hamcrest.CoreMatchers.not
-import org.hamcrest.Matcher
 import org.junit.After
 import org.junit.Before
 import org.junit.FixMethodOrder
@@ -84,7 +78,6 @@ import org.junit.runners.MethodSorters
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.resume
-
 
 suspend fun waitForNavigationTo(
     navController: NavController,
@@ -120,37 +113,6 @@ suspend fun waitForNavigationTo(
     }
 }
 
-fun waitForViewToHaveFocus(timeoutMs: Long = 10_000L) {
-    val startTime = System.currentTimeMillis()
-    val endTime = startTime + timeoutMs
-    while (System.currentTimeMillis() < endTime) {
-        try {
-            onView(isRoot()).perform(object : ViewAction {
-                override fun getConstraints(): Matcher<View> = isRoot()
-
-                override fun getDescription() = "Esperar que la raíz tenga foco de ventana"
-
-                override fun perform(
-                    uiController: androidx.test.espresso.UiController?,
-                    view: View?
-                ) {
-                    if (view?.hasWindowFocus() == true) {
-                        return
-                    } else {
-                        throw PerformException.Builder()
-                            .withCause(Throwable("Esperando foco de ventana"))
-                            .withViewDescription(HumanReadables.describe(view))
-                            .build()
-                    }
-                }
-            })
-            return
-        } catch (e: Exception) {
-            Thread.sleep(50)
-        }
-    }
-    throw AssertionError("La vista raíz no obtuvo foco de ventana dentro del tiempo permitido.")
-}
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @RunWith(AndroidJUnit4::class)
@@ -187,17 +149,15 @@ class LoginFragmentTest {
     private val FAKE_GOOGLE_NAME = "Test Google User"
 
     private lateinit var facebookCallbackSlot: CapturingSlot<FacebookCallback<LoginResult>>
+    private lateinit var mockCallbackManager: CallbackManager // Add this for Facebook tests
+    private var activityDecorView: android.view.View? = null
 
-    private lateinit var callbackManagerMock: CallbackManager
 
     @Before
     fun setUp() {
         hiltRule.inject()
         Intents.init()
         clearAllMocks()
-        callbackManagerMock = mockk(relaxed = true)
-
-        facebookCallbackSlot = slot()
 
         uiStateFlow = MutableStateFlow(LoginUiState())
         eventFlow = MutableSharedFlow()
@@ -207,6 +167,7 @@ class LoginFragmentTest {
 
         mockGoogleSignInDataSource = mockk(relaxed = true)
         mockFacebookSignInDataSource = mockk(relaxed = true)
+        mockCallbackManager = mockk(relaxed = true) // Initialize mock CallbackManager
 
         every { mockGoogleSignInDataSource.getSignInIntent() } answers {
             Intent("com.google.android.gms.auth.GOOGLE_SIGN_IN")
@@ -218,29 +179,67 @@ class LoginFragmentTest {
                 val fragment =
                     activity.supportFragmentManager.findFragmentById(android.R.id.content) as? LoginFragment
                 if (fragment != null && fragment.isAdded && fragment.view != null) {
-                    InstrumentationRegistry.getInstrumentation().runOnMainSync {
-                        val account = mockk<GoogleSignInAccount>()
-                        every { account.idToken } returns FAKE_GOOGLE_ID_TOKEN
-                        every { account.email } returns FAKE_GOOGLE_EMAIL
-                        every { account.displayName } returns FAKE_GOOGLE_NAME
-
-                        val simulatedResultIntent =
-                            Intent().putExtra("googleSignInAccount", account)
-
-                        // Call the fragment's handler directly
-                        fragment.handleGoogleSignInResult(simulatedResultIntent)
-                    }
+                    // Call the fragment's handler directly
+                    fragment.handleGoogleSignInResult(Intent().apply {
+                        // Simulate data if needed for handleGoogleSignInResult, though for this mock
+                        // it might not be strictly necessary depending on its implementation
+                        putExtra("googleSignInAccount", mockk<GoogleSignInAccount> {
+                            every { idToken } returns FAKE_GOOGLE_ID_TOKEN
+                            every { email } returns FAKE_GOOGLE_EMAIL
+                            every { displayName } returns FAKE_GOOGLE_NAME
+                        })
+                    })
                 } else {
                     Log.w("TEST", "Fragment not ready to handle Google Sign-In result.")
                 }
             }
         }
 
+        // THIS IS WHERE MOCKK CAPTURES THE CALLBACK WHEN fragment.testFacebookSignInDataSource.registerCallback IS CALLED
+        facebookCallbackSlot = CapturingSlot()
         every {
-            mockFacebookSignInDataSource.registerCallback(any(), capture(facebookCallbackSlot))
+            mockFacebookSignInDataSource.registerCallback(
+                any(), // This will be the fragment's internal FacebookCallback instance
+                capture(facebookCallbackSlot)
+            )
+        } just Runs
+
+        // When the fragment calls onActivityResult on the CallbackManager, we want to simulate the SDK's behavior
+        // This is important for Facebook login
+        every {
+            mockCallbackManager.onActivityResult(any(), any(), any())
         } answers {
-            Log.d("TEST", "registerCallback ejecutado correctamente") // Esto debería aparecer
+            // Simulate the CallbackManager invoking the captured FacebookCallback
+            // Check if the slot is captured before attempting to use it
+            if (facebookCallbackSlot.isCaptured) {
+                val resultCode = secondArg<Int>()
+
+                if (resultCode == Activity.RESULT_OK) {
+                    val mockAccessToken = mockk<AccessToken>(relaxed = true) {
+                        every { token } returns "mock_facebook_token_from_sdk" // Ensure this matches the test's expected token
+                    }
+                    val mockAuthenticationToken = mockk<AuthenticationToken>(relaxed = true) {
+                        every { token } returns "mock_facebook_auth_token_from_sdk"
+                    }
+                    val loginResult = LoginResult(
+                        accessToken = mockAccessToken,
+                        authenticationToken = mockAuthenticationToken,
+                        recentlyGrantedPermissions = setOf("email", "public_profile"),
+                        recentlyDeniedPermissions = emptySet()
+                    )
+                    facebookCallbackSlot.captured.onSuccess(loginResult)
+                } else if (resultCode == Activity.RESULT_CANCELED) {
+                    facebookCallbackSlot.captured.onCancel()
+                } else {
+                    facebookCallbackSlot.captured.onError(FacebookException("Simulated Facebook error"))
+                }
+            } else {
+                Log.w("TEST", "Facebook callback not captured in mockCallbackManager.onActivityResult simulation.")
+            }
+            // CallbackManager typically returns true if it handled the result
+            true
         }
+
 
         // Register IdlingResource
         IdlingRegistry.getInstance().register(EspressoIdlingResource.countingIdlingResource)
@@ -250,6 +249,7 @@ class LoginFragmentTest {
         val fragmentReadyLatch = CountDownLatch(1)
 
         activityScenario.onActivity { activity ->
+            activityDecorView = activity.window.decorView // Capture decor view
             mockNavController =
                 TestNavHostController(InstrumentationRegistry.getInstrumentation().targetContext)
             mockNavController.setGraph(R.navigation.nav_graph)
@@ -269,7 +269,7 @@ class LoginFragmentTest {
                         fragment.testGoogleSignInLauncher = mockGoogleSignInLauncher
                         fragment.testGoogleSignInDataSource = mockGoogleSignInDataSource
                         fragment.testFacebookSignInDataSource = mockFacebookSignInDataSource
-                        fragment.testCallbackManager = mockk(relaxed = true)
+                        fragment.testCallbackManager = mockCallbackManager // Inject the mock CallbackManager
                         fragmentReadyLatch.countDown()
                     }
                 }
@@ -288,6 +288,7 @@ class LoginFragmentTest {
             activityScenario.close()
         }
         clearAllMocks()
+        activityDecorView = null // Clean up decor view reference
     }
 
     // Passed
@@ -399,7 +400,7 @@ class LoginFragmentTest {
         onView(withId(R.id.btnLogin)).perform(click())
 
         mainDispatcherRule.testScope.advanceUntilIdle()
-        Espresso.onIdle() // Wait for the Snackbar to appear
+        Espresso.onIdle()
 
         coVerify { mockLoginViewModel.loginWithEmail(email, password) }
 
@@ -622,7 +623,7 @@ class LoginFragmentTest {
     }
 
     /* Pruebas de Interacción de Login Social (Facebook) */
-//passed
+    //ppssed
     @Test
     fun when_facebook_button_is_clicked_logInWithReadPermissions_is_called() = runTest {
         // 1. Click en el botón Facebook (asegurando visibilidad y scroll si es necesario)
@@ -646,85 +647,82 @@ class LoginFragmentTest {
     @Test
     fun when_facebook_access_token_is_received_loginWithFacebook_is_called_and_navigates_to_home() =
         runTest {
-            val accessTokenString = "facebook_access_token_simulated"
+            val expectedAccessToken = "mock_facebook_token_from_sdk" // Define the expected token here
             val successMessage = "Inicio de sesión con Facebook exitoso"
 
-            // 1. Simular inicio de sesión por Facebook
-            every { mockFacebookSignInDataSource.logInWithReadPermissions(any(), any()) } just Runs
-
-            // 2. Simular respuesta del ViewModel
-            coEvery { mockLoginViewModel.loginWithFacebook(accessTokenString) } coAnswers {
+            // 1. Configura el comportamiento del ViewModel cuando se llama a loginWithFacebook
+            coEvery { mockLoginViewModel.loginWithFacebook(expectedAccessToken) } coAnswers {
+                // Simulate that the ViewModel is loading, then succeeds and emits events
                 uiStateFlow.emit(uiStateFlow.value.copy(isLoading = true))
-                delay(200)
-                uiStateFlow.emit(uiStateFlow.value.copy(isLoading = false))
+                delay(200) // Simulate some asynchronous work
+                uiStateFlow.emit(uiStateFlow.value.copy(isLoading = false, isSuccess = true))
+                // Emit navigation and message events
                 eventFlow.emit(LoginEvent.NavigateToHome)
                 eventFlow.emit(LoginEvent.ShowMessage(successMessage))
             }
 
-            lateinit var activityDecorView: View
-
+            // 2. Espía el NavController para verificar la navegación. Esto es crucial.
+            val navControllerSpy = spyk(mockNavController)
             activityScenario.onActivity { activity ->
-                activityDecorView = activity.window.decorView
-
-                // Setear mockFacebookSignInDataSource como testFacebookSignInDataSource en el fragmento
                 val fragment =
                     activity.supportFragmentManager.findFragmentById(android.R.id.content) as LoginFragment
-                fragment.testFacebookSignInDataSource = mockFacebookSignInDataSource
-                fragment.testCallbackManager = callbackManagerMock
-
-                Navigation.setViewNavController(fragment.requireView(), mockNavController)
+                activity.runOnUiThread {
+                    Navigation.setViewNavController(fragment.requireView(), navControllerSpy)
+                }
             }
 
-            // Esperar que fragmento esté completamente listo
-            advanceUntilIdle()
-            Espresso.onIdle()
-            waitForViewToHaveFocus()
-
+            // 3. Realiza la acción de click en el botón de Facebook
             onView(withId(R.id.btnFacebookLogin)).perform(click())
 
-            // 💡 Esperamos a que se haya registrado el callback
+            // 4. Avanza el tiempo virtual to allow logInWithReadPermissions to complete and fragment's internal setup
+            // This also gives a chance for the fragment's initFacebookLogin to register the callback
+            mainDispatcherRule.testScope.advanceUntilIdle()
+            Espresso.onIdle()
+
+            // 5. Verify that logInWithReadPermissions was called.
+            coVerify(exactly = 1) {
+                mockFacebookSignInDataSource.logInWithReadPermissions(any(), any())
+            }
+
+            // 6. Simulate the onActivityResult of the activity, which then delegates to CallbackManager.
+            activityScenario.onActivity { activity ->
+                val fragment = activity.supportFragmentManager.findFragmentById(android.R.id.content) as LoginFragment
+                val requestCode = 64206 // Standard Facebook Login Request Code
+                val resultCode = Activity.RESULT_OK
+                val data = mockk<Intent>(relaxed = true)
+
+                // Call the fragment's onActivityResult directly to simulate the flow
+                // This code is already on the main thread because it's inside activityScenario.onActivity
+                fragment.onActivityResult(requestCode, resultCode, data)
+            }
+
+            // 7. Crucial: Advance virtual time AGAIN to process the coroutine launched by lifecycleScope
+            // inside the FacebookCallback.onSuccess method.
             advanceUntilIdle()
             Espresso.onIdle()
 
-            // 4. Verificamos que el callback fue capturado
-            assert(facebookCallbackSlot.isCaptured) {
-                "El FacebookCallback no fue registrado correctamente. Asegúrate de que registerCallback se haya ejecutado."
-            }
+            // 8. Verify that the captured FacebookCallback's onSuccess was called by the mockCallbackManager
+            // This confirms our mock CallbackManager correctly invoked the captured callback.
+            coVerify(exactly = 1) { facebookCallbackSlot.captured.onSuccess(any()) }
 
-            // 5. Simulamos el resultado exitoso del login de Facebook
-            val mockAccessToken = mockk<AccessToken> {
-                every { token } returns accessTokenString
-            }
+            // 9. Verify that loginWithFacebook was called with the expected token
+            coVerify(exactly = 1) { mockLoginViewModel.loginWithFacebook(expectedAccessToken) }
 
-            val mockAuthenticationToken = mockk<AuthenticationToken> {
-                every { token } returns "mock_auth_token"
-            }
+            // 10. Verify that the progress bar is not visible
+            onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
 
-            val mockLoginResult = LoginResult(
-                accessToken = mockAccessToken,
-                authenticationToken = mockAuthenticationToken,
-                recentlyGrantedPermissions = setOf("email", "public_profile"),
-                recentlyDeniedPermissions = emptySet()
-            )
+            // 11. Wait for navigation and verify that the destination is correct
+            waitForNavigationTo(navControllerSpy, R.id.mapFragment)
+            assertThat(navControllerSpy.currentDestination?.id).isEqualTo(R.id.mapFragment)
 
-            // 6. Disparamos el callback exitoso
-            facebookCallbackSlot.captured.onSuccess(mockLoginResult)
+            // 12. Verify that navigation occurred
+            coVerify(exactly = 1) { navControllerSpy.navigate(R.id.action_loginFragment_to_mapFragment) }
 
-            // 7. Esperamos a que se procese el flujo
-            advanceUntilIdle()
-            Espresso.onIdle()
-
-            // 8. Validamos interacciones y navegación
-            coVerify(exactly = 1) { mockLoginViewModel.loginWithFacebook(accessTokenString) }
-            coVerify(exactly = 1) { mockNavController.navigate(R.id.action_loginFragment_to_mapFragment) }
-
+            // 13. Verify that the success message is displayed correctly.
             onView(withText(successMessage))
                 .inRoot(withDecorView(not(activityDecorView)))
                 .check(matches(isDisplayed()))
-
-            onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
         }
-
 }
 //    @Test
 //    fun when_facebook_login_is_cancelled_error_message_is_shown() = runTest {
@@ -732,62 +730,46 @@ class LoginFragmentTest {
 //
 //        every { mockFacebookSignInDataSource.logInWithReadPermissions(any(), any()) } just Runs
 //
-//        // Configura que el ViewModel emita el mensaje de error cuando se le indique (a través del callback)
-//        // No hay un coEvery para un 'LoginEvent.ShowMessage' específico en el ViewModel
-//        // porque la lógica del error se manejará directamente en el callback capturado.
-//
 //        onView(withId(R.id.btnFacebookLogin)).perform(click())
-//        advanceUntilIdle() // Asegura que el clic y el `logInWithReadPermissions` se procesen
+//        advanceUntilIdle()
 //
-//        // Simula la cancelación del login de Facebook invocando el método onCancel del callback capturado
 //        facebookCallbackSlot.captured.onCancel()
-//        advanceUntilIdle() // Permite que el mensaje de error se emita y se muestre en la UI
-//
-//        // Verificaciones
-//        // Verifica que el método logInWithReadPermissions fue llamado
+//        advanceUntilIdle()
+
 //        coVerify(exactly = 1) {
 //            mockFacebookSignInDataSource.logInWithReadPermissions(
 //                any(),
 //                any()
 //            )
 //        }
-//
-//        // Verifica que no se llamó a loginWithFacebook (porque fue cancelado)
 //        coVerify(exactly = 0) { mockLoginViewModel.loginWithFacebook(any()) }
-//
-//        // Verifica que el mensaje de error se mostró
 //        onView(withText(errorMessage))
 //            .inRoot(withDecorView(not(activityDecorView)))
 //            .check(matches(isDisplayed()))
 //
-//        // Asegura que la barra de progreso no esté visible
 //        onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
 //    }
 //
 //    @Test
 //    fun when_facebook_login_fails_due_to_error_error_message_is_shown() = runTest {
 //        val exceptionMessage = "Error de conexión de red"
-//        val errorMessage = "Error: $exceptionMessage" // Como el fragmento lo construye
+//        val errorMessage = "Error: $exceptionMessage"
 //
 //        every { mockFacebookSignInDataSource.logInWithReadPermissions(any(), any()) } just Runs
 //
 //        onView(withId(R.id.btnFacebookLogin)).perform(click())
 //        advanceUntilIdle()
 //
-//        // Simula un error en el login de Facebook
 //        val facebookException = FacebookException(exceptionMessage)
 //        facebookCallbackSlot.captured.onError(facebookException)
 //        advanceUntilIdle()
-//
-//        // Verificaciones
 //        coVerify(exactly = 1) {
 //            mockFacebookSignInDataSource.logInWithReadPermissions(
 //                any(),
 //                any()
 //            )
 //        }
-//        coVerify(exactly = 0) { mockLoginViewModel.loginWithFacebook(any()) } // No se llama a loginWithFacebook en caso de error
-//
+//        coVerify(exactly = 0) { mockLoginViewModel.loginWithFacebook(any()) }
 //        onView(withText(errorMessage))
 //            .inRoot(withDecorView(not(activityDecorView)))
 //            .check(matches(isDisplayed()))
