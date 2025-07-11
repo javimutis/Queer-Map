@@ -21,7 +21,9 @@ import androidx.test.espresso.action.ViewActions.typeText
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.intent.Intents
 import androidx.test.espresso.matcher.RootMatchers.isSystemAlertWindow
+import androidx.test.espresso.matcher.ViewMatchers.Visibility
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
+import androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -61,7 +63,7 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
-import org.hamcrest.CoreMatchers.not
+import org.hamcrest.Matchers.not
 import org.junit.After
 import org.junit.Before
 import org.junit.FixMethodOrder
@@ -596,7 +598,7 @@ class LoginFragmentTest {
         }
     }
 
-     //passed
+    //passed
     @Test
     fun when_viewmodel_uiState_loading_is_true_then_progress_bar_is_visible() = runTest {
         val scenario = ActivityScenario.launch(HiltTestActivity::class.java)
@@ -619,4 +621,30 @@ class LoginFragmentTest {
         onView(withId(R.id.progressBar))
             .check(matches(isDisplayed()))
     }
+
+    @Test
+    fun when_viewmodel_uiState_loading_is_false_then_progress_bar_is_hidden() = runTest {
+        // Lanzamos la actividad contenedora
+        val scenario = ActivityScenario.launch(HiltTestActivity::class.java)
+
+        // Insertamos LoginFragment manualmente
+        scenario.onActivity { activity ->
+            val fragment = LoginFragment()
+
+            activity.supportFragmentManager.beginTransaction()
+                .replace(android.R.id.content, fragment, "LOGIN_FRAGMENT")
+                .commitNow()
+        }
+
+        // Emitimos el estado con isLoading = false
+        uiStateFlow.value = uiStateFlow.value.copy(isLoading = false)
+
+        // Avanzamos las corutinas hasta que se estabilice el estado
+        advanceUntilIdle()
+
+        // Verificamos que el progressBar esté GONE o INVISIBLE
+        onView(withId(R.id.progressBar))
+            .check(matches(withEffectiveVisibility(Visibility.GONE)))
+    }
+
 }
