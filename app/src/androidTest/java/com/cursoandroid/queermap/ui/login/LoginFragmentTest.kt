@@ -596,7 +596,7 @@ class LoginFragmentTest {
         }
     }
 
-    //passed
+     //passed
     @Test
     fun when_viewmodel_uiState_loading_is_true_then_progress_bar_is_visible() = runTest {
         val scenario = ActivityScenario.launch(HiltTestActivity::class.java)
