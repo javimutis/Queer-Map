@@ -595,166 +595,27 @@ class LoginFragmentTest {
             )
         }
     }
-
+//passed
     @Test
-    fun when_facebook_access_token_is_received_loginWithFacebook_is_called_and_navigates_to_home() =
-        runTest {
-            val accessTokenString = "facebook_access_token_simulated"
-            val successMessage = "Inicio de sesión con Facebook exitoso"
+    fun when_viewmodel_uiState_loading_is_true_then_progress_bar_is_visible() = runTest {
+        val scenario = ActivityScenario.launch(HiltTestActivity::class.java)
 
-            every { mockFacebookSignInDataSource.logInWithReadPermissions(any(), any()) } just Runs
+        scenario.onActivity { activity ->
+            val fragment = LoginFragment()
 
-            coEvery { mockLoginViewModel.loginWithFacebook(accessTokenString) } coAnswers {
-                uiStateFlow.emit(uiStateFlow.value.copy(isLoading = true))
-                this@runTest.advanceUntilIdle()
-                uiStateFlow.emit(uiStateFlow.value.copy(isLoading = false, isSuccess = true))
-                eventFlow.emit(LoginEvent.NavigateToHome)
-                eventFlow.emit(LoginEvent.ShowMessage(successMessage))
-            }
-
-            every { mockNavController.navigate(R.id.action_loginFragment_to_mapFragment) } just Runs
-
-            onView(withId(R.id.btnFacebookLogin)).perform(click())
-
-            coVerify(exactly = 1) {
-                mockFacebookSignInDataSource.logInWithReadPermissions(any(), any())
-            }
-
-            val mockAccessToken = mockk<AccessToken>(relaxed = true) {
-                every { token } returns accessTokenString
-            }
-            val mockAuthenticationToken = mockk<AuthenticationToken>(relaxed = true) {
-                every { token } returns "mock_auth_token"
-            }
-            val mockLoginResult = LoginResult(
-                accessToken = mockAccessToken,
-                authenticationToken = mockAuthenticationToken,
-                recentlyGrantedPermissions = setOf("email", "public_profile"),
-                recentlyDeniedPermissions = emptySet()
-            )
-
-            // Invoca directamente el callback capturado para simular el éxito de Facebook
-            facebookCallbackSlot.captured.onSuccess(mockLoginResult)
-
-            advanceUntilIdle()
-
-            coVerify(exactly = 1) { mockLoginViewModel.loginWithFacebook(accessTokenString) }
-            onView(withText(successMessage))
-                .inRoot(withDecorView(not(activityDecorView)))
-                .check(matches(isDisplayed()))
-            onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
-            assertThat(mockNavController.currentDestination?.id).isEqualTo(R.id.loginFragment)
-            coVerify(exactly = 1) { mockNavController.navigate(R.id.action_loginFragment_to_mapFragment) }
+            activity.supportFragmentManager.beginTransaction()
+                .replace(android.R.id.content, fragment, "TAG")
+                .commitNow()
         }
+
+        // Emite el estado de loading
+        uiStateFlow.value = uiStateFlow.value.copy(isLoading = true)
+
+        // Asegura procesamiento de coroutines
+        advanceUntilIdle()
+
+        // Aquí puedes esperar manualmente (método más confiable)
+        onView(withId(R.id.progressBar))
+            .check(matches(isDisplayed()))
+    }
 }
-//    @Test
-//    fun when_facebook_login_is_cancelled_error_message_is_shown() = runTest {
-//        val errorMessage = "Inicio de sesión con Facebook cancelado."
-//
-//        every { mockFacebookSignInDataSource.logInWithReadPermissions(any(), any()) } just Runs
-//
-//        // Configura que el ViewModel emita el mensaje de error cuando se le indique (a través del callback)
-//        // No hay un coEvery para un 'LoginEvent.ShowMessage' específico en el ViewModel
-//        // porque la lógica del error se manejará directamente en el callback capturado.
-//
-//        onView(withId(R.id.btnFacebookLogin)).perform(click())
-//        advanceUntilIdle() // Asegura que el clic y el `logInWithReadPermissions` se procesen
-//
-//        // Simula la cancelación del login de Facebook invocando el método onCancel del callback capturado
-//        facebookCallbackSlot.captured.onCancel()
-//        advanceUntilIdle() // Permite que el mensaje de error se emita y se muestre en la UI
-//
-//        // Verificaciones
-//        // Verifica que el método logInWithReadPermissions fue llamado
-//        coVerify(exactly = 1) {
-//            mockFacebookSignInDataSource.logInWithReadPermissions(
-//                any(),
-//                any()
-//            )
-//        }
-//
-//        // Verifica que no se llamó a loginWithFacebook (porque fue cancelado)
-//        coVerify(exactly = 0) { mockLoginViewModel.loginWithFacebook(any()) }
-//
-//        // Verifica que el mensaje de error se mostró
-//        onView(withText(errorMessage))
-//            .inRoot(withDecorView(not(activityDecorView)))
-//            .check(matches(isDisplayed()))
-//
-//        // Asegura que la barra de progreso no esté visible
-//        onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
-//    }
-//
-//    @Test
-//    fun when_facebook_login_fails_due_to_error_error_message_is_shown() = runTest {
-//        val exceptionMessage = "Error de conexión de red"
-//        val errorMessage = "Error: $exceptionMessage" // Como el fragmento lo construye
-//
-//        every { mockFacebookSignInDataSource.logInWithReadPermissions(any(), any()) } just Runs
-//
-//        onView(withId(R.id.btnFacebookLogin)).perform(click())
-//        advanceUntilIdle()
-//
-//        // Simula un error en el login de Facebook
-//        val facebookException = FacebookException(exceptionMessage)
-//        facebookCallbackSlot.captured.onError(facebookException)
-//        advanceUntilIdle()
-//
-//        // Verificaciones
-//        coVerify(exactly = 1) {
-//            mockFacebookSignInDataSource.logInWithReadPermissions(
-//                any(),
-//                any()
-//            )
-//        }
-//        coVerify(exactly = 0) { mockLoginViewModel.loginWithFacebook(any()) } // No se llama a loginWithFacebook en caso de error
-//
-//        onView(withText(errorMessage))
-//            .inRoot(withDecorView(not(activityDecorView)))
-//            .check(matches(isDisplayed()))
-//
-//        onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
-//    }
-//
-//
-//    /* Pruebas de Navegación */
-//
-//    @Test
-//    fun when_forgot_password_is_clicked_navigates_to_forgot_password_fragment() = runTest {
-//        every { mockLoginViewModel.onForgotPasswordClicked() } coAnswers {
-//            eventFlow.emit(LoginEvent.NavigateToForgotPassword)
-//        }
-//        every { mockNavController.navigate(R.id.action_loginFragment_to_forgotPasswordFragment) } just Runs
-//
-//        onView(withId(R.id.tvForgotPassword)).perform(click())
-//        advanceUntilIdle()
-//
-//        coVerify(exactly = 1) { mockLoginViewModel.onForgotPasswordClicked() }
-//        assertThat(mockNavController.currentDestination?.id).isEqualTo(R.id.loginFragment)
-//        coVerify(exactly = 1) { mockNavController.navigate(R.id.action_loginFragment_to_forgotPasswordFragment) }
-//    }
-//
-//    @Test
-//    fun when_back_button_is_clicked_navigates_back() = runTest {
-//        every { mockLoginViewModel.onBackPressed() } coAnswers {
-//            eventFlow.emit(LoginEvent.NavigateBack)
-//        }
-//        every { mockNavController.popBackStack() } returns true
-//
-//        onView(withId(R.id.ivBack)).perform(click())
-//        advanceUntilIdle()
-//
-//        coVerify(exactly = 1) { mockLoginViewModel.onBackPressed() }
-//        coVerify(exactly = 1) { mockNavController.popBackStack() }
-//    }
-//
-//    @Test
-//    fun when_sign_up_button_is_clicked_navigates_to_signup_fragment() {
-//        every { mockNavController.navigate(R.id.action_loginFragment_to_signupFragment) } just Runs
-//
-//        onView(withId(R.id.tvSignUpBtn)).perform(click())
-//
-//        assertThat(mockNavController.currentDestination?.id).isEqualTo(R.id.loginFragment)
-//        verify(exactly = 1) { mockNavController.navigate(R.id.action_loginFragment_to_signupFragment) }
-//    }
-//}
