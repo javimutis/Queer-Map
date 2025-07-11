@@ -3,7 +3,7 @@ package com.cursoandroid.queermap.ui.login
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
+import android.util.Log // Keep this import for Log.d
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,7 +14,6 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.ViewModelProvider // Keep for other ViewModels if any
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
@@ -22,7 +21,6 @@ import com.cursoandroid.queermap.R
 import com.cursoandroid.queermap.data.source.remote.FacebookSignInDataSource
 import com.cursoandroid.queermap.data.source.remote.GoogleSignInDataSource
 import com.cursoandroid.queermap.databinding.FragmentLoginBinding
-import com.cursoandroid.queermap.util.Result
 import com.facebook.CallbackManager
 import com.facebook.FacebookCallback
 import com.facebook.FacebookException
@@ -39,7 +37,7 @@ class LoginFragment : Fragment() {
     private var _binding: FragmentLoginBinding? = null
     private val binding get() = _binding
 
-    private val viewModel: LoginViewModel by viewModels() // Use KTX viewModels() extension function
+    private val viewModel: LoginViewModel by viewModels()
 
     @Inject
     internal lateinit var _googleSignInDataSource: GoogleSignInDataSource
@@ -58,7 +56,6 @@ class LoginFragment : Fragment() {
         get() = testFacebookSignInDataSource ?: _facebookSignInDataSource
 
 
-    // Mantén esto si necesitas mockear el launcher en el fragmento, si no, lo remueves
     internal lateinit var googleSignInLauncher: ActivityResultLauncher<Intent>
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
@@ -67,7 +64,17 @@ class LoginFragment : Fragment() {
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     internal var testCallbackManager: CallbackManager? = null
 
-    // Propiedad lazy para el CallbackManager, que usará el mock en tests si se inyecta.
+    // NUEVAS PROPIEDADES PARA CONTROLAR EL LOGGING EN TESTS
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    internal var testLogHelper: ((String, String) -> Unit)? = null
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    internal var testLogEHelper: ((String, String, Throwable?) -> Unit)? = null
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    internal var testLogWHelper: ((String, String) -> Unit)? = null
+
+
     private val callbackManager: CallbackManager by lazy {
         testCallbackManager ?: CallbackManager.Factory.create()
     }
@@ -83,10 +90,8 @@ class LoginFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel.loadUserCredentials() // Ahora esto llamará al ViewModel inyectado (real o mock)
+        viewModel.loadUserCredentials()
 
-        // Asegúrate de usar 'googleSignInLauncher' del fragmento, no 'testGoogleSignInLauncher' para la inicialización normal
-        // El 'testGoogleSignInLauncher' se usará si lo asignas en el test.
         googleSignInLauncher = testGoogleSignInLauncher ?: registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
         ) { result ->
@@ -117,20 +122,23 @@ class LoginFragment : Fragment() {
             callbackManager,
             object : FacebookCallback<LoginResult> {
                 override fun onSuccess(result: LoginResult) {
-                    Log.d("LoginFragment", "Facebook Login Success: ${result.accessToken.token}")
+                    // USA LA FUNCIÓN AUXILIAR logD
+                    logD("LoginFragment", "Facebook Login Success: ${result.accessToken.token}")
                     lifecycleScope.launch {
                         viewModel.loginWithFacebook(result.accessToken.token)
                     }
                 }
 
                 override fun onCancel() {
-                    Log.d("LoginFragment", "Facebook Login Cancelled")
+                    // USA LA FUNCIÓN AUXILIAR logD
+                    logD("LoginFragment", "Facebook Login Cancelled")
                     showSnackbar("Inicio de sesión con Facebook cancelado.")
                 }
 
                 override fun onError(error: FacebookException) {
                     val errorMessage = error.message ?: "Error desconocido en Facebook Login."
-                    Log.e("LoginFragment", "Facebook Login Error: $errorMessage", error)
+                    // USA LA FUNCIÓN AUXILIAR logE
+                    logE("LoginFragment", "Facebook Login Error: $errorMessage", error)
                     showSnackbar("Error: $errorMessage")
                 }
             })
@@ -142,6 +150,26 @@ class LoginFragment : Fragment() {
             )
         }
     }
+
+    // NUEVAS FUNCIONES AUXILIARES PARA LOGGING
+    private fun logD(tag: String, msg: String) {
+        testLogHelper?.invoke(tag, msg) ?: Log.d(tag, msg)
+    }
+
+    private fun logE(tag: String, msg: String, tr: Throwable? = null) {
+        testLogEHelper?.invoke(tag, msg, tr) ?: run {
+            if (tr != null) {
+                Log.e(tag, msg, tr)
+            } else {
+                Log.e(tag, msg)
+            }
+        }
+    }
+
+    private fun logW(tag: String, msg: String) {
+        testLogWHelper?.invoke(tag, msg) ?: Log.w(tag, msg)
+    }
+    // FIN DE NUEVAS FUNCIONES AUXILIARES PARA LOGGING
 
 
     private fun setupListeners() {
@@ -170,29 +198,30 @@ class LoginFragment : Fragment() {
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     internal fun handleGoogleSignInResult(data: Intent?) {
         lifecycleScope.launch {
-            Log.d("LoginFragment", "Inside handleGoogleSignInResult, data: $data")
+            // USA LAS FUNCIONES AUXILIARES logD y logE
+            logD("LoginFragment", "Inside handleGoogleSignInResult, data: $data")
             val result: com.cursoandroid.queermap.util.Result<String> =
                 googleSignInDataSource.handleSignInResult(data)
-            Log.d("LoginFragment", "Result from handleSignInResult: $result")
+            logD("LoginFragment", "Result from handleSignInResult: $result")
             when (result) {
                 is com.cursoandroid.queermap.util.Result.Success<String> -> {
                     val idToken = result.data
-                    Log.d("LoginFragment", "Entering Success branch, idToken: $idToken")
-                    Log.d(
+                    logD("LoginFragment", "Entering Success branch, idToken: $idToken")
+                    logD(
                         "LoginFragment",
                         "About to call viewModel.loginWithGoogle with idToken: $idToken"
                     )
                     viewModel.loginWithGoogle(idToken)
-                    Log.d("LoginFragment", "Finished calling viewModel.loginWithGoogle")
+                    logD("LoginFragment", "Finished calling viewModel.loginWithGoogle")
                 }
 
                 is com.cursoandroid.queermap.util.Result.Failure -> {
                     val errorMessage = result.exception.message ?: "Error desconocido"
-                    Log.e("LoginFragment", "Google Sign-In failed: $errorMessage")
+                    logE("LoginFragment", "Google Sign-In failed: $errorMessage")
                     showSnackbar("Error en Sign-In: $errorMessage")
                 }
             }
-            Log.d("LoginFragment", "Exiting handleGoogleSignInResult coroutine")
+            logD("LoginFragment", "Exiting handleGoogleSignInResult coroutine")
         }
     }
 
@@ -204,6 +233,7 @@ class LoginFragment : Fragment() {
 
     private fun observeState() {
         viewLifecycleOwner.lifecycleScope.launch {
+            // FIX: Corrected typo from viewLifecycleowner to viewLifecycleOwner
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect { state ->
                     binding?.let { currentBinding ->
