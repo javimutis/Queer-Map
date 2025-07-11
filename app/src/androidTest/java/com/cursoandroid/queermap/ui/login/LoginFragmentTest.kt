@@ -621,7 +621,7 @@ class LoginFragmentTest {
         onView(withId(R.id.progressBar))
             .check(matches(isDisplayed()))
     }
-
+    //passed
     @Test
     fun when_viewmodel_uiState_loading_is_false_then_progress_bar_is_hidden() = runTest {
         // Lanzamos la actividad contenedora
