@@ -575,7 +575,7 @@ class LoginFragmentTest {
     }
 
     /* Pruebas de Interacción de Login Social (Facebook) */
-//ppssed
+    //passed
     @Test
     fun when_facebook_button_is_clicked_logInWithReadPermissions_is_called() = runTest {
         // 1. Click en el botón Facebook (asegurando visibilidad y scroll si es necesario)
@@ -595,7 +595,8 @@ class LoginFragmentTest {
             )
         }
     }
-//passed
+
+    //passed
     @Test
     fun when_viewmodel_uiState_loading_is_true_then_progress_bar_is_visible() = runTest {
         val scenario = ActivityScenario.launch(HiltTestActivity::class.java)
