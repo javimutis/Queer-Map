@@ -11,6 +11,9 @@
       <SelectionState runConfigName="when_facebook_login_successful_then_loginWithFacebook_is_called_with_token()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
+      <SelectionState runConfigName="when_facebook_login_cancelled_then_snackbar_with_cancel_message_is_shown()">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
     </selectionStates>
   </component>
 </project>

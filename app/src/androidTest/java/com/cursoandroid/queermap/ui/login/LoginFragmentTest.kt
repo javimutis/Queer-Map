@@ -41,6 +41,7 @@ import com.cursoandroid.queermap.util.withDecorView
 import com.facebook.AccessToken
 import com.facebook.CallbackManager
 import com.facebook.FacebookCallback
+import com.facebook.FacebookException
 import com.facebook.login.LoginResult
 import com.google.common.truth.Truth.assertThat
 import dagger.hilt.android.testing.BindValue
@@ -702,7 +703,7 @@ class LoginFragmentTest {
         assert(mockNavController.currentDestination?.id == R.id.mapFragment)
     }
 
-
+    //passed
     @Test
     fun when_facebook_login_cancelled_then_snackbar_with_cancel_message_is_shown() = runTest {
         val cancelMessage = "Inicio de sesión con Facebook cancelado."
@@ -721,6 +722,46 @@ class LoginFragmentTest {
         Espresso.onIdle()
 
         Espresso.onView(withText(cancelMessage))
+            .inRoot(withDecorView(isDisplayed())) // Asegúrate de que el Snackbar esté en la vista correcta (decorView)
+            .check(matches(isDisplayed()))
+    }
+
+    @Test
+    fun when_facebook_login_error_then_snackbar_with_error_message_is_shown() = runTest {
+        // Define el mensaje de error esperado
+        val errorMessage = "Error simulado de Facebook."
+        val expectedSnackbarMessage = "Error: $errorMessage" // El fragmento añade "Error: "
+
+        // 1. Asegúrate de que la configuración inicial (incluido el registro del callback) esté completa.
+        Espresso.onIdle()
+
+        // Verifica que el callback de Facebook fue capturado.
+        assert(facebookCallbackSlot.isCaptured) { "El Callback de Facebook no fue registrado." }
+
+        // 2. Clic en el botón de Facebook para iniciar el flujo.
+        onView(withId(R.id.btnFacebookLogin)).perform(scrollTo(), click())
+
+        // 3. Simula que ocurrió un error durante el inicio de sesión de Facebook.
+        // Crea una instancia de FacebookException con el mensaje de error.
+        val facebookException = FacebookException(errorMessage)
+
+        // Esto debe ocurrir en el hilo principal de la UI para que el fragmento lo procese.
+        activityScenario.onActivity {
+            val callback = facebookCallbackSlot.captured
+            callback.onError(facebookException) // Invoca el método onError
+        }
+
+        // 4. Avanza el tiempo del TestDispatcher para procesar cualquier coroutine pendiente.
+        // Aunque onError podría no lanzar un coroutine en el fragmento directamente,
+        // siempre es buena práctica para asegurar que todo el trabajo del TestDispatcher se complete.
+        advanceUntilIdle()
+
+        // 5. Espera a que Espresso procese todas las actualizaciones de la UI,
+        // especialmente la visualización del Snackbar.
+        Espresso.onIdle()
+
+        // 6. Verifica que el Snackbar con el mensaje de error sea visible.
+        Espresso.onView(withText(expectedSnackbarMessage))
             .inRoot(withDecorView(isDisplayed())) // Asegúrate de que el Snackbar esté en la vista correcta (decorView)
             .check(matches(isDisplayed()))
     }
