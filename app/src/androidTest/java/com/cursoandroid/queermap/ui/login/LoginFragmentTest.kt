@@ -763,31 +763,27 @@ class LoginFragmentTest {
             .inRoot(withDecorView(isDisplayed()))
             .check(matches(isDisplayed()))
     }
+
     //passed
     @Test
     fun when_back_icon_is_clicked_then_navigate_back_is_called() = runTest {
-        // Mockear el ViewModel para que cuando se llame a onBackPressed(), emita el evento de navegación.
         coEvery { mockLoginViewModel.onBackPressed() } coAnswers {
             launch(mainDispatcherRule.testDispatcher) {
                 eventFlow.emit(LoginEvent.NavigateBack)
             }
         }
 
-        // 1. Simular que el NavController tiene un destino anterior en el backstack.
-        // Esto es necesario para que popBackStack() tenga un efecto visible de navegación.
-        // Para manipular el NavController en el hilo principal:
         activityScenario.onActivity { activity ->
             activity.runOnUiThread {
-                mockNavController.setCurrentDestination(R.id.mapFragment) // Un destino previo
-                mockNavController.navigate(R.id.loginFragment) // Navegamos a loginFragment
+                mockNavController.setCurrentDestination(R.id.mapFragment)
+                mockNavController.navigate(R.id.loginFragment)
             }
         }
 
-        // Asegúrate de que el NavController esté en el LoginFragment.
-        Espresso.onIdle() // Espera a que la navegación anterior se complete en la UI
+
+        Espresso.onIdle()
         assertThat(mockNavController.currentDestination?.id).isEqualTo(R.id.loginFragment)
 
-        // Captura el NavController para espiarlo (verificar llamadas a popBackStack)
         val navControllerSpy = spyk(mockNavController)
         activityScenario.onActivity { activity ->
             val fragment =
@@ -796,27 +792,13 @@ class LoginFragmentTest {
                 Navigation.setViewNavController(fragment.requireView(), navControllerSpy)
             }
         }
-
-        // Espera a que Espresso esté inactivo después de establecer el NavController.
         Espresso.onIdle()
-
-        // 2. Simular el clic en el ivBack
         onView(withId(R.id.ivBack)).perform(click())
-
-        // 3. Avanza el tiempo para procesar el coroutine que emite NavigateBack.
         advanceUntilIdle()
-
-        // 4. Asegura que Espresso esté inactivo para que se procese la navegación.
         Espresso.onIdle()
 
-        // 5. Verifica que onBackPressed() fue llamado en el ViewModel
         coVerify(exactly = 1) { mockLoginViewModel.onBackPressed() }
-
-        // 6. Verifica que popBackStack() fue llamado en el NavController
-        // Como hemos navegado de homeFragment -> loginFragment, esperamos volver a homeFragment.
         coVerify(exactly = 1) { navControllerSpy.popBackStack() }
-
-        // Opcional: Verificar que el destino actual del NavController es el esperado (el previo)
         assertThat(navControllerSpy.currentDestination?.id).isEqualTo(R.id.mapFragment)
     }
 }
