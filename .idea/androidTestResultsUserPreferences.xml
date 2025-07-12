@@ -202,6 +202,19 @@
             </AndroidTestResultsTableState>
           </value>
         </entry>
+        <entry key="-416161280">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="QueerMap_Test_API30" value="120" />
+                  <entry key="Tests" value="360" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
         <entry key="-414047175">
           <value>
             <AndroidTestResultsTableState>
@@ -328,6 +341,7 @@
               <option name="preferredColumnWidths">
                 <map>
                   <entry key="Duration" value="90" />
+                  <entry key="QueerMap_Test_API30" value="120" />
                   <entry key="Tests" value="360" />
                 </map>
               </option>

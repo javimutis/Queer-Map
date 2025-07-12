@@ -1,5 +1,6 @@
 package com.cursoandroid.queermap.ui.login
 
+// Importa las funciones para verificar Snackbar y otros elementos de UI
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.result.ActivityResultLauncher
@@ -82,7 +83,7 @@ import kotlin.coroutines.resume
 
 
 suspend fun waitForNavigationTo(
-    navController: NavController,
+    navController: TestNavHostController, // Usa TestNavHostController aquí para acceso a backstack
     destinationId: Int,
     timeoutMs: Long = 5000L
 ) {
@@ -187,7 +188,7 @@ class LoginFragmentTest {
         every { mockLoginViewModel.loginWithEmail(any(), any()) } just Runs
         every { mockLoginViewModel.loginWithGoogle(any()) } just Runs
         every { mockLoginViewModel.onForgotPasswordClicked() } just Runs
-        every { mockLoginViewModel.onBackPressed() } just Runs
+        every { mockLoginViewModel.onBackPressed() } just Runs // Mock onBackPressed
 
         mockGoogleSignInDataSource = mockk(relaxed = true)
         every { mockGoogleSignInDataSource.getSignInIntent() } answers {
@@ -218,8 +219,18 @@ class LoginFragmentTest {
 
         activityScenario.onActivity { activity ->
             mockNavController = TestNavHostController(activity)
+            // Carga el grafo de navegación. Asegúrate de que el LoginFragment esté en él
             mockNavController.setGraph(R.navigation.nav_graph)
+            // Simula que el LoginFragment es la pantalla actual, PERO que hay algo en el backstack.
+            // Para simular el popBackStack, necesitamos que el nav controller no esté en la raíz.
+            // Por ejemplo, navegando a LoginFragment desde un punto anterior.
+            // Para simplificar, podemos establecer un destino inicial diferente y luego navegar a LoginFragment,
+            // o directamente manipular el backstack si es necesario, pero lo más fácil es
+            // simplemente asumir que ya hay algo "detrás" para hacer pop.
+            // Si el loginFragment es la pantalla de inicio, popBackStack puede cerrar la actividad.
+            // Para un test, simplemente llamaremos a popBackStack y veremos si mockNavController.popBackStack() fue invocado.
             mockNavController.setCurrentDestination(R.id.loginFragment)
+
 
             activity.supportFragmentManager.fragmentFactory = TestLoginFragmentFactory(
                 mockGoogleSignInDataSource,
@@ -259,6 +270,7 @@ class LoginFragmentTest {
         }
         clearAllMocks()
     }
+
 
     // Passed
     @Test
@@ -726,43 +738,85 @@ class LoginFragmentTest {
             .check(matches(isDisplayed()))
     }
 
+    //passed
     @Test
     fun when_facebook_login_error_then_snackbar_with_error_message_is_shown() = runTest {
-        // Define el mensaje de error esperado
         val errorMessage = "Error simulado de Facebook."
         val expectedSnackbarMessage = "Error: $errorMessage" // El fragmento añade "Error: "
-
-        // 1. Asegúrate de que la configuración inicial (incluido el registro del callback) esté completa.
         Espresso.onIdle()
 
-        // Verifica que el callback de Facebook fue capturado.
         assert(facebookCallbackSlot.isCaptured) { "El Callback de Facebook no fue registrado." }
 
-        // 2. Clic en el botón de Facebook para iniciar el flujo.
         onView(withId(R.id.btnFacebookLogin)).perform(scrollTo(), click())
 
-        // 3. Simula que ocurrió un error durante el inicio de sesión de Facebook.
-        // Crea una instancia de FacebookException con el mensaje de error.
         val facebookException = FacebookException(errorMessage)
 
-        // Esto debe ocurrir en el hilo principal de la UI para que el fragmento lo procese.
         activityScenario.onActivity {
             val callback = facebookCallbackSlot.captured
-            callback.onError(facebookException) // Invoca el método onError
+            callback.onError(facebookException)
         }
 
-        // 4. Avanza el tiempo del TestDispatcher para procesar cualquier coroutine pendiente.
-        // Aunque onError podría no lanzar un coroutine en el fragmento directamente,
-        // siempre es buena práctica para asegurar que todo el trabajo del TestDispatcher se complete.
         advanceUntilIdle()
-
-        // 5. Espera a que Espresso procese todas las actualizaciones de la UI,
-        // especialmente la visualización del Snackbar.
         Espresso.onIdle()
 
-        // 6. Verifica que el Snackbar con el mensaje de error sea visible.
         Espresso.onView(withText(expectedSnackbarMessage))
-            .inRoot(withDecorView(isDisplayed())) // Asegúrate de que el Snackbar esté en la vista correcta (decorView)
+            .inRoot(withDecorView(isDisplayed()))
             .check(matches(isDisplayed()))
+    }
+    //passed
+    @Test
+    fun when_back_icon_is_clicked_then_navigate_back_is_called() = runTest {
+        // Mockear el ViewModel para que cuando se llame a onBackPressed(), emita el evento de navegación.
+        coEvery { mockLoginViewModel.onBackPressed() } coAnswers {
+            launch(mainDispatcherRule.testDispatcher) {
+                eventFlow.emit(LoginEvent.NavigateBack)
+            }
+        }
+
+        // 1. Simular que el NavController tiene un destino anterior en el backstack.
+        // Esto es necesario para que popBackStack() tenga un efecto visible de navegación.
+        // Para manipular el NavController en el hilo principal:
+        activityScenario.onActivity { activity ->
+            activity.runOnUiThread {
+                mockNavController.setCurrentDestination(R.id.mapFragment) // Un destino previo
+                mockNavController.navigate(R.id.loginFragment) // Navegamos a loginFragment
+            }
+        }
+
+        // Asegúrate de que el NavController esté en el LoginFragment.
+        Espresso.onIdle() // Espera a que la navegación anterior se complete en la UI
+        assertThat(mockNavController.currentDestination?.id).isEqualTo(R.id.loginFragment)
+
+        // Captura el NavController para espiarlo (verificar llamadas a popBackStack)
+        val navControllerSpy = spyk(mockNavController)
+        activityScenario.onActivity { activity ->
+            val fragment =
+                activity.supportFragmentManager.findFragmentById(android.R.id.content) as LoginFragment
+            activity.runOnUiThread {
+                Navigation.setViewNavController(fragment.requireView(), navControllerSpy)
+            }
+        }
+
+        // Espera a que Espresso esté inactivo después de establecer el NavController.
+        Espresso.onIdle()
+
+        // 2. Simular el clic en el ivBack
+        onView(withId(R.id.ivBack)).perform(click())
+
+        // 3. Avanza el tiempo para procesar el coroutine que emite NavigateBack.
+        advanceUntilIdle()
+
+        // 4. Asegura que Espresso esté inactivo para que se procese la navegación.
+        Espresso.onIdle()
+
+        // 5. Verifica que onBackPressed() fue llamado en el ViewModel
+        coVerify(exactly = 1) { mockLoginViewModel.onBackPressed() }
+
+        // 6. Verifica que popBackStack() fue llamado en el NavController
+        // Como hemos navegado de homeFragment -> loginFragment, esperamos volver a homeFragment.
+        coVerify(exactly = 1) { navControllerSpy.popBackStack() }
+
+        // Opcional: Verificar que el destino actual del NavController es el esperado (el previo)
+        assertThat(navControllerSpy.currentDestination?.id).isEqualTo(R.id.mapFragment)
     }
 }
