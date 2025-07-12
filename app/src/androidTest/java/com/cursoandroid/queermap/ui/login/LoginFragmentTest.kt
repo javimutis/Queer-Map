@@ -37,6 +37,7 @@ import com.cursoandroid.queermap.util.EspressoIdlingResource
 import com.cursoandroid.queermap.util.MainDispatcherRule
 import com.cursoandroid.queermap.util.Result
 import com.cursoandroid.queermap.util.waitForNavigationTo
+import com.cursoandroid.queermap.util.withDecorView
 import com.facebook.AccessToken
 import com.facebook.CallbackManager
 import com.facebook.FacebookCallback
@@ -77,6 +78,7 @@ import org.junit.runners.MethodSorters
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.resume
+
 
 suspend fun waitForNavigationTo(
     navController: NavController,
@@ -158,7 +160,6 @@ class LoginFragmentTest {
         override fun instantiate(classLoader: ClassLoader, className: String): Fragment {
             return when (className) {
                 LoginFragment::class.java.name -> LoginFragment(
-                    // Pasa tus mocks directamente al constructor de prueba
                     googleSignInDataSource = googleSignInDataSource,
                     facebookSignInDataSource = facebookSignInDataSource,
                     googleSignInLauncher = mockGoogleSignInLauncher,
@@ -219,7 +220,6 @@ class LoginFragmentTest {
             mockNavController.setGraph(R.navigation.nav_graph)
             mockNavController.setCurrentDestination(R.id.loginFragment)
 
-            // Asigna la FragmentFactory personalizada ANTES de instanciar el fragmento
             activity.supportFragmentManager.fragmentFactory = TestLoginFragmentFactory(
                 mockGoogleSignInDataSource,
                 mockFacebookSignInDataSource,
@@ -235,6 +235,7 @@ class LoginFragmentTest {
             activity.supportFragmentManager.beginTransaction()
                 .replace(android.R.id.content, fragment)
                 .commitNow()
+
             val latch = CountDownLatch(1)
             fragment.viewLifecycleOwnerLiveData.observe(fragment) { viewLifecycleOwner ->
                 if (viewLifecycleOwner != null && fragment.view != null &&
@@ -244,10 +245,7 @@ class LoginFragmentTest {
                     latch.countDown()
                 }
             }
-            latch.await(
-                2,
-                TimeUnit.SECONDS
-            ) // Pequeña espera para asegurar la adjunción del NavController
+            latch.await(2, TimeUnit.SECONDS)
         }
         Espresso.onIdle()
     }
@@ -702,5 +700,28 @@ class LoginFragmentTest {
             timeoutMs = 2000L
         ) // Reducir un poco el timeout si es necesario, ya que esperamos que esté casi inmediato
         assert(mockNavController.currentDestination?.id == R.id.mapFragment)
+    }
+
+
+    @Test
+    fun when_facebook_login_cancelled_then_snackbar_with_cancel_message_is_shown() = runTest {
+        val cancelMessage = "Inicio de sesión con Facebook cancelado."
+
+        Espresso.onIdle()
+        assert(facebookCallbackSlot.isCaptured) { "El Callback de Facebook no fue registrado." }
+        onView(withId(R.id.btnFacebookLogin)).perform(scrollTo(), click())
+
+        activityScenario.onActivity {
+            val callback = facebookCallbackSlot.captured
+            callback.onCancel()
+        }
+
+        advanceUntilIdle()
+
+        Espresso.onIdle()
+
+        Espresso.onView(withText(cancelMessage))
+            .inRoot(withDecorView(isDisplayed())) // Asegúrate de que el Snackbar esté en la vista correcta (decorView)
+            .check(matches(isDisplayed()))
     }
 }
