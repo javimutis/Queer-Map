@@ -5,10 +5,10 @@
       <SelectionState runConfigName="when_google_login_fails_error_message_is_shown()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="when_facebook_button_is_clicked_logInWithReadPermissions_is_called()">
+      <SelectionState runConfigName="when_viewmodel_uiState_loading_is_false_then_progress_bar_is_hidden()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="when_viewmodel_uiState_loading_is_false_then_progress_bar_is_hidden()">
+      <SelectionState runConfigName="when_facebook_login_successful_then_loginWithFacebook_is_called_with_token()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>
