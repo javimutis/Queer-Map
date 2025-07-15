@@ -1196,7 +1196,6 @@ class LoginFragmentTest {
     }
 
     /*   Comportamiento de los Campos de Entrada  */
-
     //passed
     @Test
     fun when_email_password_fields_are_empty_and_login_clicked_then_error_messages_are_shown() =
@@ -1264,7 +1263,6 @@ class LoginFragmentTest {
         }
 
     /*   Robustez y Casos de Borde de Inicios de Sesión  */
-
     //passed
     @Test
     fun when_google_login_results_in_cancelled_status_then_snackbar_is_shown() = runTest {
@@ -1337,4 +1335,47 @@ class LoginFragmentTest {
         onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
     }
 
+
+    @Test
+    fun when_testLogHelper_is_set_then_it_is_used_for_logD() = runTest {
+        val capturedLogTag = slot<String>()
+        val capturedLogMessage = slot<String>()
+
+        val mockLogHelper: (String, String) -> Unit = mockk(relaxed = true)
+        every { mockLogHelper(capture(capturedLogTag), capture(capturedLogMessage)) } just Runs
+
+        coEvery { mockGoogleSignInDataSource.handleSignInResult(any()) } returns Result.Success("fake_google_id_token")
+
+        activityScenario =
+            ActivityScenario.launch(HiltTestActivity::class.java).onActivity { activity ->
+                val fragment = LoginFragment(
+                    googleSignInDataSource = mockGoogleSignInDataSource,
+                    facebookSignInDataSource = mockFacebookSignInDataSource,
+                    googleSignInLauncher = mockGoogleSignInLauncher,
+                    callbackManager = mockCallbackManager
+                ).apply {
+                    testLogHelper = mockLogHelper
+                }
+                activity.supportFragmentManager.beginTransaction()
+                    .replace(android.R.id.content, fragment)
+                    .commitNow()
+                Navigation.setViewNavController(fragment.requireView(), mockNavController)
+
+                val fakeIntent = mockk<Intent>(relaxed = true)
+                fragment.handleGoogleSignInResult(fakeIntent)
+            }
+        Espresso.onIdle()
+
+        mainDispatcherRule.testScope.advanceUntilIdle()
+
+        val expectedTag = "LoginFragment"
+        val expectedPartialMessage = "Inside handleGoogleSignInResult"
+
+        coVerify {
+            mockLogHelper(
+                expectedTag,
+                match { msg -> msg.startsWith(expectedPartialMessage) }
+            )
+        }
+    }
 }
