@@ -123,9 +123,26 @@ class LoginFragment @JvmOverloads constructor(
             actualCallbackManager,
             object : FacebookCallback<LoginResult> {
                 override fun onSuccess(result: LoginResult) {
-                    logD("LoginFragment", "Facebook Login Success: ${result.accessToken.token}")
+                    logD("LoginFragment", "Facebook Login Success, result: $result")
                     lifecycleScope.launch {
-                        viewModel.loginWithFacebook(result.accessToken.token)
+                        try {
+                            // Verifica si accessToken es nulo antes de intentar acceder a su .token
+                            val accessToken = result.accessToken?.token
+                            if (accessToken != null) {
+                                logD("LoginFragment", "Facebook Access Token: $accessToken")
+                                viewModel.loginWithFacebook(accessToken)
+                            } else {
+                                // Manejar el caso donde el accessToken es nulo
+                                val errorMessage = "El token de acceso de Facebook es nulo. Por favor, inténtelo de nuevo."
+                                logE("LoginFragment", errorMessage)
+                                showSnackbar(errorMessage) // ESTO ES CLAVE para que el test lo detecte
+                            }
+                        } catch (e: Exception) {
+                            // Capturar cualquier otra excepción inesperada durante el procesamiento del token
+                            val errorMessage = "Error inesperado al procesar el token de Facebook: ${e.message ?: "detalle desconocido"}"
+                            logE("LoginFragment", errorMessage, e)
+                            showSnackbar(errorMessage)
+                        }
                     }
                 }
 

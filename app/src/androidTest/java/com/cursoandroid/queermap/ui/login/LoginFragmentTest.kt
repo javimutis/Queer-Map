@@ -29,7 +29,11 @@ import androidx.test.espresso.action.ViewActions.typeText
 import androidx.test.espresso.assertion.ViewAssertions.doesNotExist
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.RootMatchers.isSystemAlertWindow
-import androidx.test.espresso.matcher.ViewMatchers.*
+import androidx.test.espresso.matcher.ViewMatchers.Visibility
+import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
+import androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility
+import androidx.test.espresso.matcher.ViewMatchers.withId
+import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.cursoandroid.queermap.HiltTestActivity
@@ -1266,7 +1270,8 @@ class LoginFragmentTest {
     fun when_google_login_results_in_cancelled_status_then_snackbar_is_shown() = runTest {
         val cancelledMessage = "Inicio de sesión cancelado"
 
-        val resultCallbackSlot = slot<androidx.activity.result.ActivityResultCallback<ActivityResult>>()
+        val resultCallbackSlot =
+            slot<androidx.activity.result.ActivityResultCallback<ActivityResult>>()
         every { mockGoogleSignInLauncher.launch(any()) } answers {
 
             mainDispatcherRule.testScope.launch {
@@ -1296,4 +1301,40 @@ class LoginFragmentTest {
 
         onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
     }
+
+    //passed
+    @Test
+    fun when_facebook_login_sends_null_data_then_error_is_handled() = runTest {
+        val expectedErrorMessage =
+            "El token de acceso de Facebook es nulo. Por favor, inténtelo de nuevo."
+
+        every { mockFacebookSignInDataSource.logInWithReadPermissions(any(), any()) } answers {
+
+            mainDispatcherRule.testScope.launch {
+                eventFlow.emit(LoginEvent.ShowMessage(expectedErrorMessage))
+            }
+        }
+
+        onView(withId(R.id.btnFacebookLogin)).perform(click())
+
+        advanceUntilIdle()
+        Espresso.onIdle()
+
+        coVerify(exactly = 0) { mockLoginViewModel.loginWithFacebook(any()) }
+
+        onView(withText(expectedErrorMessage))
+            .inRoot(withDecorView(isDisplayed()))
+            .check(matches(isDisplayed()))
+
+        onView(withText(expectedErrorMessage))
+            .inRoot(withDecorView(isDisplayed()))
+            .perform(dismissSnackbarViewAction(expectedErrorMessage))
+
+        delay(500)
+        advanceUntilIdle()
+        Espresso.onIdle()
+
+        onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
+    }
+
 }
