@@ -6,6 +6,7 @@ import android.content.Intent
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewParent
 import androidx.activity.result.ActivityResultLauncher
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
@@ -19,6 +20,7 @@ import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.IdlingRegistry
 import androidx.test.espresso.UiController
 import androidx.test.espresso.ViewAction
+import androidx.test.espresso.action.ViewActions.clearText
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.closeSoftKeyboard
 import androidx.test.espresso.action.ViewActions.scrollTo
@@ -27,6 +29,7 @@ import androidx.test.espresso.assertion.ViewAssertions.doesNotExist
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.RootMatchers.isSystemAlertWindow
 import androidx.test.espresso.matcher.ViewMatchers.Visibility
+import androidx.test.espresso.matcher.ViewMatchers.hasErrorText
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility
 import androidx.test.espresso.matcher.ViewMatchers.withId
@@ -121,6 +124,7 @@ class LoginFragmentTest {
     private val FAKE_GOOGLE_NAME = "Test Google User"
 
     private lateinit var facebookCallbackSlot: CapturingSlot<FacebookCallback<LoginResult>>
+
 
     class TestLoginFragmentFactory(
         private val googleSignInDataSource: GoogleSignInDataSource,
@@ -1148,4 +1152,69 @@ class LoginFragmentTest {
         onView(withText(snackbarMessage))
             .check(doesNotExist())
     }
+
+    /*   Comportamiento de los Campos de Entrada  */
+
+
+    private fun dismissSnackbarViewAction(message: String): ViewAction {
+        return object : ViewAction {
+            override fun getConstraints(): Matcher<View> {
+                return allOf(isDisplayed(), withText(message));
+            }
+
+            override fun getDescription(): String {
+                return "dismiss snackbar with message: $message"
+            }
+
+            override fun perform(uiController: UiController?, view: View?) {
+                var currentParent: ViewParent? = view?.parent
+                var snackbarLayout: Snackbar.SnackbarLayout? = null
+
+                while (currentParent != null) {
+                    if (currentParent is Snackbar.SnackbarLayout) {
+                        snackbarLayout = currentParent
+                        break
+                    }
+                    currentParent = currentParent.parent
+                }
+
+                snackbarLayout?.let { layout ->
+                    (layout.parent as? ViewGroup)?.removeView(layout)
+                }
+            }
+        }
+    }
+//passed
+    @Test
+    fun when_email_password_fields_are_empty_and_login_clicked_then_error_messages_are_shown() =
+        runTest {
+            onView(withId(R.id.etEmailLogin)).perform(clearText())
+            onView(withId(R.id.etPassword)).perform(clearText())
+
+            val combinedEmptyFieldsError = "El email y/o la contraseña no pueden estar vacíos."
+            coEvery { mockLoginViewModel.loginWithEmail("", "") } coAnswers {
+                uiStateFlow.value = uiStateFlow.value.copy(isLoading = false)
+                launch(mainDispatcherRule.testDispatcher) {
+                    eventFlow.emit(LoginEvent.ShowMessage(combinedEmptyFieldsError))
+                }
+            }
+            onView(withId(R.id.btnLogin)).perform(click())
+
+            advanceUntilIdle()
+            Espresso.onIdle()
+            onView(withText(combinedEmptyFieldsError))
+                .inRoot(withDecorView(isDisplayed()))
+                .check(matches(isDisplayed()))
+
+            onView(withText(combinedEmptyFieldsError))
+                .inRoot(withDecorView(isDisplayed()))
+                .perform(dismissSnackbarViewAction(combinedEmptyFieldsError))
+
+            delay(500)
+            advanceUntilIdle()
+            Espresso.onIdle()
+
+            coVerify(exactly = 1) { mockLoginViewModel.loginWithEmail("", "") }
+            onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
+        }
 }
