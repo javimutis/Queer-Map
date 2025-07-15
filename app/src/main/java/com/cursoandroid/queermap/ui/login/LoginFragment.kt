@@ -40,12 +40,15 @@ class LoginFragment @JvmOverloads constructor(
 ) : Fragment() {
 
     private var _binding: FragmentLoginBinding? = null
-    private val binding get() = _binding
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    internal val binding get() = _binding
 
     private val viewModel: LoginViewModel by viewModels()
 
     @Inject
     internal lateinit var _googleSignInDataSource: GoogleSignInDataSource
+
     @Inject
     internal lateinit var _facebookSignInDataSource: FacebookSignInDataSource
 

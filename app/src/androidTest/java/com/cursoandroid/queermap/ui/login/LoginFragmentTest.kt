@@ -3,14 +3,11 @@ package com.cursoandroid.queermap.ui.login
 
 import android.app.Activity
 import android.content.Intent
-import android.os.Bundle
 import androidx.activity.result.ActivityResultLauncher
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleRegistry
-import androidx.navigation.NavController
-import androidx.navigation.NavDestination
 import androidx.navigation.Navigation
 import androidx.navigation.testing.TestNavHostController
 import androidx.test.core.app.ActivityScenario
@@ -45,6 +42,7 @@ import com.facebook.CallbackManager
 import com.facebook.FacebookCallback
 import com.facebook.FacebookException
 import com.facebook.login.LoginResult
+import com.google.common.truth.Truth
 import com.google.common.truth.Truth.assertThat
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -60,17 +58,13 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.spyk
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeout
 import org.hamcrest.Matchers.not
 import org.junit.After
 import org.junit.Before
@@ -81,7 +75,6 @@ import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
-import kotlin.coroutines.resume
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @RunWith(AndroidJUnit4::class)
@@ -1025,4 +1018,59 @@ class LoginFragmentTest {
 
         testActivityScenario.close()
     }
+
+    /*  Cliclo de vida */
+    //passed
+    @Test
+    fun when_fragment_is_destroyed_then_binding_is_set_to_null() = runTest {
+
+        clearMocks(
+            mockGoogleSignInDataSource, mockFacebookSignInDataSource,
+            mockGoogleSignInLauncher, mockCallbackManager
+        )
+
+        val scenario = ActivityScenario.launch(HiltTestActivity::class.java)
+
+        val fragmentRef = arrayOf<LoginFragment?>(null)
+
+        scenario.onActivity { activity ->
+            activity.supportFragmentManager.fragmentFactory = TestLoginFragmentFactory(
+                googleSignInDataSource = mockGoogleSignInDataSource,
+                facebookSignInDataSource = mockFacebookSignInDataSource,
+                mockGoogleSignInLauncher = mockGoogleSignInLauncher,
+                callbackManager = mockCallbackManager
+            )
+
+            val loginFragment = activity.supportFragmentManager.fragmentFactory.instantiate(
+                activity.classLoader,
+                LoginFragment::class.java.name
+            ) as LoginFragment
+
+            activity.supportFragmentManager.beginTransaction()
+                .replace(android.R.id.content, loginFragment, "LoginFragmentTag")
+                .commitNow()
+            fragmentRef[0] = loginFragment
+        }
+        Espresso.onIdle()
+        val fragment = fragmentRef[0]
+
+        Truth.assertThat(fragment?.binding).isNotNull()
+
+        scenario.onActivity { activity ->
+            val fragmentToRemove =
+                activity.supportFragmentManager.findFragmentByTag("LoginFragmentTag")
+            if (fragmentToRemove != null) {
+                activity.supportFragmentManager.beginTransaction()
+                    .remove(fragmentToRemove)
+                    .commitNow()
+            }
+        }
+        Espresso.onIdle()
+
+        Truth.assertThat(fragment?.binding).isNull()
+
+        scenario.close()
+    }
+
+
 }
