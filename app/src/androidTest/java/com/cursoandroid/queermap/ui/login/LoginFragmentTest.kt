@@ -51,6 +51,7 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.CapturingSlot
 import io.mockk.Runs
 import io.mockk.clearAllMocks
+import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -821,6 +822,74 @@ class LoginFragmentTest {
         coVerify(exactly = 0) { mockGoogleSignInDataSource.getSignInIntent() }
 
         coVerify(exactly = 1) { mockGoogleSignInLauncher.launch(testIntent) }
+
+        testActivityScenario.close()
+    }
+
+    @Test
+    fun when_testFacebookSignInDataSource_is_set_then_it_is_used_instead_of_real_one() = runTest {
+        clearMocks(mockFacebookSignInDataSource)
+
+        val testFacebookSignInDataSource = mockk<FacebookSignInDataSource>(relaxed = true)
+        val testCallbackManager = mockk<CallbackManager>(relaxed = true)
+        val slotForTestCallback = slot<FacebookCallback<LoginResult>>()
+        every {
+            testFacebookSignInDataSource.registerCallback(
+                any(),
+                capture(slotForTestCallback)
+            )
+        } just Runs
+        every { testFacebookSignInDataSource.logInWithReadPermissions(any(), any()) } just Runs
+        val testActivityScenario = ActivityScenario.launch(HiltTestActivity::class.java)
+        testActivityScenario.moveToState(Lifecycle.State.RESUMED)
+
+        testActivityScenario.onActivity { activity ->
+            activity.supportFragmentManager.fragmentFactory = TestLoginFragmentFactory(
+                googleSignInDataSource = mockGoogleSignInDataSource,
+                facebookSignInDataSource = testFacebookSignInDataSource,
+                mockGoogleSignInLauncher = mockGoogleSignInLauncher,
+                callbackManager = testCallbackManager
+            )
+
+            val fragment = activity.supportFragmentManager.fragmentFactory.instantiate(
+                activity.classLoader,
+                LoginFragment::class.java.name
+            ) as LoginFragment
+
+            activity.supportFragmentManager.beginTransaction()
+                .replace(android.R.id.content, fragment)
+                .commitNow()
+
+            val navController = TestNavHostController(activity)
+            navController.setGraph(R.navigation.nav_graph)
+            navController.setCurrentDestination(R.id.loginFragment)
+            Navigation.setViewNavController(fragment.requireView(), navController)
+        }
+        Espresso.onIdle()
+
+        onView(withId(R.id.btnFacebookLogin)).perform(click())
+
+        coVerify(exactly = 1) {
+            testFacebookSignInDataSource.logInWithReadPermissions(
+                any(),
+                listOf("email", "public_profile")
+            )
+        }
+
+        coVerify(exactly = 1) {
+            testFacebookSignInDataSource.registerCallback(
+                eq(testCallbackManager),
+                any()
+            )
+        }
+
+        coVerify(exactly = 0) {
+            mockFacebookSignInDataSource.logInWithReadPermissions(
+                any(),
+                any()
+            )
+        }
+        coVerify(exactly = 0) { mockFacebookSignInDataSource.registerCallback(any(), any()) }
 
         testActivityScenario.close()
     }
