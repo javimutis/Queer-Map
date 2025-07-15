@@ -26,7 +26,11 @@ import androidx.test.espresso.action.ViewActions.typeText
 import androidx.test.espresso.assertion.ViewAssertions.doesNotExist
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.RootMatchers.isSystemAlertWindow
-import androidx.test.espresso.matcher.ViewMatchers.*
+import androidx.test.espresso.matcher.ViewMatchers.Visibility
+import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
+import androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility
+import androidx.test.espresso.matcher.ViewMatchers.withId
+import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.cursoandroid.queermap.HiltTestActivity
@@ -1095,36 +1099,27 @@ class LoginFragmentTest {
 
     }
 
-//passed
+    //passed
     @Test
     fun when_snackbar_is_shown_then_it_can_be_dismissed() = runTest {
         clearMocks(mockLoginViewModel)
 
         val snackbarMessage = "Este es un mensaje de prueba para el Snackbar."
 
-        // 1. Simular la emisión de un evento que active la visualización del Snackbar.
         launch(mainDispatcherRule.testDispatcher) {
             eventFlow.emit(LoginEvent.ShowMessage(snackbarMessage))
         }
-
-        // Darle tiempo al Snackbar para que se muestre y su animación de entrada termine.
         delay(500)
         advanceUntilIdle()
         Espresso.onIdle()
 
-        // 2. Verificar que el Snackbar se muestra inicialmente.
         onView(withText(snackbarMessage))
             .inRoot(withDecorView(isDisplayed()))
             .check(matches(isDisplayed()))
-
-        // 3. Forzar el descarte del Snackbar llamando a su método dismiss()
-        // directamente a través de una ViewAction personalizada.
         onView(withText(snackbarMessage))
             .inRoot(withDecorView(isDisplayed()))
             .perform(object : ViewAction {
                 override fun getConstraints(): Matcher<View> {
-                    // Asegúrate de que el ViewAction solo opere en Views que son SnackBar.SnackbarLayout
-                    // o sus descendientes que contienen el texto.
                     return allOf(isDisplayed(), withText(snackbarMessage));
                 }
 
@@ -1133,33 +1128,23 @@ class LoginFragmentTest {
                 }
 
                 override fun perform(uiController: UiController?, view: View?) {
-                    // La vista 'view' aquí será el TextView del Snackbar.
-                    // Necesitamos encontrar el SnackbarLayout padre para llamar a dismiss().
                     var parent = view?.parent
                     while (parent != null && parent !is Snackbar.SnackbarLayout) {
                         parent = parent.parent
                     }
                     if (parent is Snackbar.SnackbarLayout) {
-                        // Accede al Snackbar a través de su layout y llama a dismiss()
-                        // Snackbar no expone un método getSnackbar() desde su layout.
-                        // Esto es un workaround para simular el dismiss.
-                        // El SnackbarLayout es el View raíz del Snackbar, y cuando se remueve,
-                        // el Snackbar desaparece.
                         (parent.parent as? ViewGroup)?.removeView(parent)
                         Log.d("SnackbarTest", "Snackbar dismissed programmatically.")
                     } else {
                         Log.e("SnackbarTest", "Could not find SnackbarLayout parent for dismissal.")
-                        // Fallback si no encontramos el layout, aunque deberíamos.
                     }
                 }
             })
 
-        // Dar tiempo a la UI para procesar la remoción del Snackbar.
         delay(500)
         advanceUntilIdle()
         Espresso.onIdle()
 
-        // 4. Verificar que el Snackbar ya no está visible.
         onView(withText(snackbarMessage))
             .check(doesNotExist())
     }
