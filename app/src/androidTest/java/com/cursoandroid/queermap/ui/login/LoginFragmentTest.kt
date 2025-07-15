@@ -29,11 +29,7 @@ import androidx.test.espresso.action.ViewActions.typeText
 import androidx.test.espresso.assertion.ViewAssertions.doesNotExist
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.RootMatchers.isSystemAlertWindow
-import androidx.test.espresso.matcher.ViewMatchers.Visibility
-import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
-import androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility
-import androidx.test.espresso.matcher.ViewMatchers.withId
-import androidx.test.espresso.matcher.ViewMatchers.withText
+import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.cursoandroid.queermap.HiltTestActivity
@@ -1335,7 +1331,7 @@ class LoginFragmentTest {
         onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
     }
 
-
+    //passed
     @Test
     fun when_testLogHelper_is_set_then_it_is_used_for_logD() = runTest {
         val capturedLogTag = slot<String>()
@@ -1377,5 +1373,89 @@ class LoginFragmentTest {
                 match { msg -> msg.startsWith(expectedPartialMessage) }
             )
         }
+    }
+
+    //passed
+    @Test
+    fun when_testLogEHelper_is_set_then_it_is_used_for_logE() = runTest {
+
+        val capturedLogTag = slot<String>()
+        val capturedLogMessage = slot<String>()
+
+        val mockLogEHelper: (String, String, Throwable?) -> Unit = mockk(relaxed = true)
+        every {
+            mockLogEHelper(
+                capture(capturedLogTag),
+                capture(capturedLogMessage),
+                any()
+            )
+        } just Runs
+
+        val expectedException = Exception("Simulated Google Sign-In error for test")
+        coEvery { mockGoogleSignInDataSource.handleSignInResult(any()) } returns Result.Failure(
+            expectedException
+        )
+
+        activityScenario =
+            ActivityScenario.launch(HiltTestActivity::class.java).onActivity { activity ->
+
+                val fragment = LoginFragment(
+                    googleSignInDataSource = mockGoogleSignInDataSource,
+                    facebookSignInDataSource = mockFacebookSignInDataSource,
+                    googleSignInLauncher = mockGoogleSignInLauncher,
+                    callbackManager = mockCallbackManager
+                ).apply {
+
+                    testLogEHelper = mockLogEHelper
+                }
+                activity.supportFragmentManager.beginTransaction()
+                    .replace(android.R.id.content, fragment)
+                    .commitNow()
+
+                Navigation.setViewNavController(fragment.requireView(), mockNavController)
+
+
+                val fakeIntent = mockk<Intent>(relaxed = true)
+                fragment.handleGoogleSignInResult(fakeIntent)
+            }
+        Espresso.onIdle()
+
+        mainDispatcherRule.testScope.advanceUntilIdle()
+
+        val expectedTag = "LoginFragment"
+        val expectedPartialMessage = "Google Sign-In failed"
+        val expectedErrorMessageFromException = expectedException.message
+
+        coVerify(atLeast = 1) {
+            mockLogEHelper(
+                expectedTag,
+                match { msg ->
+                    msg.contains(expectedPartialMessage) && msg.contains(
+                        expectedErrorMessageFromException!!
+                    )
+                },
+                null
+            )
+        }
+
+        assertThat(capturedLogTag.captured).isEqualTo(expectedTag)
+        assertThat(capturedLogMessage.captured).contains(expectedPartialMessage)
+        assertThat(capturedLogMessage.captured).contains(expectedErrorMessageFromException!!)
+
+
+        val expectedSnackbarMessage = "Error en Sign-In: ${expectedException.message}"
+        onView(withText(expectedSnackbarMessage))
+            .inRoot(withDecorView(isDisplayed()))
+            .check(matches(isDisplayed()))
+
+        onView(withText(expectedSnackbarMessage))
+            .inRoot(withDecorView(isDisplayed()))
+            .perform(dismissSnackbarViewAction(expectedSnackbarMessage))
+
+        delay(500)
+        advanceUntilIdle()
+        Espresso.onIdle()
+
+        onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
     }
 }
