@@ -1072,5 +1072,19 @@ class LoginFragmentTest {
         scenario.close()
     }
 
+    @Test
+    fun when_viewModel_emits_errorMessage_then_snackbar_is_shown_and_error_is_cleared() = runTest {
+     clearMocks(mockLoginViewModel)
 
+        val errorMessage = "Hubo un problema al iniciar sesión."
+
+        uiStateFlow.value = uiStateFlow.value.copy(errorMessage = errorMessage)
+
+        advanceUntilIdle()
+        onView(withText(errorMessage))
+            .inRoot(withDecorView(isDisplayed()))
+            .check(matches(isDisplayed()))
+
+
+    }
 }
