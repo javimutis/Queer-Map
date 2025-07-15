@@ -146,6 +146,36 @@ class LoginFragmentTest {
         }
     }
 
+    private fun dismissSnackbarViewAction(message: String): ViewAction {
+        return object : ViewAction {
+            override fun getConstraints(): Matcher<View> {
+                return allOf(isDisplayed(), withText(message));
+            }
+
+            override fun getDescription(): String {
+                return "dismiss snackbar with message: $message"
+            }
+
+            override fun perform(uiController: UiController?, view: View?) {
+                var currentParent: ViewParent? = view?.parent
+                var snackbarLayout: Snackbar.SnackbarLayout? = null
+
+                while (currentParent != null) {
+                    if (currentParent is Snackbar.SnackbarLayout) {
+                        snackbarLayout = currentParent
+                        break
+                    }
+                    currentParent = currentParent.parent
+                }
+
+                snackbarLayout?.let { layout ->
+                    (layout.parent as? ViewGroup)?.removeView(layout)
+                }
+            }
+        }
+    }
+
+
     @Before
     fun setUp() {
         hiltRule.inject()
@@ -551,11 +581,8 @@ class LoginFragmentTest {
             fragment.handleGoogleSignInResult(Intent())
         }
 
-
         mainDispatcherRule.testScope.advanceUntilIdle()
-
-        coVerify(exactly = 1) { mockGoogleSignInDataSource.handleSignInResult(any()) }
-        coVerify(exactly = 1) { mockLoginViewModel.loginWithGoogle(idToken) }
+        Espresso.onIdle()
 
         waitForNavigationTo(mockNavController, R.id.signupFragment)
 
@@ -567,6 +594,21 @@ class LoginFragmentTest {
         assertThat(args?.getBoolean("isSocialLoginFlow")).isEqualTo(true)
 
         onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
+
+        onView(withText(messageForNewUser))
+            .inRoot(withDecorView(isDisplayed()))
+            .check(matches(isDisplayed()))
+
+        onView(withText(messageForNewUser))
+            .inRoot(withDecorView(isDisplayed()))
+            .perform(dismissSnackbarViewAction(messageForNewUser))
+
+        delay(500)
+        advanceUntilIdle()
+        Espresso.onIdle()
+
+        coVerify(exactly = 1) { mockGoogleSignInDataSource.handleSignInResult(any()) }
+        coVerify(exactly = 1) { mockLoginViewModel.loginWithGoogle(idToken) }
     }
 
     //passed
@@ -1155,36 +1197,7 @@ class LoginFragmentTest {
 
     /*   Comportamiento de los Campos de Entrada  */
 
-
-    private fun dismissSnackbarViewAction(message: String): ViewAction {
-        return object : ViewAction {
-            override fun getConstraints(): Matcher<View> {
-                return allOf(isDisplayed(), withText(message));
-            }
-
-            override fun getDescription(): String {
-                return "dismiss snackbar with message: $message"
-            }
-
-            override fun perform(uiController: UiController?, view: View?) {
-                var currentParent: ViewParent? = view?.parent
-                var snackbarLayout: Snackbar.SnackbarLayout? = null
-
-                while (currentParent != null) {
-                    if (currentParent is Snackbar.SnackbarLayout) {
-                        snackbarLayout = currentParent
-                        break
-                    }
-                    currentParent = currentParent.parent
-                }
-
-                snackbarLayout?.let { layout ->
-                    (layout.parent as? ViewGroup)?.removeView(layout)
-                }
-            }
-        }
-    }
-//passed
+    //passed
     @Test
     fun when_email_password_fields_are_empty_and_login_clicked_then_error_messages_are_shown() =
         runTest {
@@ -1215,6 +1228,37 @@ class LoginFragmentTest {
             Espresso.onIdle()
 
             coVerify(exactly = 1) { mockLoginViewModel.loginWithEmail("", "") }
+            onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
+        }
+
+    /*   Flujo de Navegación */
+    @Test
+    fun when_forgot_password_text_is_clicked_then_navigates_to_forgot_password_fragment() =
+        runTest {
+            coEvery { mockLoginViewModel.onForgotPasswordClicked() } coAnswers {
+                launch(mainDispatcherRule.testDispatcher) {
+                    eventFlow.emit(LoginEvent.NavigateToForgotPassword)
+                }
+            }
+            val navControllerSpy = spyk(mockNavController)
+            activityScenario.onActivity { activity ->
+                val fragment = activity.supportFragmentManager
+                    .findFragmentById(android.R.id.content) as LoginFragment
+                activity.runOnUiThread {
+                    Navigation.setViewNavController(fragment.requireView(), navControllerSpy)
+                }
+            }
+            Espresso.onIdle()
+            onView(withId(R.id.tvForgotPassword)).perform(click())
+
+            advanceUntilIdle()
+            Espresso.onIdle()
+
+            coVerify(exactly = 1) { mockLoginViewModel.onForgotPasswordClicked() }
+
+            waitForNavigationTo(navControllerSpy, R.id.forgotPasswordFragment)
+            assertThat(navControllerSpy.currentDestination?.id).isEqualTo(R.id.forgotPasswordFragment)
+
             onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
         }
 }
