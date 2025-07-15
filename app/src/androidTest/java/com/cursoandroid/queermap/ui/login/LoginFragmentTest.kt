@@ -1,6 +1,6 @@
 package com.cursoandroid.queermap.ui.login
 
-// Importa las funciones para verificar Snackbar y otros elementos de UI
+
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.result.ActivityResultLauncher
@@ -188,7 +188,7 @@ class LoginFragmentTest {
         every { mockLoginViewModel.loginWithEmail(any(), any()) } just Runs
         every { mockLoginViewModel.loginWithGoogle(any()) } just Runs
         every { mockLoginViewModel.onForgotPasswordClicked() } just Runs
-        every { mockLoginViewModel.onBackPressed() } just Runs // Mock onBackPressed
+        every { mockLoginViewModel.onBackPressed() } just Runs
 
         mockGoogleSignInDataSource = mockk(relaxed = true)
         every { mockGoogleSignInDataSource.getSignInIntent() } answers {
@@ -219,16 +219,7 @@ class LoginFragmentTest {
 
         activityScenario.onActivity { activity ->
             mockNavController = TestNavHostController(activity)
-            // Carga el grafo de navegación. Asegúrate de que el LoginFragment esté en él
             mockNavController.setGraph(R.navigation.nav_graph)
-            // Simula que el LoginFragment es la pantalla actual, PERO que hay algo en el backstack.
-            // Para simular el popBackStack, necesitamos que el nav controller no esté en la raíz.
-            // Por ejemplo, navegando a LoginFragment desde un punto anterior.
-            // Para simplificar, podemos establecer un destino inicial diferente y luego navegar a LoginFragment,
-            // o directamente manipular el backstack si es necesario, pero lo más fácil es
-            // simplemente asumir que ya hay algo "detrás" para hacer pop.
-            // Si el loginFragment es la pantalla de inicio, popBackStack puede cerrar la actividad.
-            // Para un test, simplemente llamaremos a popBackStack y veremos si mockNavController.popBackStack() fue invocado.
             mockNavController.setCurrentDestination(R.id.loginFragment)
 
 
@@ -300,13 +291,10 @@ class LoginFragmentTest {
                 .commitNow()
         }
 
-        // Emite el estado de loading
         uiStateFlow.value = uiStateFlow.value.copy(isLoading = true)
 
-        // Asegura procesamiento de coroutines
         advanceUntilIdle()
 
-        // Aquí puedes esperar manualmente (método más confiable)
         onView(withId(R.id.progressBar))
             .check(matches(isDisplayed()))
     }
@@ -314,10 +302,8 @@ class LoginFragmentTest {
     //passed
     @Test
     fun when_viewmodel_uiState_loading_is_false_then_progress_bar_is_hidden() = runTest {
-        // Lanzamos la actividad contenedora
         val scenario = ActivityScenario.launch(HiltTestActivity::class.java)
 
-        // Insertamos LoginFragment manualmente
         scenario.onActivity { activity ->
             val fragment = LoginFragment()
 
@@ -326,13 +312,10 @@ class LoginFragmentTest {
                 .commitNow()
         }
 
-        // Emitimos el estado con isLoading = false
         uiStateFlow.value = uiStateFlow.value.copy(isLoading = false)
 
-        // Avanzamos las corutinas hasta que se estabilice el estado
         advanceUntilIdle()
 
-        // Verificamos que el progressBar esté GONE o INVISIBLE
         onView(withId(R.id.progressBar))
             .check(matches(withEffectiveVisibility(Visibility.GONE)))
     }
@@ -366,12 +349,9 @@ class LoginFragmentTest {
         }
 
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
-            // No need for runBlocking here, as it's within runTest
             mockLoginViewModel.loadUserCredentials()
         }
-        // Advance virtual time for coroutines
         mainDispatcherRule.testScope.advanceUntilIdle()
-        // Wait for Espresso to be idle after UI updates from the coroutines
         Espresso.onIdle()
 
         onView(withId(R.id.etEmailLogin)).check(matches(withText(savedEmail)))
@@ -389,9 +369,8 @@ class LoginFragmentTest {
             val password = "validpassword"
 
             coEvery { mockLoginViewModel.loginWithEmail(email, password) } coAnswers {
-                // Simulate UI loading and then success, emitting navigation event
                 uiStateFlow.value = uiStateFlow.value.copy(isLoading = true)
-                delay(200) // Simulate some work
+                delay(200)
                 uiStateFlow.value = uiStateFlow.value.copy(isLoading = false, isSuccess = true)
                 mainDispatcherRule.testScope.launch {
                     eventFlow.emit(LoginEvent.NavigateToHome)
@@ -402,7 +381,6 @@ class LoginFragmentTest {
             onView(withId(R.id.etPassword)).perform(typeText(password), closeSoftKeyboard())
             onView(withId(R.id.btnLogin)).perform(click())
 
-            // Advance virtual time and wait for Espresso to be idle
             mainDispatcherRule.testScope.advanceUntilIdle()
             Espresso.onIdle()
 
@@ -539,17 +517,13 @@ class LoginFragmentTest {
             }
 
             onView(withId(R.id.btnGoogleSignIn)).perform(click())
-
-            // Advance virtual time for all coroutines triggered by the click and mock launcher callback
             mainDispatcherRule.testScope.advanceUntilIdle()
-            // Ensure Espresso is idle, waiting for UI updates and IdlingResources
             Espresso.onIdle()
 
-            // At this point, navigation should have occurred and the message displayed
             waitForNavigationTo(
                 navControllerSpy,
                 R.id.mapFragment
-            ) // This is a final check for navigation
+            )
 
             coVerify(exactly = 1) { mockGoogleSignInDataSource.handleSignInResult(any()) }
             coVerify(exactly = 1) { mockLoginViewModel.loginWithGoogle(FAKE_GOOGLE_ID_TOKEN) }
@@ -639,12 +613,10 @@ class LoginFragmentTest {
             fragment.handleGoogleSignInResult(Intent())
         }
 
-        // 🔧 Dale tiempo a la coroutine para emitir el mensaje
         advanceUntilIdle()
-        delay(500) // Dale tiempo a Snackbar
+        delay(500)
         Espresso.onIdle()
 
-        // Verificaciones
         coVerify(exactly = 1) { mockGoogleSignInDataSource.handleSignInResult(any()) }
         coVerify(exactly = 0) { mockLoginViewModel.loginWithGoogle(any()) }
 
@@ -686,7 +658,7 @@ class LoginFragmentTest {
 
         coEvery { mockLoginViewModel.loginWithFacebook(accessTokenValue) } coAnswers {
             uiStateFlow.value = uiStateFlow.value.copy(isLoading = false, isSuccess = true)
-            launch(mainDispatcherRule.testDispatcher) { // Asegura que se lance en el dispatcher del test
+            launch(mainDispatcherRule.testDispatcher) {
                 eventFlow.emit(LoginEvent.NavigateToHome)
                 eventFlow.emit(LoginEvent.ShowMessage(successMessage))
             }
@@ -702,7 +674,7 @@ class LoginFragmentTest {
             callback.onSuccess(loginResult)
         }
 
-        advanceUntilIdle() // Esto procesa los coroutines lanzados en el TestScope
+        advanceUntilIdle()
 
         Espresso.onIdle()
         coVerify { mockLoginViewModel.loginWithFacebook(accessTokenValue) }
@@ -711,7 +683,7 @@ class LoginFragmentTest {
             mockNavController,
             R.id.mapFragment,
             timeoutMs = 2000L
-        ) // Reducir un poco el timeout si es necesario, ya que esperamos que esté casi inmediato
+        )
         assert(mockNavController.currentDestination?.id == R.id.mapFragment)
     }
 
@@ -734,7 +706,7 @@ class LoginFragmentTest {
         Espresso.onIdle()
 
         Espresso.onView(withText(cancelMessage))
-            .inRoot(withDecorView(isDisplayed())) // Asegúrate de que el Snackbar esté en la vista correcta (decorView)
+            .inRoot(withDecorView(isDisplayed()))
             .check(matches(isDisplayed()))
     }
 
@@ -742,7 +714,7 @@ class LoginFragmentTest {
     @Test
     fun when_facebook_login_error_then_snackbar_with_error_message_is_shown() = runTest {
         val errorMessage = "Error simulado de Facebook."
-        val expectedSnackbarMessage = "Error: $errorMessage" // El fragmento añade "Error: "
+        val expectedSnackbarMessage = "Error: $errorMessage"
         Espresso.onIdle()
 
         assert(facebookCallbackSlot.isCaptured) { "El Callback de Facebook no fue registrado." }
@@ -800,5 +772,43 @@ class LoginFragmentTest {
         coVerify(exactly = 1) { mockLoginViewModel.onBackPressed() }
         coVerify(exactly = 1) { navControllerSpy.popBackStack() }
         assertThat(navControllerSpy.currentDestination?.id).isEqualTo(R.id.mapFragment)
+    }
+
+    //passed
+    @Test
+    fun when_signup_text_is_clicked_then_navigates_to_signup_fragment() = runTest {
+        val navControllerSpy = spyk(mockNavController)
+        activityScenario.onActivity { activity ->
+            val fragment =
+                activity.supportFragmentManager.findFragmentById(android.R.id.content) as LoginFragment
+            activity.runOnUiThread {
+                Navigation.setViewNavController(fragment.requireView(), navControllerSpy)
+            }
+        }
+        Espresso.onIdle()
+        onView(withId(R.id.tvSignUpBtn)).perform(click())
+
+        waitForNavigationTo(navControllerSpy, R.id.signupFragment)
+
+        assertThat(navControllerSpy.currentDestination?.id).isEqualTo(R.id.signupFragment)
+
+        coVerify(exactly = 1) { navControllerSpy.navigate(R.id.action_loginFragment_to_signupFragment) }
+    }
+
+    @Test
+    fun when_event_showMessage_is_emitted_then_snackbar_with_message_is_shown() = runTest {
+        val expectedMessage = "Snackbar de prueba!"
+
+        mainDispatcherRule.testScope.launch {
+            eventFlow.emit(LoginEvent.ShowMessage(expectedMessage))
+        }
+
+        advanceUntilIdle()
+
+        Espresso.onIdle()
+
+        onView(withText(expectedMessage))
+            .inRoot(withDecorView(isDisplayed()))
+            .check(matches(isDisplayed()))
     }
 }
