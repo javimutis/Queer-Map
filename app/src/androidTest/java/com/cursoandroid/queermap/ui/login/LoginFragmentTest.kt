@@ -1,6 +1,7 @@
 package com.cursoandroid.queermap.ui.login
 
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.result.ActivityResultLauncher
@@ -826,6 +827,7 @@ class LoginFragmentTest {
         testActivityScenario.close()
     }
 
+    //passed
     @Test
     fun when_testFacebookSignInDataSource_is_set_then_it_is_used_instead_of_real_one() = runTest {
         clearMocks(mockFacebookSignInDataSource)
@@ -890,6 +892,85 @@ class LoginFragmentTest {
             )
         }
         coVerify(exactly = 0) { mockFacebookSignInDataSource.registerCallback(any(), any()) }
+
+        testActivityScenario.close()
+    }
+
+    @Test
+    fun when_testCallbackManager_is_set_then_it_is_used_instead_of_real_one() = runTest {
+
+        clearMocks(mockCallbackManager, mockFacebookSignInDataSource)
+
+        val testCallbackManager = mockk<CallbackManager>(relaxed = true)
+        val testFacebookSignInDataSource = mockk<FacebookSignInDataSource>(relaxed = true)
+        val slotForTestCallback = slot<FacebookCallback<LoginResult>>()
+
+        every {
+            testFacebookSignInDataSource.registerCallback(
+                eq(testCallbackManager),
+                capture(slotForTestCallback)
+            )
+        } just Runs
+        every { testFacebookSignInDataSource.logInWithReadPermissions(any(), any()) } just Runs
+
+        val testActivityScenario = ActivityScenario.launch(HiltTestActivity::class.java)
+        testActivityScenario.moveToState(Lifecycle.State.RESUMED)
+
+        testActivityScenario.onActivity { activity ->
+            activity.supportFragmentManager.fragmentFactory = TestLoginFragmentFactory(
+                googleSignInDataSource = mockGoogleSignInDataSource,
+                facebookSignInDataSource = testFacebookSignInDataSource,
+                mockGoogleSignInLauncher = mockGoogleSignInLauncher,
+                callbackManager = testCallbackManager
+            )
+
+            val fragment = activity.supportFragmentManager.fragmentFactory.instantiate(
+                activity.classLoader,
+                LoginFragment::class.java.name
+            ) as LoginFragment
+
+            activity.supportFragmentManager.beginTransaction()
+                .replace(android.R.id.content, fragment)
+                .commitNow()
+
+            val navController = TestNavHostController(activity)
+            navController.setGraph(R.navigation.nav_graph)
+            navController.setCurrentDestination(R.id.loginFragment)
+            Navigation.setViewNavController(fragment.requireView(), navController)
+        }
+        Espresso.onIdle()
+
+
+        val requestCode = 64206
+        val resultCode = Activity.RESULT_OK
+        val data = Intent()
+
+
+        testActivityScenario.onActivity { activity ->
+            val fragment =
+                activity.supportFragmentManager.findFragmentById(android.R.id.content) as LoginFragment
+            fragment.onActivityResult(requestCode, resultCode, data)
+        }
+
+        coVerify(exactly = 1) {
+            testCallbackManager.onActivityResult(
+                requestCode,
+                resultCode,
+                data
+            )
+        }
+
+        coVerify(exactly = 0) { mockCallbackManager.onActivityResult(any(), any(), any()) }
+
+        coVerify(exactly = 1) {
+            testFacebookSignInDataSource.registerCallback(
+                eq(testCallbackManager),
+                any()
+            )
+        }
+
+        coVerify(exactly = 0) { mockFacebookSignInDataSource.registerCallback(any(), any()) }
+
 
         testActivityScenario.close()
     }
