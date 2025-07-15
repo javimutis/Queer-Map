@@ -78,7 +78,6 @@ class LoginFragment @JvmOverloads constructor(
         callbackManager ?: CallbackManager.Factory.create()
     }
 
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?

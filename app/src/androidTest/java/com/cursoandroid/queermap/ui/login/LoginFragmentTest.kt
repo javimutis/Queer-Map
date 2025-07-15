@@ -7,6 +7,7 @@ import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewParent
+import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
@@ -28,12 +29,7 @@ import androidx.test.espresso.action.ViewActions.typeText
 import androidx.test.espresso.assertion.ViewAssertions.doesNotExist
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.RootMatchers.isSystemAlertWindow
-import androidx.test.espresso.matcher.ViewMatchers.Visibility
-import androidx.test.espresso.matcher.ViewMatchers.hasErrorText
-import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
-import androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility
-import androidx.test.espresso.matcher.ViewMatchers.withId
-import androidx.test.espresso.matcher.ViewMatchers.withText
+import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.cursoandroid.queermap.HiltTestActivity
@@ -1232,6 +1228,7 @@ class LoginFragmentTest {
         }
 
     /*   Flujo de Navegación */
+    //passed
     @Test
     fun when_forgot_password_text_is_clicked_then_navigates_to_forgot_password_fragment() =
         runTest {
@@ -1261,4 +1258,42 @@ class LoginFragmentTest {
 
             onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
         }
+
+    /*   Robustez y Casos de Borde de Inicios de Sesión  */
+
+    //passed
+    @Test
+    fun when_google_login_results_in_cancelled_status_then_snackbar_is_shown() = runTest {
+        val cancelledMessage = "Inicio de sesión cancelado"
+
+        val resultCallbackSlot = slot<androidx.activity.result.ActivityResultCallback<ActivityResult>>()
+        every { mockGoogleSignInLauncher.launch(any()) } answers {
+
+            mainDispatcherRule.testScope.launch {
+                eventFlow.emit(LoginEvent.ShowMessage(cancelledMessage))
+            }
+        }
+
+        onView(withId(R.id.btnGoogleSignIn)).perform(click())
+
+        mainDispatcherRule.testScope.advanceUntilIdle()
+        Espresso.onIdle()
+
+        onView(withText(cancelledMessage))
+            .inRoot(withDecorView(isDisplayed()))
+            .check(matches(isDisplayed()))
+
+        onView(withText(cancelledMessage))
+            .inRoot(withDecorView(isDisplayed()))
+            .perform(dismissSnackbarViewAction(cancelledMessage))
+
+        delay(500)
+        advanceUntilIdle()
+        Espresso.onIdle()
+
+        coVerify(exactly = 0) { mockLoginViewModel.loginWithGoogle(any()) }
+        coVerify(exactly = 0) { mockGoogleSignInDataSource.handleSignInResult(any()) }
+
+        onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
+    }
 }
