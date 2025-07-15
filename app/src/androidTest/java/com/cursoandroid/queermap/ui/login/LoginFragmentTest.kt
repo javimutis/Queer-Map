@@ -896,6 +896,7 @@ class LoginFragmentTest {
         testActivityScenario.close()
     }
 
+    //passed
     @Test
     fun when_testCallbackManager_is_set_then_it_is_used_instead_of_real_one() = runTest {
 
@@ -971,6 +972,56 @@ class LoginFragmentTest {
 
         coVerify(exactly = 0) { mockFacebookSignInDataSource.registerCallback(any(), any()) }
 
+
+        testActivityScenario.close()
+    }
+
+    //passed
+    @Test
+    fun when_testGoogleSignInLauncher_is_set_then_it_is_used() = runTest {
+        clearMocks(mockGoogleSignInLauncher, mockGoogleSignInDataSource)
+        val testGoogleSignInLauncher = mockk<ActivityResultLauncher<Intent>>(relaxed = true)
+        val testGoogleSignInDataSource = mockk<GoogleSignInDataSource>(relaxed = true)
+
+        val expectedIntent = Intent("TEST_GOOGLE_SIGN_IN_INTENT")
+        every { testGoogleSignInDataSource.getSignInIntent() } returns expectedIntent
+        every { testGoogleSignInLauncher.launch(any()) } just Runs
+        val testActivityScenario = ActivityScenario.launch(HiltTestActivity::class.java)
+        testActivityScenario.moveToState(Lifecycle.State.RESUMED)
+
+        testActivityScenario.onActivity { activity ->
+            activity.supportFragmentManager.fragmentFactory = TestLoginFragmentFactory(
+                googleSignInDataSource = testGoogleSignInDataSource,
+                facebookSignInDataSource = mockFacebookSignInDataSource,
+                mockGoogleSignInLauncher = testGoogleSignInLauncher,
+                callbackManager = mockCallbackManager
+            )
+
+            val fragment = activity.supportFragmentManager.fragmentFactory.instantiate(
+                activity.classLoader,
+                LoginFragment::class.java.name
+            ) as LoginFragment
+
+            activity.supportFragmentManager.beginTransaction()
+                .replace(android.R.id.content, fragment)
+                .commitNow()
+
+            val navController = TestNavHostController(activity)
+            navController.setGraph(R.navigation.nav_graph)
+            navController.setCurrentDestination(R.id.loginFragment)
+            Navigation.setViewNavController(fragment.requireView(), navController)
+        }
+        Espresso.onIdle()
+
+
+        onView(withId(R.id.btnGoogleSignIn)).perform(click())
+
+        coVerify(exactly = 1) { testGoogleSignInLauncher.launch(expectedIntent) }
+
+        coVerify(exactly = 1) { testGoogleSignInDataSource.getSignInIntent() }
+
+        coVerify(exactly = 0) { mockGoogleSignInLauncher.launch(any()) }
+        coVerify(exactly = 0) { mockGoogleSignInDataSource.getSignInIntent() }
 
         testActivityScenario.close()
     }
