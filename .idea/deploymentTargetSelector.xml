@@ -2,9 +2,6 @@
 <project version="4">
   <component name="deploymentTargetSelector">
     <selectionStates>
-      <SelectionState runConfigName="when_google_login_results_in_cancelled_status_then_snackbar_is_shown()">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
       <SelectionState runConfigName="when_facebook_login_sends_null_data_then_error_is_handled()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
