@@ -2,19 +2,19 @@
 <project version="4">
   <component name="deploymentTargetSelector">
     <selectionStates>
-      <SelectionState runConfigName="when_viewmodel_uiState_loading_is_false_then_progress_bar_is_hidden()">
+      <SelectionState runConfigName="when_google_login_results_in_cancelled_status_then_snackbar_is_shown()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="when_facebook_login_successful_then_loginWithFacebook_is_called_with_token()">
+      <SelectionState runConfigName="when_facebook_login_sends_null_data_then_error_is_handled()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="when_facebook_login_cancelled_then_snackbar_with_cancel_message_is_shown()">
+      <SelectionState runConfigName="when_testLogHelper_is_set_then_it_is_used_for_logD()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="when_facebook_login_error_then_snackbar_with_error_message_is_shown()">
+      <SelectionState runConfigName="when_testLogEHelper_is_set_then_it_is_used_for_logE()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="when_back_icon_is_clicked_then_navigate_back_is_called()">
+      <SelectionState runConfigName="when_testLogWHelper_is_set_then_it_is_used_for_logW()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>

@@ -1458,4 +1458,63 @@ class LoginFragmentTest {
 
         onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
     }
+
+    @Test
+    fun when_testLogWHelper_is_set_then_it_is_used_for_logW() = runTest {
+        val capturedLogTag = slot<String>()
+        val capturedLogMessage = slot<String>()
+
+        val mockLogWHelper: (String, String) -> Unit = mockk(relaxed = true)
+        every { mockLogWHelper(capture(capturedLogTag), capture(capturedLogMessage)) } just Runs
+        coEvery { mockGoogleSignInDataSource.handleSignInResult(any()) } returns Result.Success("fake_valid_google_token")
+        activityScenario =
+            ActivityScenario.launch(HiltTestActivity::class.java).onActivity { activity ->
+                val fragment = LoginFragment(
+                    googleSignInDataSource = mockGoogleSignInDataSource,
+                    facebookSignInDataSource = mockFacebookSignInDataSource,
+                    googleSignInLauncher = mockGoogleSignInLauncher,
+                    callbackManager = mockCallbackManager
+                ).apply {
+                    testLogWHelper = mockLogWHelper
+                }
+                activity.supportFragmentManager.beginTransaction()
+                    .replace(android.R.id.content, fragment)
+                    .commitNow()
+                Navigation.setViewNavController(fragment.requireView(), mockNavController)
+
+                mainDispatcherRule.testScope.launch {
+                    eventFlow.emit(LoginEvent.ShowMessage("Advertencia: algunas características podrían no funcionar."))
+                }
+            }
+        Espresso.onIdle()
+
+        mainDispatcherRule.testScope.advanceUntilIdle()
+
+        val expectedTag = "LoginFragment"
+        val expectedMessage = "Advertencia: algunas características podrían no funcionar."
+
+        coVerify(atLeast = 1) {
+            mockLogWHelper(
+                expectedTag,
+                expectedMessage
+            )
+        }
+        assertThat(capturedLogTag.captured).isEqualTo(expectedTag)
+        assertThat(capturedLogMessage.captured).isEqualTo(expectedMessage)
+
+        onView(withText(expectedMessage))
+            .inRoot(withDecorView(isDisplayed()))
+            .check(matches(isDisplayed()))
+
+        onView(withText(expectedMessage))
+            .inRoot(withDecorView(isDisplayed()))
+            .perform(dismissSnackbarViewAction(expectedMessage))
+
+        delay(500)
+        advanceUntilIdle()
+        Espresso.onIdle()
+
+        onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
+    }
+
 }

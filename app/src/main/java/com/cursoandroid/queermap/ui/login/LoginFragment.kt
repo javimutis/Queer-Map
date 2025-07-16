@@ -39,7 +39,10 @@ class LoginFragment @JvmOverloads constructor(
     private val callbackManager: CallbackManager? = null
 ) : Fragment() {
 
+    private val TAG = "LoginFragment"
+
     private var _binding: FragmentLoginBinding? = null
+
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     internal val binding get() = _binding
@@ -266,7 +269,13 @@ class LoginFragment @JvmOverloads constructor(
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.event.collect { event ->
                     when (event) {
-                        is LoginEvent.ShowMessage -> showSnackbar(event.message)
+                        is LoginEvent.ShowMessage -> {
+                            showSnackbar(event.message)
+                            // ADD THIS LINE: Call logW for warning messages
+                            if (event.message.startsWith("Advertencia")) { // Or use a specific error code/type if ShowMessage has one
+                                logW(TAG, event.message)
+                            }
+                        }
                         is LoginEvent.NavigateToHome ->
                             findNavController().navigate(R.id.action_loginFragment_to_mapFragment)
 
