@@ -361,6 +361,19 @@
             </AndroidTestResultsTableState>
           </value>
         </entry>
+        <entry key="-148168009">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="QueerMap_Test_API30" value="120" />
+                  <entry key="Tests" value="360" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
         <entry key="-92124282">
           <value>
             <AndroidTestResultsTableState>
@@ -519,6 +532,19 @@
           </value>
         </entry>
         <entry key="549526996">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="QueerMap_Test_API30" value="120" />
+                  <entry key="Tests" value="360" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
+        <entry key="603107756">
           <value>
             <AndroidTestResultsTableState>
               <option name="preferredColumnWidths">

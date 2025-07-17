@@ -29,12 +29,13 @@ import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
 @AndroidEntryPoint
 class LoginFragment @JvmOverloads constructor(
-    // These are now ONLY for overriding in tests,
-    // Hilt will inject them if not provided by constructor
-    private val googleSignInLauncher: ActivityResultLauncher<Intent>? = null,
-    private val callbackManager: CallbackManager? = null
+    private val providedGoogleSignInLauncher: ActivityResultLauncher<Intent>? = null,
+    private val providedCallbackManager: CallbackManager? = null,
+    private val providedGoogleSignInDataSource: GoogleSignInDataSource? = null,
+    private val providedFacebookSignInDataSource: FacebookSignInDataSource? = null
 ) : Fragment() {
 
     private val TAG = "LoginFragment"
@@ -46,29 +47,37 @@ class LoginFragment @JvmOverloads constructor(
 
     private val viewModel: LoginViewModel by viewModels()
 
-    // Hilt will inject these directly. No need for internal _name and actualName properties.
+    // Estas son las dependencias que Hilt inyectará si el constructor no las provee.
     @Inject
-    internal lateinit var hiltGoogleSignInDataSource: GoogleSignInDataSource // Renamed to avoid clash
+    internal lateinit var hiltGoogleSignInDataSource: GoogleSignInDataSource
 
     @Inject
-    internal lateinit var hiltFacebookSignInDataSource: FacebookSignInDataSource // Renamed to avoid clash
+    internal lateinit var hiltFacebookSignInDataSource: FacebookSignInDataSource
 
-    // These public getters will provide either the constructor-injected mock (for tests)
-    // or the Hilt-injected instance (for real app or if no mock passed in test constructor).
-    // Note: The constructor parameters for DataSources are removed as @BindValue handles them now.
+    // --- CAMBIOS CLAVE AQUÍ ---
+    // Estas propiedades ahora DEBEN priorizar los valores del constructor si no son nulos.
+    // Si son nulos (significa que no se pasaron en el constructor, como en producción),
+    // entonces usa las instancias inyectadas por Hilt.
+
     internal val actualGoogleSignInDataSource: GoogleSignInDataSource
-        get() = hiltGoogleSignInDataSource // Always use the Hilt-injected one in production, and @BindValue mock in tests
+        get() = providedGoogleSignInDataSource ?: hiltGoogleSignInDataSource
 
     internal val actualFacebookSignInDataSource: FacebookSignInDataSource
-        get() = hiltFacebookSignInDataSource // Always use the Hilt-injected one in production, and @BindValue mock in tests
+        get() = providedFacebookSignInDataSource ?: hiltFacebookSignInDataSource
 
-    // This is still needed for testing, as ActivityResultLauncher is created in onViewCreated
-    // and cannot be @BindValue injected easily.
-    internal var testGoogleSignInLauncher: ActivityResultLauncher<Intent>? = null
+    private val actualCallbackManager: CallbackManager by lazy {
+        providedCallbackManager ?: CallbackManager.Factory.create()
+    }
 
-    // This is the one passed via constructor or created via Facebook SDK factory
-    internal var testCallbackManager: CallbackManager? = null
+    // El ActivityResultLauncher es un poco diferente porque se registra en onViewCreated,
+    // pero podemos hacer que el getter también priorice el del constructor.
+    private var registeredGoogleSignInLauncher: ActivityResultLauncher<Intent>? = null
 
+    // --- FIX IS HERE ---
+    // Make actualGoogleSignInLauncher nullable
+    internal val actualGoogleSignInLauncher: ActivityResultLauncher<Intent>? // <-- Changed to nullable
+        get() = providedGoogleSignInLauncher ?: registeredGoogleSignInLauncher
+    // --- END FIX ---
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     internal var testLogHelper: ((String, String) -> Unit)? = null
@@ -79,12 +88,6 @@ class LoginFragment @JvmOverloads constructor(
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     internal var testLogWHelper: ((String, String) -> Unit)? = null
 
-
-    // This will now prioritize the constructor-passed callbackManager (for tests)
-    // or create a default one (for production).
-    private val actualCallbackManager: CallbackManager by lazy {
-        callbackManager ?: CallbackManager.Factory.create()
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -98,17 +101,18 @@ class LoginFragment @JvmOverloads constructor(
         super.onViewCreated(view, savedInstanceState)
         viewModel.loadUserCredentials()
 
-        // Use the constructor-passed launcher if available, otherwise register a new one.
-        val currentGoogleSignInLauncher = googleSignInLauncher ?: registerForActivityResult(
-            ActivityResultContracts.StartActivityForResult()
-        ) { result ->
-            if (result.resultCode == Activity.RESULT_OK) {
-                handleGoogleSignInResult(result.data)
-            } else {
-                showSnackbar("Inicio de sesión cancelado")
+        if (providedGoogleSignInLauncher == null) {
+            registeredGoogleSignInLauncher = registerForActivityResult(
+                ActivityResultContracts.StartActivityForResult()
+            ) { result ->
+                if (result.resultCode == Activity.RESULT_OK) {
+                    handleGoogleSignInResult(result.data)
+                } else {
+                    showSnackbar("Inicio de sesión cancelado")
+                }
             }
         }
-        this.testGoogleSignInLauncher = currentGoogleSignInLauncher // Expose for testing if it's the registered one
+        // No need for testGoogleSignInLauncher as actualGoogleSignInLauncher handles it now.
 
         initFacebookLogin()
         setupListeners()
@@ -197,8 +201,8 @@ class LoginFragment @JvmOverloads constructor(
         }
 
         binding?.btnGoogleSignIn?.setOnClickListener {
-            // Use the actual launcher that was either provided by constructor or registered
-            testGoogleSignInLauncher?.launch(actualGoogleSignInDataSource.getSignInIntent())
+            // Use safe call operator `?.` because actualGoogleSignInLauncher is now nullable
+            actualGoogleSignInLauncher?.launch(actualGoogleSignInDataSource.getSignInIntent())
         }
 
         binding?.tvForgotPassword?.setOnClickListener {
@@ -234,7 +238,9 @@ class LoginFragment @JvmOverloads constructor(
 
                 is com.cursoandroid.queermap.util.Result.Failure -> {
                     val errorMessage = result.exception.message ?: "Error desconocido"
-                    logE("LoginFragment", "Google Sign-In failed: $errorMessage")
+                    // --- CAMBIO CLAVE AQUÍ ---
+                    logE("LoginFragment", "Google Sign-In failed: $errorMessage", result.exception) // Pasa la excepción
+                    // --- FIN CAMBIO ---
                     showSnackbar("Error en Sign-In: $errorMessage")
                 }
             }

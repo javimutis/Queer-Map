@@ -1,4 +1,4 @@
-package com.cursoandroid.queermap // ESTE PAQUETE DEBE SER EL applicationID
+package com.cursoandroid.queermap // THIS PACKAGE MUST BE THE applicationID
 
 import android.app.Application
 import android.content.Context
@@ -11,6 +11,7 @@ class CustomTestRunner : AndroidJUnitRunner() {
         className: String?,
         context: Context?
     ): Application {
+        // This line is correct and crucial for Hilt to use its test application.
         return super.newApplication(cl, HiltTestApplication::class.java.name, context)
     }
 }

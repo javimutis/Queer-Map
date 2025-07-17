@@ -3,10 +3,10 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.hilt) // Asegúrate de que este plugin esté aplicado
+    alias(libs.plugins.hilt) // Applied here - GOOD
     alias(libs.plugins.google.services)
     alias(libs.plugins.secrets)
-    kotlin("kapt") // Este plugin sigue siendo crucial para Hilt
+    kotlin("kapt") // Applied here - CRUCIAL AND GOOD
     id("androidx.navigation.safeargs.kotlin")
 }
 
@@ -129,9 +129,9 @@ dependencies {
 
     // Hilt **¡Asegúrate de que estas dos líneas estén presentes y correctas!**
     implementation(libs.hilt.core)
-    implementation(libs.androidx.navigation.common.android)
-    implementation(libs.espresso.core) // Esta es la dependencia que busca el plugin.
-    kapt(libs.hilt.compiler)       // El procesador de anotaciones.
+    // Removed: implementation(libs.androidx.navigation.common.android) // This looks like an accidental dependency or misplacement, it's not a Hilt core dependency.
+    // Removed: implementation(libs.espresso.core) // Same as above, not a core Hilt dependency.
+    kapt(libs.hilt.compiler)       // The annotation processor for main sources - GOOD.
 
     // --- DEPENDENCIAS DE PRUEBAS ---
 
@@ -160,8 +160,8 @@ dependencies {
 
     // Hilt para Pruebas de Instrumentación
     androidTestImplementation(libs.hilt.android.testing)
-    // El procesador de anotaciones para Hilt en las pruebas de instrumentación
-    kaptAndroidTest(libs.hilt.compiler)
+    // The annotation processor for Hilt in instrumentation tests
+    kaptAndroidTest(libs.hilt.compiler) // CRUCIAL AND GOOD. This applies kapt to your androidTest source set.
 
     // Fragment Testing
     androidTestImplementation(libs.androidx.fragment.testing)

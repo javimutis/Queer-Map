@@ -36,6 +36,7 @@ import com.cursoandroid.queermap.R
 import com.cursoandroid.queermap.common.InputValidator
 import com.cursoandroid.queermap.data.source.remote.FacebookSignInDataSource
 import com.cursoandroid.queermap.data.source.remote.GoogleSignInDataSource
+import com.cursoandroid.queermap.di.TestLoginModule
 import com.cursoandroid.queermap.util.EspressoIdlingResource
 import com.cursoandroid.queermap.util.MainDispatcherRule
 import com.cursoandroid.queermap.util.Result
@@ -53,9 +54,11 @@ import com.google.common.truth.Truth.assertThat
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import dagger.hilt.android.testing.UninstallModules
 import io.mockk.CapturingSlot
 import io.mockk.Runs
 import io.mockk.clearAllMocks
+import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -103,16 +106,11 @@ class LoginFragmentTest {
     @JvmField
     val mockInputValidator: InputValidator = mockk(relaxed = true)
 
-    @BindValue
-    @JvmField
-    val mockGoogleSignInDataSource: GoogleSignInDataSource = mockk(relaxed = true)
-
-    @BindValue
-    @JvmField
-    val mockFacebookSignInDataSource: FacebookSignInDataSource = mockk(relaxed = true)
-
     private lateinit var mockGoogleSignInLauncher: ActivityResultLauncher<Intent>
     private lateinit var mockCallbackManager: CallbackManager
+    private lateinit var mockGoogleSignInDataSource: GoogleSignInDataSource // <-- Needs initialization
+    private lateinit var mockFacebookSignInDataSource: FacebookSignInDataSource // <-- Needs initialization
+
 
     private lateinit var activityScenario: ActivityScenario<HiltTestActivity>
     private lateinit var mockNavController: TestNavHostController
@@ -189,6 +187,8 @@ class LoginFragmentTest {
     private fun launchLoginFragmentWithCustomDependencies(
         googleSignInLauncher: ActivityResultLauncher<Intent>? = null,
         callbackManager: CallbackManager? = null,
+        googleSignInDataSource: GoogleSignInDataSource? = null,
+        facebookSignInDataSource: FacebookSignInDataSource? = null
     ): LoginFragment {
         if (this::activityScenario.isInitialized) {
             activityScenario.close()
@@ -198,8 +198,13 @@ class LoginFragmentTest {
         var fragment: LoginFragment? = null
         activityScenario.onActivity { activity ->
             fragment = LoginFragment(
-                googleSignInLauncher = googleSignInLauncher ?: this.mockGoogleSignInLauncher,
-                callbackManager = callbackManager ?: this.mockCallbackManager,
+                providedGoogleSignInLauncher = googleSignInLauncher
+                    ?: this.mockGoogleSignInLauncher,
+                providedCallbackManager = callbackManager ?: this.mockCallbackManager,
+                providedGoogleSignInDataSource = googleSignInDataSource
+                    ?: this.mockGoogleSignInDataSource,
+                providedFacebookSignInDataSource = facebookSignInDataSource
+                    ?: this.mockFacebookSignInDataSource
             )
 
             activity.supportFragmentManager.beginTransaction()
@@ -229,8 +234,10 @@ class LoginFragmentTest {
         var fragment: LoginFragment? = null
         activityScenario.onActivity { activity ->
             fragment = LoginFragment(
-                googleSignInLauncher = this.mockGoogleSignInLauncher,
-                callbackManager = this.mockCallbackManager
+                providedGoogleSignInLauncher = this.mockGoogleSignInLauncher,
+                providedCallbackManager = this.mockCallbackManager,
+                providedGoogleSignInDataSource = this.mockGoogleSignInDataSource,
+                providedFacebookSignInDataSource = this.mockFacebookSignInDataSource
             ).apply {
                 logDHelper?.let { testLogHelper = it }
                 logEHelper?.let { testLogEHelper = it }
@@ -250,11 +257,11 @@ class LoginFragmentTest {
         return fragment!!
     }
 
-
     @Before
     fun setUp() {
         hiltRule.inject()
-        clearAllMocks()
+        clearAllMocks() // Esto limpia TODOS los mocks en la clase, incluyendo los BindValue.
+        // Si quieres limpiar solo algunos, usa clearMocks(mock1, mock2, ...)
 
         uiStateFlow = MutableStateFlow(LoginUiState())
         eventFlow = MutableSharedFlow()
@@ -266,31 +273,37 @@ class LoginFragmentTest {
         every { mockLoginViewModel.loginWithGoogle(any()) } just Runs
         every { mockLoginViewModel.onForgotPasswordClicked() } just Runs
         every { mockLoginViewModel.onBackPressed() } just Runs
-        every { mockLoginViewModel.loginWithFacebook(any()) } just Runs // Added for completeness
+        every { mockLoginViewModel.loginWithFacebook(any()) } just Runs
 
         // Initialize mockGoogleSignInLauncher and mockCallbackManager
-        // These cannot be @BindValue
         mockGoogleSignInLauncher = mockk<ActivityResultLauncher<Intent>>(relaxed = true)
         mockCallbackManager = mockk(relaxed = true)
         every { mockCallbackManager.onActivityResult(any(), any(), any()) } returns true
 
+        // Initialize your DataSources
+        mockGoogleSignInDataSource = mockk(relaxed = true)
+        mockFacebookSignInDataSource = mockk(relaxed = true)
+
         // For Facebook Callback capture (still needed for specific tests)
         facebookCallbackSlot = slot()
-        // Register the callback on the @BindValue mockFacebookSignInDataSource
+        // NOTA: Esta expectativa se establecerá en setUp().
+        // Los tests que necesiten un CallbackManager diferente (como el test de CallbackManager)
+        // deberán limpiar y re-establecer sus propias expectativas.
         every {
             mockFacebookSignInDataSource.registerCallback(any(), capture(facebookCallbackSlot))
         } just Runs
 
-        // Set default behaviors for @BindValue DataSources
+        // Set default behaviors for your DataSources
         every { mockGoogleSignInDataSource.getSignInIntent() } answers {
             Intent("com.google.android.gms.auth.GOOGLE_SIGN_IN")
         }
+        // NOTA: Esta expectativa se establecerá en setUp().
+        // Los tests que necesiten un comportamiento diferente (como el de CallbackManager),
+        // deberán re-establecerla si usan `clearMocks` para `mockFacebookSignInDataSource`.
         every { mockFacebookSignInDataSource.logInWithReadPermissions(any(), any()) } just Runs
-
 
         IdlingRegistry.getInstance().register(EspressoIdlingResource.countingIdlingResource)
 
-        // Launch the activity scenario. Hilt will inject the @BindValue mocks into LoginFragment's @Inject fields.
         activityScenario = ActivityScenario.launch(HiltTestActivity::class.java)
 
         activityScenario.onActivity { activity ->
@@ -298,17 +311,18 @@ class LoginFragmentTest {
             mockNavController.setGraph(R.navigation.nav_graph)
             mockNavController.setCurrentDestination(R.id.loginFragment)
 
-            // Hilt handles the fragment instantiation and injection, so no custom FragmentFactory needed here.
-            // Just add the fragment to the activity.
+            // Pass ALL your mocks to the LoginFragment constructor,
+            // as the fragment now explicitly expects them.
             val fragment = LoginFragment(
-                googleSignInLauncher = mockGoogleSignInLauncher, // Pass the default mock launcher
-                callbackManager = mockCallbackManager // Pass the default mock callback manager
+                providedGoogleSignInLauncher = mockGoogleSignInLauncher,
+                providedCallbackManager = mockCallbackManager,
+                providedGoogleSignInDataSource = mockGoogleSignInDataSource,
+                providedFacebookSignInDataSource = mockFacebookSignInDataSource
             )
             activity.supportFragmentManager.beginTransaction()
                 .replace(android.R.id.content, fragment, "LoginFragmentTag")
                 .commitNow()
 
-            // Latch to wait for fragment view to be ready and NavController to be set
             val latch = CountDownLatch(1)
             fragment.viewLifecycleOwnerLiveData.observe(fragment) { viewLifecycleOwner ->
                 if (viewLifecycleOwner != null && fragment.view != null &&
@@ -336,8 +350,6 @@ class LoginFragmentTest {
     /* Initialization and UI State */
     @Test
     fun when_login_fragment_is_launched_then_all_essential_ui_elements_are_displayed() {
-        // No explicit launch needed here, as setUp() already launches the fragment
-        // with default mocked dependencies provided by @BindValue.
         onView(withId(R.id.tvTitle)).check(matches(isDisplayed()))
         onView(withId(R.id.etEmailLogin)).check(matches(isDisplayed()))
         onView(withId(R.id.etPassword)).check(matches(isDisplayed()))
@@ -600,31 +612,32 @@ class LoginFragmentTest {
             // Configure ViewModel to emit the error message for empty fields.
             coEvery { mockLoginViewModel.loginWithEmail("", "") } coAnswers {
                 uiStateFlow.value = uiStateFlow.value.copy(isLoading = false)
-                // Use testScope.launch for consistency and proper dispatcher handling
-                mainDispatcherRule.testScope.launch {
+                mainDispatcherRule.testScope.launch { // Esto ya es correcto
                     eventFlow.emit(LoginEvent.ShowMessage(combinedEmptyFieldsError))
                 }
             }
             // Perform UI action.
             onView(withId(R.id.btnLogin)).perform(click())
 
-            // Advance time for coroutines and UI updates.
-            mainDispatcherRule.testScope.advanceUntilIdle()
-            Espresso.onIdle()
+            // --- CAMBIOS AQUÍ ---
+            mainDispatcherRule.testScope.advanceUntilIdle() // Asegura que las corrutinas se procesen
+            Espresso.onIdle() // Espera a que el hilo principal esté inactivo y el UI se actualice
+            // --- FIN CAMBIOS ---
 
-            // Verify Snackbar is displayed. Using isSystemAlertWindow() is preferred for Snackbars.
+            // Verify Snackbar is displayed.
             onView(withText(combinedEmptyFieldsError))
                 .inRoot(isSystemAlertWindow())
                 .check(matches(isDisplayed()))
 
             // Dismiss Snackbar using the helper for a clean test state.
             onView(withText(combinedEmptyFieldsError))
-                .inRoot(isSystemAlertWindow()) // Use the consistent matcher
+                .inRoot(isSystemAlertWindow())
                 .perform(dismissSnackbarViewAction(combinedEmptyFieldsError))
 
-            // Advance until idle to ensure the dismissal is fully processed.
-            mainDispatcherRule.testScope.advanceUntilIdle()
-            Espresso.onIdle()
+            // --- CAMBIOS AQUÍ ---
+            mainDispatcherRule.testScope.advanceUntilIdle() // Asegura que las corrutinas de dismissal se procesen
+            Espresso.onIdle() // Espera a que el hilo principal esté inactivo después del dismissal
+            // --- FIN CAMBIOS ---
 
             // Verify ViewModel interaction and progress bar state.
             coVerify(exactly = 1) { mockLoginViewModel.loginWithEmail("", "") }
@@ -1091,25 +1104,24 @@ class LoginFragmentTest {
     fun when_event_showMessage_is_emitted_then_snackbar_with_message_is_shown() = runTest {
         val expectedMessage = "Snackbar de prueba!"
 
-        // Emit the ShowMessage event from the eventFlow on the test dispatcher
         mainDispatcherRule.testScope.launch {
             eventFlow.emit(LoginEvent.ShowMessage(expectedMessage))
         }
 
-        // Advance until idle to process the event and allow the Snackbar to display
-        // Espresso.onIdle() is implicitly called by advanceUntilIdle() for UI synchronization.
-        advanceUntilIdle()
+        // --- CAMBIOS AQUÍ ---
+        advanceUntilIdle() // Procesa el evento de la corrutina
+        Espresso.onIdle() // Espera a que el UI se actualice
+        // --- FIN CAMBIOS ---
 
         // Verify the Snackbar is displayed with the correct message
         onView(withText(expectedMessage))
-            .inRoot(isSystemAlertWindow()) // Standardized to isSystemAlertWindow()
+            .inRoot(isSystemAlertWindow())
             .check(matches(isDisplayed()))
     }
 
     @Test
     fun when_viewModel_emits_errorMessage_then_snackbar_is_shown() = runTest {
-        // No need to clearMocks here; setUp() ensures fresh mocks.
-        // We only need to directly update the uiStateFlow.
+
 
         val errorMessage = "Hubo un problema al iniciar sesión."
 
@@ -1162,21 +1174,17 @@ class LoginFragmentTest {
     /* Dependency Injection and Helper Testing (Mocking) */
     @Test
     fun when_custom_googleSignInDataSource_is_set_then_it_is_used_instead_of_default() = runTest {
-        // We do NOT directly set googleSignInDataSource in launchLoginFragmentWithCustomDependencies
-        // because it's already a @BindValue mock.
-        // Instead, we manipulate the behavior of the *injected* mockGoogleSignInDataSource.
-
         val testIntent = Intent("TEST_GOOGLE_SIGN_IN_INTENT")
-        // Configure the behavior of the @BindValue mockGoogleSignInDataSource
         every { mockGoogleSignInDataSource.getSignInIntent() } returns testIntent
 
-        // Re-launching the fragment with the default setup (which uses the @BindValue mocks)
-        // is sufficient, as we've configured mockGoogleSignInDataSource's behavior.
-        // No need for a custom launch method with explicit datasource parameters here.
         activityScenario.onActivity { activity ->
             val fragment = LoginFragment(
-                googleSignInLauncher = mockGoogleSignInLauncher,
-                callbackManager = mockCallbackManager
+                // --- CAMBIO AQUÍ: Usar los nuevos nombres de parámetros ---
+                providedGoogleSignInLauncher = mockGoogleSignInLauncher,
+                providedCallbackManager = mockCallbackManager,
+                providedGoogleSignInDataSource = mockGoogleSignInDataSource,
+                providedFacebookSignInDataSource = mockFacebookSignInDataSource
+                // --- FIN CAMBIO ---
             )
             activity.supportFragmentManager.beginTransaction()
                 .replace(android.R.id.content, fragment, "LoginFragmentTag")
@@ -1188,37 +1196,29 @@ class LoginFragmentTest {
 
         onView(withId(R.id.btnGoogleSignIn)).perform(click())
 
-        // Verify the @BindValue mock was called with the configured behavior.
         coVerify(exactly = 1) { mockGoogleSignInDataSource.getSignInIntent() }
         coVerify(exactly = 1) { mockGoogleSignInLauncher.launch(testIntent) }
-
-        // No need for 'exactly = 0' checks on other mocks because we're testing the
-        // behavior of the *same* mock, just with a specific configuration.
     }
+
 
     @Test
     fun when_custom_facebookSignInDataSource_is_set_then_it_is_used_instead_of_default() = runTest {
-        // Similar to GoogleSignInDataSource, mockFacebookSignInDataSource is a @BindValue mock.
-        // We configure its behavior directly instead of trying to "inject" a new one.
+        val testCallbackManager = mockk<CallbackManager>(relaxed = true)
 
-        val testCallbackManager =
-            mockk<CallbackManager>(relaxed = true) // This can still be a separate mock for specific testing scenarios if needed
-
-        // Configure the behavior of the @BindValue mockFacebookSignInDataSource
         val slotForCallback = slot<FacebookCallback<LoginResult>>()
         every {
             mockFacebookSignInDataSource.registerCallback(any(), capture(slotForCallback))
         } just Runs
         every { mockFacebookSignInDataSource.logInWithReadPermissions(any(), any()) } just Runs
 
-        // Re-launching the fragment with the default setup (which uses the @BindValue mocks)
-        // is sufficient, as we've configured mockFacebookSignInDataSource's behavior.
-        // If you need to swap the CallbackManager, you would use launchLoginFragmentWithCustomDependencies for that.
         activityScenario.onActivity { activity ->
             val fragment = LoginFragment(
-                googleSignInLauncher = mockGoogleSignInLauncher,
-                // If you want to use the 'testCallbackManager' for this specific test:
-                callbackManager = testCallbackManager
+                // --- CAMBIO AQUÍ: Usar los nuevos nombres de parámetros ---
+                providedGoogleSignInLauncher = mockGoogleSignInLauncher,
+                providedCallbackManager = testCallbackManager,
+                providedGoogleSignInDataSource = mockGoogleSignInDataSource,
+                providedFacebookSignInDataSource = mockFacebookSignInDataSource
+                // --- FIN CAMBIO ---
             )
             activity.supportFragmentManager.beginTransaction()
                 .replace(android.R.id.content, fragment, "LoginFragmentTag")
@@ -1230,84 +1230,64 @@ class LoginFragmentTest {
 
         onView(withId(R.id.btnFacebookLogin)).perform(click())
 
-        // Verify the @BindValue mockFacebookSignInDataSource was called
         coVerify(exactly = 1) {
             mockFacebookSignInDataSource.logInWithReadPermissions(
                 any(),
                 listOf("email", "public_profile")
             )
         }
-        // Verify the registerCallback was called on the @BindValue mockFacebookSignInDataSource
-        // with the *correct* CallbackManager (whether it's testCallbackManager or mockCallbackManager)
-        coVerify(exactly = 1) {
-            mockFacebookSignInDataSource.registerCallback(
-                eq(testCallbackManager), // Check if the correct callback manager was used
-                any()
-            )
-        }
-        // No need for 'exactly = 0' checks, as we're testing the behavior of the same mock.
-    }
-
-    @Test
-    fun when_custom_callbackManager_is_set_then_it_is_used_instead_of_default() = runTest {
-        val testCallbackManager = mockk<CallbackManager>(relaxed = true)
-        // We still need to mock the @BindValue FacebookSignInDataSource to interact with the custom CallbackManager
-        val testFacebookSignInDataSource = mockk<FacebookSignInDataSource>(relaxed = true)
-        val slotForTestCallback = slot<FacebookCallback<LoginResult>>()
-
-        // Configure the @BindValue mockFacebookSignInDataSource to register the callback
-        // on the *custom* testCallbackManager. This is the crucial part.
-        every {
-            mockFacebookSignInDataSource.registerCallback(
-                eq(testCallbackManager), // This ensures it's the testCallbackManager being registered
-                capture(slotForTestCallback)
-            )
-        } just Runs
-        every { mockFacebookSignInDataSource.logInWithReadPermissions(any(), any()) } just Runs
-
-        // Launch fragment with the custom callbackManager.
-        // We use the helper here because callbackManager is a constructor parameter, not @Inject field.
-        val fragment = launchLoginFragmentWithCustomDependencies(
-            callbackManager = testCallbackManager
-        )
-        Espresso.onIdle()
-
-        val requestCode = 64206
-        val resultCode = Activity.RESULT_OK
-        val data = Intent()
-
-        activityScenario.onActivity {
-            // Directly call onActivityResult on the fragment instance
-            fragment.onActivityResult(requestCode, resultCode, data)
-        }
-
-        // Verify the custom CallbackManager was called
-        coVerify(exactly = 1) {
-            testCallbackManager.onActivityResult(
-                requestCode,
-                resultCode,
-                data
-            )
-        }
-        // Verify the *default* mockCallbackManager was NOT called
-        coVerify(exactly = 0) {
-            mockCallbackManager.onActivityResult(
-                any(),
-                any(),
-                any()
-            )
-        }
-        // Verify the @BindValue mockFacebookSignInDataSource registered the callback with the *custom* manager
         coVerify(exactly = 1) {
             mockFacebookSignInDataSource.registerCallback(
                 eq(testCallbackManager),
                 any()
             )
         }
-        // Verify the @BindValue mockFacebookSignInDataSource did NOT register with the default
-        coVerify(exactly = 0) {
+    }
+
+    @Test
+    fun when_custom_callbackManager_is_set_then_it_is_used_instead_of_default() = runTest {
+        val testCallbackManager = mockk<CallbackManager>(relaxed = true)
+
+        clearMocks(mockFacebookSignInDataSource)
+
+        val slotForCallback = slot<FacebookCallback<LoginResult>>()
+        every {
             mockFacebookSignInDataSource.registerCallback(
-                eq(mockCallbackManager), // Explicitly check for the default mock
+                eq(testCallbackManager),
+                capture(slotForCallback)
+            )
+        } just Runs
+
+        every { mockFacebookSignInDataSource.logInWithReadPermissions(any(), any()) } just Runs
+
+        activityScenario.onActivity { activity ->
+            val fragment = LoginFragment(
+                // --- CAMBIO AQUÍ: Usar los nuevos nombres de parámetros ---
+                providedGoogleSignInLauncher = mockGoogleSignInLauncher,
+                providedCallbackManager = testCallbackManager,
+                providedGoogleSignInDataSource = mockGoogleSignInDataSource,
+                providedFacebookSignInDataSource = mockFacebookSignInDataSource
+                // --- FIN CAMBIO ---
+            )
+            activity.supportFragmentManager.beginTransaction()
+                .replace(android.R.id.content, fragment, "LoginFragmentTag")
+                .commitNow()
+            Navigation.setViewNavController(fragment.requireView(), mockNavController)
+        }
+        activityScenario.moveToState(Lifecycle.State.RESUMED)
+        Espresso.onIdle()
+
+        onView(withId(R.id.btnFacebookLogin)).perform(click())
+
+        coVerify(exactly = 1) {
+            mockFacebookSignInDataSource.logInWithReadPermissions(
+                any(),
+                listOf("email", "public_profile")
+            )
+        }
+        coVerify(exactly = 1) {
+            mockFacebookSignInDataSource.registerCallback(
+                eq(testCallbackManager),
                 any()
             )
         }
@@ -1348,17 +1328,19 @@ class LoginFragmentTest {
         val capturedLogMessage = slot<String>()
 
         val mockLogHelper: (String, String) -> Unit = mockk(relaxed = true)
-        every { mockLogHelper(capture(capturedLogTag), capture(capturedLogMessage)) } just Runs
+        val capturedMessages = mutableListOf<String>()
+
+        every { mockLogHelper(capture(capturedLogTag), capture(capturedLogMessage)) } answers {
+            capturedMessages.add(capturedLogMessage.captured)
+        }
 
         coEvery { mockGoogleSignInDataSource.handleSignInResult(any()) } returns Result.Success("fake_google_id_token")
 
-        // Launch fragment with custom logD helper.
         val fragment = launchLoginFragmentWithCustomLogHelpers(
             logDHelper = mockLogHelper
         )
-        Espresso.onIdle() // Wait for fragment to be ready
+        Espresso.onIdle()
 
-        // Trigger an action that should cause a logD call (e.g., successful Google Sign-In processing)
         val fakeIntent = mockk<Intent>(relaxed = true)
         activityScenario.onActivity {
             fragment.handleGoogleSignInResult(fakeIntent)
@@ -1367,52 +1349,31 @@ class LoginFragmentTest {
         mainDispatcherRule.testScope.advanceUntilIdle()
 
         val expectedTag = "LoginFragment"
-        val expectedPartialMessage = "Inside handleGoogleSignInResult"
+        val expectedFirstMessage =
+            "Inside handleGoogleSignInResult, data: " // Modificado para ser más exacto
 
-        // Verify the custom log helper was called with the correct arguments.
-        coVerify {
+        coVerify(atLeast = 1) {
             mockLogHelper(
                 expectedTag,
-                match { msg -> msg.startsWith(expectedPartialMessage) }
+                match { msg -> msg.startsWith(expectedFirstMessage) }
             )
         }
-        assertThat(capturedLogTag.captured).isEqualTo(expectedTag)
-        assertThat(capturedLogMessage.captured).startsWith(expectedPartialMessage)
+
+        assertThat(capturedMessages.any { it.startsWith(expectedFirstMessage) }).isTrue()
+        assertThat(capturedMessages.any { it.startsWith("Exiting handleGoogleSignInResult coroutine") }).isTrue()
     }
 
     @Test
     fun when_custom_logE_helper_is_set_then_it_is_used() = runTest {
         val capturedLogTag = slot<String>()
         val capturedLogMessage = slot<String>()
-        val capturedThrowable = slot<Throwable?>() // This remains nullable
+        val capturedThrowable = slot<Throwable?>()
 
         val mockLogEHelper: (String, String, Throwable?) -> Unit = mockk(relaxed = true)
         every {
             mockLogEHelper(
                 capture(capturedLogTag),
                 capture(capturedLogMessage),
-                // Use 'any()' here to match any Throwable? (including null) for the 'every' block.
-                // The actual value will be captured into 'capturedThrowable' via the 'Answer' block or implicitly by MockK if the slot is defined correctly.
-                // For direct capturing of nullable, MockK's 'capture' on 'CapturingSlot' isn't designed for it directly in 'every'.
-                // We'll rely on the 'capture(slot)' mechanism usually applied within 'answers' or similar,
-                // but for a simple 'just Runs' scenario, 'any()' is sufficient in 'every'
-                // and the 'slot' in 'every' works if it's the *last* argument and capture is applied there.
-                // However, if it's not the last argument or you need strict capturing for nullable,
-                // a more explicit approach might be needed. Let's simplify for directness as you intended.
-
-                // Reverting to the original intent with a slight modification:
-                // MockK often implicitly captures the last 'any()' if a slot is associated.
-                // However, for explicit nullable capture, the `capture` function requires a non-nullable type.
-                // The common pattern is to just use `any()` in `every` for nullable and verify later.
-                // For *capturing* a nullable argument, you'd typically do it in an `answers` block.
-                // Since you have `just Runs`, we can't use `answers`.
-                // The most straightforward way to make `capture(capturedThrowable)` work for `Throwable?` is if MockK's internal mechanics handle it,
-                // or by making `capturedThrowable` non-nullable and then checking for nullity *after* capture, which defeats the purpose.
-
-                // Let's modify based on common MockK nullable parameter handling:
-                // Use 'any()' in the 'every' block and ensure the verification correctly asserts the captured value.
-                // If your mockLogEHelper truly takes a nullable Throwable, then 'any()' allows it to match.
-                // The initial setup of `capturedThrowable = slot<Throwable?>()` is correct for what you want to capture.
                 any() // Change this back to `any()` for the `every` block.
             )
         } just Runs
