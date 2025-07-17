@@ -1,8 +1,6 @@
 package com.cursoandroid.queermap.di
 
 import com.cursoandroid.queermap.data.source.AuthRemoteDataSource
-import com.cursoandroid.queermap.data.source.remote.FacebookSignInDataSource
-import com.cursoandroid.queermap.data.source.remote.GoogleSignInDataSource
 import com.cursoandroid.queermap.domain.usecase.auth.CreateUserUseCase
 import com.cursoandroid.queermap.domain.usecase.auth.LoginWithEmailUseCase
 import com.cursoandroid.queermap.domain.usecase.auth.RegisterWithFacebookUseCase
@@ -18,7 +16,7 @@ import io.mockk.mockk
 @Module
 @TestInstallIn(
     components = [ViewModelComponent::class, SingletonComponent::class],
-    replaces = [DataSourceModule::class, UseCaseModule::class]
+  replaces = [DataSourceModule::class, UseCaseModule::class]
 )
 object TestLoginModule {
 

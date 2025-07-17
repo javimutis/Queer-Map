@@ -2,9 +2,6 @@ package com.cursoandroid.queermap.ui.login
 
 
 import android.app.Activity
-import com.cursoandroid.queermap.util.Result
-import com.cursoandroid.queermap.util.Result.Success // Explicitly import Success
-import com.cursoandroid.queermap.util.Result.Failure
 import android.content.Intent
 import android.view.View
 import android.view.ViewGroup
@@ -12,6 +9,7 @@ import android.view.ViewParent
 import androidx.activity.result.ActivityResultLauncher
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.Navigation
+import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.testing.TestNavHostController
 import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.Espresso
@@ -19,11 +17,19 @@ import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.IdlingRegistry
 import androidx.test.espresso.UiController
 import androidx.test.espresso.ViewAction
-import androidx.test.espresso.action.ViewActions.*
+import androidx.test.espresso.action.ViewActions.clearText
+import androidx.test.espresso.action.ViewActions.click
+import androidx.test.espresso.action.ViewActions.closeSoftKeyboard
+import androidx.test.espresso.action.ViewActions.scrollTo
+import androidx.test.espresso.action.ViewActions.typeText
 import androidx.test.espresso.assertion.ViewAssertions.doesNotExist
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.RootMatchers.isSystemAlertWindow
-import androidx.test.espresso.matcher.ViewMatchers.*
+import androidx.test.espresso.matcher.ViewMatchers.Visibility
+import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
+import androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility
+import androidx.test.espresso.matcher.ViewMatchers.withId
+import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.cursoandroid.queermap.HiltTestActivity
 import com.cursoandroid.queermap.R
@@ -32,8 +38,10 @@ import com.cursoandroid.queermap.data.source.remote.FacebookSignInDataSource
 import com.cursoandroid.queermap.data.source.remote.GoogleSignInDataSource
 import com.cursoandroid.queermap.util.EspressoIdlingResource
 import com.cursoandroid.queermap.util.MainDispatcherRule
+import com.cursoandroid.queermap.util.Result
+import com.cursoandroid.queermap.util.Result.Failure
+import com.cursoandroid.queermap.util.Result.Success
 import com.cursoandroid.queermap.util.waitForNavigationTo
-import com.cursoandroid.queermap.util.withDecorView
 import com.facebook.AccessToken
 import com.facebook.CallbackManager
 import com.facebook.FacebookCallback
@@ -45,7 +53,16 @@ import com.google.common.truth.Truth.assertThat
 import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import io.mockk.*
+import io.mockk.CapturingSlot
+import io.mockk.Runs
+import io.mockk.clearAllMocks
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.every
+import io.mockk.just
+import io.mockk.mockk
+import io.mockk.slot
+import io.mockk.spyk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -53,7 +70,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
-import org.hamcrest.CoreMatchers.*
 import org.hamcrest.Matcher
 import org.hamcrest.Matchers.allOf
 import org.hamcrest.Matchers.not
@@ -66,7 +82,6 @@ import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
-import androidx.navigation.fragment.NavHostFragment
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @RunWith(AndroidJUnit4::class)
@@ -80,7 +95,6 @@ class LoginFragmentTest {
     @get:Rule(order = 1)
     val mainDispatcherRule = MainDispatcherRule()
 
-    // --- Mocks Injected via @BindValue (replaces need for Factory for these) ---
     @BindValue
     @JvmField
     val mockLoginViewModel: LoginViewModel = mockk(relaxed = true)
@@ -89,11 +103,11 @@ class LoginFragmentTest {
     @JvmField
     val mockInputValidator: InputValidator = mockk(relaxed = true)
 
-    @BindValue // Hilt will now provide this mock directly to LoginFragment's injected fields
+    @BindValue
     @JvmField
     val mockGoogleSignInDataSource: GoogleSignInDataSource = mockk(relaxed = true)
 
-    @BindValue // Hilt will now provide this mock directly to LoginFragment's injected fields
+    @BindValue
     @JvmField
     val mockFacebookSignInDataSource: FacebookSignInDataSource = mockk(relaxed = true)
 
@@ -145,7 +159,6 @@ class LoginFragmentTest {
     private fun getLoginFragmentFromActivityScenario(): LoginFragment {
         var fragment: LoginFragment? = null
         activityScenario.onActivity { activity ->
-            // Use findFragmentById as this is how Hilt-created fragments are typically managed
             fragment =
                 activity.supportFragmentManager.findFragmentById(android.R.id.content) as? LoginFragment
             if (fragment == null) {
@@ -174,9 +187,8 @@ class LoginFragmentTest {
     }
 
     private fun launchLoginFragmentWithCustomDependencies(
-        googleSignInLauncher: ActivityResultLauncher<Intent>? = null, // Now nullable if you don't always need to override
-        callbackManager: CallbackManager? = null, // Now nullable if you don't always need to override
-        // No need for googleSignInDataSource or facebookSignInDataSource here as they are @BindValue
+        googleSignInLauncher: ActivityResultLauncher<Intent>? = null,
+        callbackManager: CallbackManager? = null,
     ): LoginFragment {
         if (this::activityScenario.isInitialized) {
             activityScenario.close()
@@ -188,7 +200,6 @@ class LoginFragmentTest {
             fragment = LoginFragment(
                 googleSignInLauncher = googleSignInLauncher ?: this.mockGoogleSignInLauncher,
                 callbackManager = callbackManager ?: this.mockCallbackManager,
-                // googleSignInDataSource and facebookSignInDataSource are now provided by Hilt via @BindValue
             )
 
             activity.supportFragmentManager.beginTransaction()
@@ -218,8 +229,8 @@ class LoginFragmentTest {
         var fragment: LoginFragment? = null
         activityScenario.onActivity { activity ->
             fragment = LoginFragment(
-                googleSignInLauncher = this.mockGoogleSignInLauncher, // Use the default mock
-                callbackManager = this.mockCallbackManager // Use the default mock
+                googleSignInLauncher = this.mockGoogleSignInLauncher,
+                callbackManager = this.mockCallbackManager
             ).apply {
                 logDHelper?.let { testLogHelper = it }
                 logEHelper?.let { testLogEHelper = it }
@@ -239,19 +250,17 @@ class LoginFragmentTest {
         return fragment!!
     }
 
-    // --- Setup and Teardown ---
 
     @Before
     fun setUp() {
         hiltRule.inject()
-        clearAllMocks() // Ensure all mocks are fresh before each test
+        clearAllMocks()
 
         uiStateFlow = MutableStateFlow(LoginUiState())
         eventFlow = MutableSharedFlow()
         every { mockLoginViewModel.uiState } returns uiStateFlow
         every { mockLoginViewModel.event } returns eventFlow
 
-        // Basic mock behaviors for ViewModel that are common
         every { mockLoginViewModel.loadUserCredentials() } just Runs
         every { mockLoginViewModel.loginWithEmail(any(), any()) } just Runs
         every { mockLoginViewModel.loginWithGoogle(any()) } just Runs
@@ -1504,21 +1513,5 @@ class LoginFragmentTest {
         assertThat(capturedLogTag.captured).isEqualTo(expectedTag)
         assertThat(capturedLogMessage.captured).isEqualTo(expectedMessage)
 
-        // The following Snackbar-related checks are likely out of scope for a `logW` test,
-        // as warnings don't necessarily display Snackbars. Removed for clarity.
-        // If your specific warning *does* show a Snackbar, re-add and adjust accordingly.
-        // onView(withText(expectedMessage))
-        //     .inRoot(withDecorView(isDisplayed()))
-        //     .check(matches(isDisplayed()))
-        //
-        // onView(withText(expectedMessage))
-        //     .inRoot(withDecorView(isDisplayed()))
-        //     .perform(dismissSnackbarViewAction(expectedMessage))
-        //
-        // delay(500)
-        // advanceUntilIdle()
-        // Espresso.onIdle()
-        //
-        // onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
     }
 }

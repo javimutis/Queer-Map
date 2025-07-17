@@ -7,13 +7,13 @@ import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.components.SingletonComponent
-import dagger.hilt.testing.TestInstallIn // <-- CORRECTO
+import dagger.hilt.testing.TestInstallIn
 import javax.inject.Singleton
 
 @Module
 @TestInstallIn(
     components = [SingletonComponent::class],
-    replaces = [UtilityModule::class] // <-- CORRECTO: Reemplaza tu módulo de producción
+    replaces = [UtilityModule::class] // Correcto: Reemplaza tu módulo de producción
 )
 abstract class TestUtilityModule {
 
