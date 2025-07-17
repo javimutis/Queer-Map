@@ -5,7 +5,7 @@ import com.facebook.FacebookSdk
 import com.facebook.appevents.AppEventsLogger
 import dagger.hilt.android.HiltAndroidApp // <-- ¡Esta línea es crucial!
 
-@HiltAndroidApp // <-- ¡Esta anotación es crucial!
+@HiltAndroidApp
 class QueerMapApp : Application() {
 
     override fun onCreate() {

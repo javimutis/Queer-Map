@@ -29,12 +29,10 @@ import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-
 @AndroidEntryPoint
 class LoginFragment @JvmOverloads constructor(
-
-    private val googleSignInDataSource: GoogleSignInDataSource? = null,
-    private val facebookSignInDataSource: FacebookSignInDataSource? = null,
+    // These are now ONLY for overriding in tests,
+    // Hilt will inject them if not provided by constructor
     private val googleSignInLauncher: ActivityResultLauncher<Intent>? = null,
     private val callbackManager: CallbackManager? = null
 ) : Fragment() {
@@ -43,27 +41,32 @@ class LoginFragment @JvmOverloads constructor(
 
     private var _binding: FragmentLoginBinding? = null
 
-
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     internal val binding get() = _binding
 
     private val viewModel: LoginViewModel by viewModels()
 
+    // Hilt will inject these directly. No need for internal _name and actualName properties.
     @Inject
-    internal lateinit var _googleSignInDataSource: GoogleSignInDataSource
+    internal lateinit var hiltGoogleSignInDataSource: GoogleSignInDataSource // Renamed to avoid clash
 
     @Inject
-    internal lateinit var _facebookSignInDataSource: FacebookSignInDataSource
+    internal lateinit var hiltFacebookSignInDataSource: FacebookSignInDataSource // Renamed to avoid clash
 
+    // These public getters will provide either the constructor-injected mock (for tests)
+    // or the Hilt-injected instance (for real app or if no mock passed in test constructor).
+    // Note: The constructor parameters for DataSources are removed as @BindValue handles them now.
     internal val actualGoogleSignInDataSource: GoogleSignInDataSource
-        get() = googleSignInDataSource ?: _googleSignInDataSource
+        get() = hiltGoogleSignInDataSource // Always use the Hilt-injected one in production, and @BindValue mock in tests
 
     internal val actualFacebookSignInDataSource: FacebookSignInDataSource
-        get() = facebookSignInDataSource ?: _facebookSignInDataSource
+        get() = hiltFacebookSignInDataSource // Always use the Hilt-injected one in production, and @BindValue mock in tests
 
-
+    // This is still needed for testing, as ActivityResultLauncher is created in onViewCreated
+    // and cannot be @BindValue injected easily.
     internal var testGoogleSignInLauncher: ActivityResultLauncher<Intent>? = null
 
+    // This is the one passed via constructor or created via Facebook SDK factory
     internal var testCallbackManager: CallbackManager? = null
 
 
@@ -77,6 +80,8 @@ class LoginFragment @JvmOverloads constructor(
     internal var testLogWHelper: ((String, String) -> Unit)? = null
 
 
+    // This will now prioritize the constructor-passed callbackManager (for tests)
+    // or create a default one (for production).
     private val actualCallbackManager: CallbackManager by lazy {
         callbackManager ?: CallbackManager.Factory.create()
     }
@@ -93,6 +98,7 @@ class LoginFragment @JvmOverloads constructor(
         super.onViewCreated(view, savedInstanceState)
         viewModel.loadUserCredentials()
 
+        // Use the constructor-passed launcher if available, otherwise register a new one.
         val currentGoogleSignInLauncher = googleSignInLauncher ?: registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
         ) { result ->
@@ -102,8 +108,7 @@ class LoginFragment @JvmOverloads constructor(
                 showSnackbar("Inicio de sesión cancelado")
             }
         }
-
-        this.testGoogleSignInLauncher = currentGoogleSignInLauncher
+        this.testGoogleSignInLauncher = currentGoogleSignInLauncher // Expose for testing if it's the registered one
 
         initFacebookLogin()
         setupListeners()
@@ -129,19 +134,16 @@ class LoginFragment @JvmOverloads constructor(
                     logD("LoginFragment", "Facebook Login Success, result: $result")
                     lifecycleScope.launch {
                         try {
-                            // Verifica si accessToken es nulo antes de intentar acceder a su .token
                             val accessToken = result.accessToken?.token
                             if (accessToken != null) {
                                 logD("LoginFragment", "Facebook Access Token: $accessToken")
                                 viewModel.loginWithFacebook(accessToken)
                             } else {
-                                // Manejar el caso donde el accessToken es nulo
                                 val errorMessage = "El token de acceso de Facebook es nulo. Por favor, inténtelo de nuevo."
                                 logE("LoginFragment", errorMessage)
-                                showSnackbar(errorMessage) // ESTO ES CLAVE para que el test lo detecte
+                                showSnackbar(errorMessage)
                             }
                         } catch (e: Exception) {
-                            // Capturar cualquier otra excepción inesperada durante el procesamiento del token
                             val errorMessage = "Error inesperado al procesar el token de Facebook: ${e.message ?: "detalle desconocido"}"
                             logE("LoginFragment", errorMessage, e)
                             showSnackbar(errorMessage)
@@ -195,7 +197,8 @@ class LoginFragment @JvmOverloads constructor(
         }
 
         binding?.btnGoogleSignIn?.setOnClickListener {
-            googleSignInLauncher?.launch(actualGoogleSignInDataSource.getSignInIntent())
+            // Use the actual launcher that was either provided by constructor or registered
+            testGoogleSignInLauncher?.launch(actualGoogleSignInDataSource.getSignInIntent())
         }
 
         binding?.tvForgotPassword?.setOnClickListener {
@@ -271,8 +274,7 @@ class LoginFragment @JvmOverloads constructor(
                     when (event) {
                         is LoginEvent.ShowMessage -> {
                             showSnackbar(event.message)
-                            // ADD THIS LINE: Call logW for warning messages
-                            if (event.message.startsWith("Advertencia")) { // Or use a specific error code/type if ShowMessage has one
+                            if (event.message.startsWith("Advertencia")) {
                                 logW(TAG, event.message)
                             }
                         }
