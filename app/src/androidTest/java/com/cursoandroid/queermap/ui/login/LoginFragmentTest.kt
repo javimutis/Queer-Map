@@ -279,7 +279,7 @@ class LoginFragmentTest {
         clearAllMocks()
 
         uiStateFlow = MutableStateFlow(LoginUiState())
-        eventFlow = MutableSharedFlow()
+        eventFlow = MutableSharedFlow(extraBufferCapacity = 1)
         every { mockLoginViewModel.uiState } returns uiStateFlow
         every { mockLoginViewModel.event } returns eventFlow
 
@@ -456,12 +456,39 @@ class LoginFragmentTest {
         val savedEmail = "saved@example.com"
         val savedPassword = "savedPassword123"
 
-        // Set initial UI state BEFORE launching el fragmento
-        uiStateFlow.value = LoginUiState(
-            email = savedEmail, password = savedPassword
-        )
+        // Clear existing mocks for mockLoginViewModel specifically for this test
+        // This is important because the setUp() method runs for ALL tests
+        // and might have already set up a 'just Runs' behavior for loadUserCredentials().
+        // We want to override it cleanly for this test.
+        clearMocks(mockLoginViewModel)
 
-        // Luego lanza el fragmento
+        // Set initial uiStateFlow state to default/empty before the fragment launch
+        // The fragment will update this after loadUserCredentials is called.
+        uiStateFlow.value = LoginUiState() // Reset to default for a clean start
+
+        // Mock the behavior of loadUserCredentials to update uiStateFlow
+        // This is crucial: when loadUserCredentials() is called, it should change the state.
+        // We use coAnswers to simulate this asynchronously within the testScope.
+        coEvery { mockLoginViewModel.loadUserCredentials() } coAnswers {
+            // This launch ensures the state update happens within the testScope and is managed by advanceUntilIdle
+            // Also, add a small delay to simulate asynchronous data loading if needed,
+            // which helps confirm advanceUntilIdle is working.
+            delay(100) // Simulate a small delay for async loading
+            mainDispatcherRule.testScope.launch {
+                uiStateFlow.value = uiStateFlow.value.copy(
+                    email = savedEmail,
+                    password = savedPassword
+                )
+            }
+        }
+
+        // Ensure the ViewModel's uiState and event flows are still mocked for this specific test
+        every { mockLoginViewModel.uiState } returns uiStateFlow
+        every { mockLoginViewModel.event } returns eventFlow
+
+        // Launch the fragment AFTER setting up the specific mock behavior for this test.
+        // We explicitly call launchLoginFragmentWithCustomDependencies here instead of relying
+        // solely on the setUp() method's generic launch.
         launchLoginFragmentWithCustomDependencies(
             googleSignInLauncher = mockGoogleSignInLauncher,
             callbackManager = mockCallbackManager,
@@ -469,18 +496,19 @@ class LoginFragmentTest {
             facebookSignInDataSource = mockFacebookSignInDataSource
         )
 
-        // Avanza hasta que el estado se recolecte y actualice la UI
+        // Advance until idle to allow all initial setup, state collection,
+        // the call to loadUserCredentials, and subsequent UI updates to occur.
         mainDispatcherRule.testScope.advanceUntilIdle()
+        Espresso.onIdle()
 
-        // Verifica que los campos estén correctamente seteados
+        // Verify that the ViewModel's loadUserCredentials was called exactly once.
+        // This is the core of your previous error.
+        coVerify(exactly = 1) { mockLoginViewModel.loadUserCredentials() }
+
+        // Verify that the fields are correctly set
         onView(withId(R.id.etEmailLogin)).check(matches(withText(savedEmail)))
         onView(withId(R.id.etPassword)).check(matches(withText(savedPassword)))
-
-        // Verifica que se llamó loadUserCredentials
-        coVerify(atLeast = 1) { mockLoginViewModel.loadUserCredentials() }
     }
-
-
     /* Email/Password Login Flow */
     @Test
     fun when_login_button_is_clicked_then_loginWithEmail_is_called_with_correct_data_and_navigates_to_home_on_success() =
@@ -601,7 +629,7 @@ class LoginFragmentTest {
         coEvery { mockLoginViewModel.loginWithEmail(email, password) } coAnswers {
             uiStateFlow.value = uiStateFlow.value.copy(isLoading = true)
             // Evitar delay real, o usar advanceTimeBy en el test si lo necesitas
-            // delay(200)
+            // delay(200) // Este delay no es necesario con advanceUntilIdle si el ViewModel no lo tiene
             uiStateFlow.value = uiStateFlow.value.copy(
                 isLoading = false, errorMessage = errorMessage
             )
@@ -624,11 +652,19 @@ class LoginFragmentTest {
         coVerify(exactly = 1) { mockLoginViewModel.loginWithEmail(email, password) }
 
         // Verificar Snackbar mostrado correctamente
-        onView(withText(errorMessage)).inRoot(withDecorView(not(`is`(getActivityDecorView()))))
+        // --- CORRECCIÓN AQUÍ: Eliminamos el .inRoot(...) ---
+        onView(withText(errorMessage))
             .check(matches(isDisplayed()))
 
         // Verificar ProgressBar oculto
         onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
+
+        // Es una buena práctica limpiar el Snackbar después de verificarlo,
+        // para que no interfiera con otros tests.
+        // --- CORRECCIÓN ADICIONAL: Limpiamos el Snackbar sin .inRoot(...) ---
+        onView(withText(errorMessage))
+            .perform(dismissSnackbarViewAction(errorMessage))
+        advanceUntilIdle() // Aseguramos que la acción de dismiss se complete
     }
 
 
