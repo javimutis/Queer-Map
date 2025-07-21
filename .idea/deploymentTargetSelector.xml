@@ -2,19 +2,19 @@
 <project version="4">
   <component name="deploymentTargetSelector">
     <selectionStates>
-      <SelectionState runConfigName="when_viewModel_emits_errorMessage_then_snackbar_is_shown()">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
-      <SelectionState runConfigName="when_signup_text_is_clicked_then_navigates_to_signup_fragment()">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
       <SelectionState runConfigName="LoginFragmentTest">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
       <SelectionState runConfigName="when_custom_logE_helper_is_set_then_it_is_used()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="when_forgot_password_text_is_clicked_then_navigates_to_forgot_password_fragment()">
+      <SelectionState runConfigName="when_google_button_is_clicked_then_launcher_is_invoked_and_navigates_to_home_on_success()">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="when_google_login_fails_then_error_message_is_shown()">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="when_google_login_is_for_new_user_then_navigates_to_signup_with_args()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>
