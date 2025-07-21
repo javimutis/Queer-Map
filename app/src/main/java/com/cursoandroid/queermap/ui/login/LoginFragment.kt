@@ -54,10 +54,6 @@ class LoginFragment @JvmOverloads constructor(
     @Inject
     internal lateinit var hiltFacebookSignInDataSource: FacebookSignInDataSource
 
-    // --- CAMBIOS CLAVE AQUÍ ---
-    // Estas propiedades ahora DEBEN priorizar los valores del constructor si no son nulos.
-    // Si son nulos (significa que no se pasaron en el constructor, como en producción),
-    // entonces usa las instancias inyectadas por Hilt.
 
     internal val actualGoogleSignInDataSource: GoogleSignInDataSource
         get() = providedGoogleSignInDataSource ?: hiltGoogleSignInDataSource
@@ -112,7 +108,6 @@ class LoginFragment @JvmOverloads constructor(
                 }
             }
         }
-        // No need for testGoogleSignInLauncher as actualGoogleSignInLauncher handles it now.
 
         initFacebookLogin()
         setupListeners()
@@ -201,7 +196,6 @@ class LoginFragment @JvmOverloads constructor(
         }
 
         binding?.btnGoogleSignIn?.setOnClickListener {
-            // Use safe call operator `?.` because actualGoogleSignInLauncher is now nullable
             actualGoogleSignInLauncher?.launch(actualGoogleSignInDataSource.getSignInIntent())
         }
 
@@ -238,9 +232,7 @@ class LoginFragment @JvmOverloads constructor(
 
                 is com.cursoandroid.queermap.util.Result.Failure -> {
                     val errorMessage = result.exception.message ?: "Error desconocido"
-                    // --- CAMBIO CLAVE AQUÍ ---
-                    logE("LoginFragment", "Google Sign-In failed: $errorMessage", result.exception) // Pasa la excepción
-                    // --- FIN CAMBIO ---
+                    logE("LoginFragment", "Google Sign-In failed: $errorMessage", result.exception)
                     showSnackbar("Error en Sign-In: $errorMessage")
                 }
             }
