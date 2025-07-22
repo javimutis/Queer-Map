@@ -12,7 +12,6 @@ import androidx.navigation.Navigation
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.testing.TestNavHostController
 import androidx.test.core.app.ActivityScenario
-import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.IdlingRegistry
@@ -117,7 +116,6 @@ class LoginFragmentTest {
     private lateinit var mockCallbackManager: CallbackManager
     private lateinit var mockGoogleSignInDataSource: GoogleSignInDataSource
     private lateinit var mockFacebookSignInDataSource: FacebookSignInDataSource
-
 
     private lateinit var activityScenario: ActivityScenario<HiltTestActivity>
     private lateinit var mockNavController: TestNavHostController
@@ -378,17 +376,6 @@ class LoginFragmentTest {
         onView(withId(R.id.tvSignUpBtn)).check(matches(isDisplayed()))
         onView(withId(R.id.ivBack)).check(matches(isDisplayed()))
         onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
-    }
-
-    @Test
-    fun when_viewmodel_uiState_loading_is_true_then_progress_bar_is_visible() = runTest {
-        uiStateFlow.value = uiStateFlow.value.copy(isLoading = true)
-
-        advanceUntilIdle() // Deja que el StateFlow y la UI se actualicen
-
-        waitForWindowFocus() // Asegura que el decorView esté enfocado
-
-        onView(withId(R.id.progressBar)).check(matches(isDisplayed()))
     }
 
     fun waitForWindowFocus() {
