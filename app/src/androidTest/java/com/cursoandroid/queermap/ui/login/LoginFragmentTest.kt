@@ -26,8 +26,6 @@ import androidx.test.espresso.action.ViewActions.scrollTo
 import androidx.test.espresso.action.ViewActions.typeText
 import androidx.test.espresso.assertion.ViewAssertions.doesNotExist
 import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.matcher.RootMatchers.isDialog
-import androidx.test.espresso.matcher.RootMatchers.isSystemAlertWindow
 import androidx.test.espresso.matcher.RootMatchers.withDecorView
 import androidx.test.espresso.matcher.ViewMatchers.Visibility
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
@@ -161,16 +159,20 @@ class LoginFragmentTest {
             }
         }
     }
+
     // Helper function to get the current LoginFragment instance
     private fun getLoginFragmentFromActivityScenario(): LoginFragment {
         var fragment: LoginFragment? = null
         activityScenario.onActivity { activity ->
             // Try to find the fragment by its tag first if explicitly set
-            fragment = activity.supportFragmentManager.findFragmentByTag("LoginFragmentTag") as? LoginFragment
+            fragment =
+                activity.supportFragmentManager.findFragmentByTag("LoginFragmentTag") as? LoginFragment
             if (fragment == null) {
                 // If not found by tag, try to find it as the primary navigation fragment
-                val navHostFragment = activity.supportFragmentManager.fragments.firstOrNull { it is NavHostFragment } as? NavHostFragment
-                fragment = navHostFragment?.childFragmentManager?.primaryNavigationFragment as? LoginFragment
+                val navHostFragment =
+                    activity.supportFragmentManager.fragments.firstOrNull { it is NavHostFragment } as? NavHostFragment
+                fragment =
+                    navHostFragment?.childFragmentManager?.primaryNavigationFragment as? LoginFragment
             }
             if (fragment == null) {
                 throw IllegalStateException("LoginFragment not found in the activity scenario.")
@@ -178,6 +180,7 @@ class LoginFragmentTest {
         }
         return fragment!!
     }
+
     private fun setupNavControllerSpyForFragment(): TestNavHostController {
         // mockNavController is already a spyk, just ensure it's set on the fragment's view
         activityScenario.onActivity { activity ->
@@ -201,10 +204,13 @@ class LoginFragmentTest {
         var fragment: LoginFragment? = null
         activityScenario.onActivity { activity ->
             fragment = LoginFragment(
-                providedGoogleSignInLauncher = googleSignInLauncher ?: this.mockGoogleSignInLauncher,
+                providedGoogleSignInLauncher = googleSignInLauncher
+                    ?: this.mockGoogleSignInLauncher,
                 providedCallbackManager = callbackManager ?: this.mockCallbackManager,
-                providedGoogleSignInDataSource = googleSignInDataSource ?: this.mockGoogleSignInDataSource,
-                providedFacebookSignInDataSource = facebookSignInDataSource ?: this.mockFacebookSignInDataSource
+                providedGoogleSignInDataSource = googleSignInDataSource
+                    ?: this.mockGoogleSignInDataSource,
+                providedFacebookSignInDataSource = facebookSignInDataSource
+                    ?: this.mockFacebookSignInDataSource
             ).apply {
                 logDHelper?.let { testLogHelper = it }
                 logEHelper?.let { testLogEHelper = it }
@@ -257,7 +263,11 @@ class LoginFragmentTest {
         }
         return decorView!!
     }
-    private suspend fun waitForNavigationTo(navController: TestNavHostController, @androidx.annotation.IdRes destId: Int) {
+
+    private suspend fun waitForNavigationTo(
+        navController: TestNavHostController,
+        @androidx.annotation.IdRes destId: Int
+    ) {
         withTimeout(5000) { // Set a timeout for navigation to prevent infinite waiting
             var navigated = false
             while (!navigated) {
@@ -509,6 +519,7 @@ class LoginFragmentTest {
         onView(withId(R.id.etEmailLogin)).check(matches(withText(savedEmail)))
         onView(withId(R.id.etPassword)).check(matches(withText(savedPassword)))
     }
+
     /* Email/Password Login Flow */
     @Test
     fun when_login_button_is_clicked_then_loginWithEmail_is_called_with_correct_data_and_navigates_to_home_on_success() =
@@ -697,10 +708,10 @@ class LoginFragmentTest {
 
             // Borra Snackbar para que no afecte siguiente test
             onView(withText(combinedEmptyFieldsError)).perform(
-                    dismissSnackbarViewAction(
-                        combinedEmptyFieldsError
-                    )
+                dismissSnackbarViewAction(
+                    combinedEmptyFieldsError
                 )
+            )
 
             // Verifica que loading desapareció
             onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
@@ -902,6 +913,7 @@ class LoginFragmentTest {
         advanceUntilIdle()
         Espresso.onIdle()
     }
+
     @Test
     fun when_google_login_results_in_cancelled_status_then_snackbar_is_shown() =
         runTest(timeout = 10.seconds) {
@@ -1054,10 +1066,10 @@ class LoginFragmentTest {
 
         // Opcional: limpia el Snackbar
         onView(withText(expectedSnackbarMessage)).perform(
-                dismissSnackbarViewAction(
-                    expectedSnackbarMessage
-                )
+            dismissSnackbarViewAction(
+                expectedSnackbarMessage
             )
+        )
     }
 
 
@@ -1088,10 +1100,10 @@ class LoginFragmentTest {
 
         // ✅ Limpieza visual
         onView(withText(expectedErrorMessage)).perform(
-                dismissSnackbarViewAction(
-                    expectedErrorMessage
-                )
+            dismissSnackbarViewAction(
+                expectedErrorMessage
             )
+        )
 
         // Verifica que el progressBar esté oculto
         onView(withId(R.id.progressBar)).check(matches(not(isDisplayed())))
@@ -1144,39 +1156,35 @@ class LoginFragmentTest {
     }
 
     @Test
-    fun when_signup_text_is_clicked_then_navigates_to_signup_fragment() {
-        // Prepara NavController real conectado a la vista
-        val navController = TestNavHostController(
-            ApplicationProvider.getApplicationContext()
-        ).apply {
-            setGraph(R.navigation.nav_graph)
-            setCurrentDestination(R.id.loginFragment)
-        }
+    fun when_signup_text_is_clicked_then_navigates_to_signup_fragment() = runTest {
+        // No necesitas crear un nuevo TestNavHostController aquí.
+        // mockNavController ya está inicializado como un spyk en setUp() y adjunto al fragment.
 
-        activityScenario.onActivity { activity ->
-            val fragment =
-                activity.supportFragmentManager.findFragmentByTag("LoginFragmentTag") as LoginFragment
-            Navigation.setViewNavController(fragment.requireView(), navController)
-        }
+        // No necesitas simular navegación previa para este test específico,
+        // ya que el destino inicial es LoginFragment en el setup.
 
-        // Espera que el botón esté visible
+        // Asegúrate de que el ViewModel no emita eventos de navegación inesperados.
+        // En este caso, la navegación se maneja directamente en el Fragment,
+        // por lo que no es necesario un coEvery para el ViewModel.
+
+        // Espera que el botón esté visible.
         onView(withId(R.id.tvSignUpBtn)).check(matches(isDisplayed()))
 
-        // Haz click en el botón
+        // Realiza el clic en el botón.
         onView(withId(R.id.tvSignUpBtn)).perform(click())
 
-        // Ahora espera hasta que la navegación suceda, simple loop:
-        val timeout = 5000L
-        val start = System.currentTimeMillis()
-        while (navController.currentDestination?.id != R.id.signupFragment) {
-            if (System.currentTimeMillis() - start > timeout) {
-                throw AssertionError("Navigation to signupFragment timed out")
-            }
-            Thread.sleep(50)
+        // Avanza el dispatcher para permitir que la navegación se procese.
+        mainDispatcherRule.testScope.advanceUntilIdle()
+        Espresso.onIdle()
+
+        // Verifica que se haya llamado a navigate con la acción correcta.
+        // Usa `verify` de MockK para el `spyk` mockNavController.
+        verify(exactly = 1) {
+            mockNavController.navigate(R.id.action_loginFragment_to_signupFragment)
         }
 
-        // Finalmente, asegúrate que el destino es correcto
-        assertThat(navController.currentDestination?.id).isEqualTo(R.id.signupFragment)
+        // Asegúrate de que el destino actual del NavController sea el fragmento de registro.
+        assertThat(mockNavController.currentDestination?.id).isEqualTo(R.id.signupFragment)
     }
 
     @Test
@@ -1222,48 +1230,79 @@ class LoginFragmentTest {
             .check(matches(isDisplayed()))
     }
 
-
     @Test
     fun when_viewModel_emits_errorMessage_then_snackbar_is_shown() = runTest {
         val errorMessage = "Hubo un problema al iniciar sesión."
 
-        // Actualiza el uiStateFlow para disparar el error
+        // Actualiza el uiStateFlow para disparar el error.
         uiStateFlow.value = uiStateFlow.value.copy(errorMessage = errorMessage)
 
-        advanceUntilIdle()
+        // Avanza el dispatcher y el reloj virtual.
+        // Es crucial que el hilo de la UI esté libre para procesar el cambio de estado.
+        mainDispatcherRule.testScope.advanceUntilIdle()
+        Espresso.onIdle() // Asegura que la UI está en reposo.
 
-        onView(withText(errorMessage)).inRoot(withDecorView(not(`is`(getActivityDecorView())))) // CORREGIDO AQUÍ
+        // Verifica que el Snackbar con el mensaje de error es visible.
+        // En lugar de usar `inRoot(withDecorView(not(is(getActivityDecorView()))))`,
+        // que puede ser problemático con la temporización de las ventanas,
+        // a menudo es más robusto dejar que Espresso encuentre la raíz automáticamente para Snackbars
+        // o usar un matcher de raíz más genérico como `isSystemAlertWindow()`.
+        // Si el test `when_event_showMessage_is_emitted_then_snackbar_with_message_is_shown()`
+        // funciona sin `inRoot`, intentemos eso primero, o `isSystemAlertWindow()`.
+        onView(withText(errorMessage))
+            // .inRoot(RootMatchers.isSystemAlertWindow()) // Asegúrate de importar androidx.test.espresso.matcher.RootMatchers
             .check(matches(isDisplayed()))
+
+        // Opcional: Limpia el mensaje de error en el ViewModel.
+        // Esto es una buena práctica para que el estado de UI sea transitorio.
+        uiStateFlow.value = uiStateFlow.value.copy(errorMessage = null)
+        mainDispatcherRule.testScope.advanceUntilIdle() // Permite que el estado se propague y el Snackbar se descarte.
     }
 
     @Test
     fun when_snackbar_is_shown_then_it_can_be_dismissed() = runTest {
         val snackbarMessage = "Este es un mensaje de prueba para el Snackbar."
 
-        // Emitir evento para mostrar snackbar
+        // 1. Emitir evento para mostrar snackbar.
         mainDispatcherRule.testScope.launch {
             eventFlow.emit(LoginEvent.ShowMessage(snackbarMessage))
         }
 
-        advanceUntilIdle()
+        // 2. Avanzar el dispatcher para que el Snackbar se muestre completamente.
+        mainDispatcherRule.testScope.advanceUntilIdle()
+        Espresso.onIdle() // Espera a que todas las operaciones de UI pendientes terminen.
 
-        // Obtener decorView de la actividad para usar en el matcher
-        val decorView = getActivityDecorView()
+        // Pequeño retraso opcional: A veces necesario si las animaciones del Snackbar son lentas
+        // o si el sistema de ventanas tarda un poco en registrar la nueva ventana.
+        // val job = launch { delay(500) } // Puedes usar un launch y join para un delay no bloqueante.
+        // job.join() // Espera el delay si es necesario.
+        // Para simplificar, si se sigue viendo el error, puedes probar con `delay(200)` directamente.
 
-        // Verificar Snackbar visible (cambia isSystemAlertWindow() por inRoot con decorView)
-        onView(withText(snackbarMessage)).inRoot(withDecorView(not(`is`(decorView))))
+        // 3. Verifica que el Snackbar es visible antes de intentar descartarlo.
+        // Usamos el mismo enfoque que en el test anterior. Si el Snackbar no está en el decorView principal,
+        // esta verificación debería encontrarlo si está presente.
+        onView(withText(snackbarMessage))
+            // .inRoot(RootMatchers.isSystemAlertWindow()) // Considera esta alternativa si falla
             .check(matches(isDisplayed()))
 
-        // Dismiss Snackbar
-        onView(withText(snackbarMessage)).inRoot(withDecorView(not(`is`(decorView))))
+        // 4. Realizar la acción de dismiss en el Snackbar.
+        onView(withText(snackbarMessage))
+            // .inRoot(RootMatchers.isSystemAlertWindow()) // Considera esta alternativa si falla
             .perform(dismissSnackbarViewAction(snackbarMessage))
 
-        advanceUntilIdle()
+        // 5. Avanzar el dispatcher de nuevo para permitir que la animación de dismiss se complete.
+        mainDispatcherRule.testScope.advanceUntilIdle()
+        Espresso.onIdle() // Espera a que todas las operaciones de UI pendientes terminen.
 
-        // Verificar que Snackbar ya no existe
+        // Retraso más largo opcional: Vital si la animación de dismiss es lenta
+        // o si el Snackbar tarda en ser removido del árbol de vistas.
+        // val dismissJob = launch { delay(1000) }
+        // dismissJob.join()
+        // Para simplificar, si se sigue viendo el error, puedes probar con `delay(500)` directamente.
+
+        // 6. Verificar que el Snackbar ya no existe.
         onView(withText(snackbarMessage)).check(doesNotExist())
     }
-
 
     /* Dependency Injection and Helper Testing (Mocking) */
     @Test
