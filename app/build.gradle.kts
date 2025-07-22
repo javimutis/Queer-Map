@@ -45,6 +45,7 @@ android {
                 "proguard-rules.pro"
             )
         }
+
     }
 
     compileOptions {
@@ -173,4 +174,48 @@ dependencies {
     // Google Truth for assertions
     androidTestImplementation(libs.google.truth)
     testImplementation(kotlin("test"))
+}
+
+
+// Reporte de cobertura personalizado
+tasks.register<JacocoReport>("jacocoTestReport") {
+    dependsOn("testDebugUnitTest") // Usa "testReleaseUnitTest" si prefieres release
+
+    reports {
+        html.required.set(true)
+        xml.required.set(true)
+        csv.required.set(false)
+    }
+
+    val fileFilter = listOf(
+        "**/R.class",
+        "**/R$*.class",
+        "**/BuildConfig.*",
+        "**/Manifest*.*",
+        "**/*Test*.*",
+        "android/**/*.*",
+        "**/*Hilt*.*" // Opcional: filtra código generado por Hilt
+    )
+
+    val kotlinClasses = fileTree("${buildDir}/tmp/kotlin-classes/debug") {
+        exclude(fileFilter)
+    }
+
+    val javaClasses = fileTree("${buildDir}/intermediates/javac/debug/classes") {
+        exclude(fileFilter)
+    }
+
+    classDirectories.setFrom(files(kotlinClasses, javaClasses))
+
+    sourceDirectories.setFrom(
+        files(
+            "$projectDir/src/main/java",
+            "$projectDir/src/main/kotlin"
+        )
+    )
+    executionData.setFrom(
+        fileTree(buildDir).include(
+            "jacoco/testDebugUnitTest.exec"
+        )
+    )
 }

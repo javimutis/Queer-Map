@@ -14,5 +14,6 @@ dependencyResolutionManagement {
     }
 }
 
+
 rootProject.name = "QueerMap"
 include(":app")
