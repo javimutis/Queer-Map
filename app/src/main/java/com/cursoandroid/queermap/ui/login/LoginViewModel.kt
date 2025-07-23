@@ -178,7 +178,13 @@ class LoginViewModel @Inject constructor(
     fun loadUserCredentials() {
         viewModelScope.launch {
             val (email, password) = authRepository.loadSavedCredentials()
-            _uiState.value = _uiState.value.copy(email = email, password = password)
+            // Only update if credentials are not null or blank
+            if (!email.isNullOrBlank()) {
+                _uiState.value = _uiState.value.copy(email = email)
+            }
+            if (!password.isNullOrBlank()) {
+                _uiState.value = _uiState.value.copy(password = password)
+            }
         }
     }
 

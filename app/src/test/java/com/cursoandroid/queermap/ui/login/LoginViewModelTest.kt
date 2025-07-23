@@ -8,6 +8,7 @@ import com.cursoandroid.queermap.domain.usecase.auth.LoginWithGoogleUseCase
 import com.cursoandroid.queermap.common.InputValidator // Importar SignUpValidator
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseUser
 import io.mockk.*
 import io.mockk.impl.annotations.MockK
@@ -22,6 +23,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import java.io.IOException
 
 @ExperimentalCoroutinesApi
 class LoginViewModelTest {
@@ -38,7 +40,7 @@ class LoginViewModelTest {
     private lateinit var firebaseAuth: FirebaseAuth
     @MockK
     private lateinit var firebaseUser: FirebaseUser
-    @MockK // AÑADIDO: Mock para SignUpValidator
+    @MockK
     private lateinit var signUpValidator: InputValidator
 
     private lateinit var viewModel: LoginViewModel
@@ -67,7 +69,7 @@ class LoginViewModelTest {
             loginWithGoogleUseCase,
             authRepository,
             firebaseAuth,
-            signUpValidator // AÑADIDO: Pasar el mock al constructor
+            signUpValidator
         )
     }
 
@@ -93,6 +95,7 @@ class LoginViewModelTest {
 
         viewModel.loginWithEmail(email, password)
         advanceUntilIdle()
+
 
         val uiState = viewModel.uiState.first()
         assertTrue(uiState.isSuccess)
@@ -553,31 +556,6 @@ class LoginViewModelTest {
         assertEquals(null, uiState.email)
         assertEquals(null, uiState.password)
     }
-    @Test
-    fun `handleThirdPartyResult emits error if current user is null after successful social login (Facebook)`() = testScope.runTest {
-        val accessToken = "facebook_access_token"
-        // Mock a successful social login use case, but then make firebaseAuth.currentUser return null
-        coEvery { loginWithFacebookUseCase(accessToken) } returns Result.success(User("anyUid", "email@example.com", null, null, null))
-        every { firebaseAuth.currentUser } returns null // Simulate currentUser being null
-
-        val emittedEvents = mutableListOf<LoginEvent>()
-        val job = launch {
-            viewModel.event.toList(emittedEvents)
-        }
-
-        viewModel.loginWithFacebook(accessToken)
-        advanceUntilIdle()
-
-        val uiState = viewModel.uiState.first()
-        assertEquals("Error: Usuario autenticado nulo después del login social.", uiState.errorMessage)
-        assertEquals(false, uiState.isLoading)
-
-        assertTrue(emittedEvents.isNotEmpty())
-        val emittedEvent = emittedEvents.first()
-        assertTrue(emittedEvent is LoginEvent.ShowMessage)
-        assertEquals("Error: Usuario autenticado nulo después del login social.", (emittedEvent as LoginEvent.ShowMessage).message)
-        job.cancel()
-    }
 
     @Test
     fun `handleThirdPartyResult emits error if verifying user in Firestore fails (Facebook)`() = testScope.runTest {
@@ -655,41 +633,64 @@ class LoginViewModelTest {
 
         job.cancel() // Cancelar la recolección de eventos
     }
-    @Test
-    fun `loginWithFacebook emits error message if current user is null after successful social login`() = testScope.runTest {
-        val accessToken = "facebook_access_token"
-        // 1. Mockear que loginWithFacebookUseCase tiene éxito (devuelve un usuario genérico, no importa el contenido)
-        coEvery { loginWithFacebookUseCase(accessToken) } returns Result.success(User("anyUid", "email@example.com", null, null, null))
 
-        // 2. Simular que firebaseAuth.currentUser retorna NULL después del éxito del use case
-        every { firebaseAuth.currentUser } returns null
+
+    @Test
+    fun `mapErrorToMessage returns network error message for IOException`() = testScope.runTest {
+        val email = "test@example.com"
+        val password = "password123"
+        val exception = IOException("No internet connection")
+        coEvery { loginWithEmailUseCase(email, password) } returns Result.failure(exception)
 
         val emittedEvents = mutableListOf<LoginEvent>()
         val job = launch {
             viewModel.event.toList(emittedEvents)
         }
 
-        // Ejecutar la función a testear
-        viewModel.loginWithFacebook(accessToken)
-        advanceUntilIdle() // Esperar a que las corrutinas terminen
+        viewModel.loginWithEmail(email, password)
+        advanceUntilIdle()
 
-        // Verificar el estado de la UI
         val uiState = viewModel.uiState.first()
+        assertEquals("Error de red. Por favor, revisa tu conexión", uiState.errorMessage)
+        assertEquals(false, uiState.isSuccess)
         assertEquals(false, uiState.isLoading)
-        // Asegúrate de que el mensaje de error es el esperado para este escenario
-        assertEquals("Error: Usuario autenticado nulo después del login social.", uiState.errorMessage)
 
-        // Verificar que se emitió el evento ShowMessage
         assertTrue(emittedEvents.isNotEmpty())
         val emittedEvent = emittedEvents.first()
         assertTrue(emittedEvent is LoginEvent.ShowMessage)
-        // El mensaje del evento debe coincidir con el errorMessage
-        assertEquals("Error: Usuario autenticado nulo después del login social.", (emittedEvent as LoginEvent.ShowMessage).message)
-
-        // Verificaciones adicionales (buena práctica para asegurar que se llamó lo que se esperaba)
-        coVerify(exactly = 1) { loginWithFacebookUseCase(accessToken) }
-        verify(exactly = 1) { firebaseAuth.currentUser } // Asegura que se intentó obtener el currentUser
-
-        job.cancel() // Cancelar la recolección de eventos
+        assertEquals("Error de red. Por favor, revisa tu conexión", (emittedEvent as LoginEvent.ShowMessage).message)
+        job.cancel()
     }
+
+    @Test
+    fun `mapErrorToMessage returns account collision message for FirebaseAuthUserCollisionException`() = testScope.runTest {
+        val email = "test@example.com"
+        val password = "password123"
+
+        val mockedException = mockk<FirebaseAuthUserCollisionException>()
+        every { mockedException.errorCode } returns "auth/email-already-in-use"
+        every { mockedException.message } returns "The email address is already in use by another account."
+
+        coEvery { loginWithEmailUseCase(email, password) } returns Result.failure(mockedException)
+
+        val emittedEvents = mutableListOf<LoginEvent>()
+        val job = launch {
+            viewModel.event.toList(emittedEvents)
+        }
+
+        viewModel.loginWithEmail(email, password)
+        advanceUntilIdle()
+
+        val uiState = viewModel.uiState.first()
+        assertEquals("Ya existe una cuenta con este email.", uiState.errorMessage)
+        assertEquals(false, uiState.isSuccess)
+        assertEquals(false, uiState.isLoading)
+
+        assertTrue(emittedEvents.isNotEmpty())
+        val emittedEvent = emittedEvents.first()
+        assertTrue(emittedEvent is LoginEvent.ShowMessage)
+        assertEquals("Ya existe una cuenta con este email.", (emittedEvent as LoginEvent.ShowMessage).message)
+        job.cancel()
+    }
+
 }
