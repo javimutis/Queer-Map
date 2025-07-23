@@ -1,7 +1,10 @@
+// build.gradle.kts (app module)
+
+// --- INICIO DE IMPORTS REQUERIDOS POR GRADLE Y JACOCO ---
 import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
 import org.gradle.testing.jacoco.tasks.JacocoReport
 import org.gradle.testing.jacoco.tasks.JacocoCoverageVerification
-
+// --- FIN DE IMPORTS ---
 
 plugins {
     alias(libs.plugins.android.application)
@@ -11,7 +14,7 @@ plugins {
     alias(libs.plugins.secrets)
     kotlin("kapt")
     id("androidx.navigation.safeargs.kotlin")
-    id("jacoco")
+    id("jacoco") // <--- Asegúrate de que el plugin de JaCoCo esté aplicado aquí
 }
 
 android {
@@ -82,6 +85,18 @@ android {
         }
         jniLibs {
             useLegacyPackaging = true
+        }
+    }
+
+    // --- CONFIGURACIÓN DE TESTS Y JACOCO PARA UNIT TESTS ---
+    testOptions {
+        unitTests.all {
+            jacoco {
+                // NOTA: 'includeNoLocationClasses' no es accesible directamente aquí.
+                // Es una limitación conocida con algunas versiones de Gradle/JaCoCo y funciones inline de Kotlin.
+                // Tus tests para onSuccess/onFailure son correctos lógicamente,
+                // pero JaCoCo puede no reportar el 100% debido a cómo se instrumenta el bytecode de las funciones inline.
+            }
         }
     }
 }
@@ -175,13 +190,9 @@ dependencies {
 }
 
 
-// Configuración de JaCoCo para la extensión de tests
-tasks.withType<Test>().configureEach {
-    configure<JacocoTaskExtension> {
-     }
-}
+// --- INICIO DE LA CONFIGURACIÓN DE JACOCO MEJORADA Y CORREGIDA ---
 
-
+// Tarea para generar el reporte de cobertura de JaCoCo
 tasks.register<JacocoReport>("jacocoTestReport") {
     dependsOn("testDebugUnitTest")
 
@@ -192,11 +203,10 @@ tasks.register<JacocoReport>("jacocoTestReport") {
         csv.required.set(false)
     }
 
-
     classDirectories.setFrom(
         fileTree("${layout.buildDirectory.get().asFile}/intermediates/javac/debug") {
             exclude(
-
+                // --- EXCLUSIONES COMUNES PARA ANDROID Y KOTLIN ---
                 "**/*_Hilt*", "****/Dagger*", "**/*Module*", "**/*_Factory*",
                 "**/*_MembersInjector*", "**/*Bindings*", "**/*EntryPoint*", "**/*_Provide*",
                 "**/R.class", "**/R\$*.class", "**/BuildConfig.*", "**/Manifest*.*",
@@ -205,15 +215,18 @@ tasks.register<JacocoReport>("jacocoTestReport") {
                 "**/*Binding.class", "**/*ViewBinding.class", "**/*DataBindingInfo", "**/*databinding*",
                 "**/*Activity*", "**/*Fragment*", "**/*Adapter*", "**/*Dialog*",
                 "**/*Application*", "**/*Navigator*", "**/*Event*", "**/*State*",
+                // Excluir clases generadas por el compilador Kotlin para inline functions que JaCoCo a veces malinterpreta.
+                // Estas pueden aparecer con nombres como 'YourClass$lambda$1', 'YourClass$WhenMappings', 'YourClass$$inlined'
                 "**/*Kt\$WhenMappings*", "**/*\$inlined*", "**/*lambda\$*", "**/*\$\$ExternalSyntheticAPI*",
                 "**/*\$jacocoInit", "**/*\$default",
-                "**/*ViewModel\$*get*$", "**/*ViewModel\$*set*$",
+                "**/*ViewModel\$*get*$", "**/*ViewModel\$*set*$", // getters/setters auto-generados de ViewModels
+                // Tus exclusiones específicas del dominio
                 "**/model/User*.*", "**/QueerMapApp.class"
             )
-        }.plus(
+        }.plus( // Incluir también las clases Kotlin desde su propio directorio intermedio
             fileTree("${layout.buildDirectory.get().asFile}/tmp/kotlin-classes/debug") {
                 exclude(
-
+                    // Repite las mismas exclusiones para las clases Kotlin
                     "**/*_Hilt*", "****/Dagger*", "**/*Module*", "**/*_Factory*",
                     "**/*_MembersInjector*", "**/*Bindings*", "**/*EntryPoint*", "**/*_Provide*",
                     "**/R.class", "**/R\$*.class", "**/BuildConfig.*", "**/Manifest*.*",
@@ -221,7 +234,8 @@ tasks.register<JacocoReport>("jacocoTestReport") {
                     "**/data/remote/responses/**", "**/data/local/entities/**",
                     "**/*Binding.class", "**/*ViewBinding.class", "**/*DataBindingInfo", "**/*databinding*",
                     "**/*Activity*", "**/*Fragment*", "**/*Adapter*", "**/*Dialog*",
-                    "**/*Application*", "**/*Navigator*", "**/*Event*", "**/*State*",
+                    "**/*Application*", "****/*Navigator*", "**/*Event*", "**/*State*",
+                    // Excluir clases generadas por el compilador Kotlin para inline functions
                     "**/*Kt\$WhenMappings*", "**/*\$inlined*", "**/*lambda\$*", "**/*\$\$ExternalSyntheticAPI*",
                     "**/*\$jacocoInit", "**/*\$default",
                     "**/*ViewModel\$*get*$", "**/*ViewModel\$*set*$",
@@ -240,13 +254,13 @@ tasks.register<JacocoReport>("jacocoTestReport") {
 
     executionData.setFrom(
         fileTree(layout.buildDirectory.get().asFile).include(
-            "jacoco/testDebugUnitTest.exec",
-            "**/*.exec"
+            "jacoco/testDebugUnitTest.exec", // Para tests unitarios
+            "**/*.exec" // Incluye cualquier otro archivo .exec generado
         )
     )
 }
 
-
+// --- OPCIONAL: Configuración para jacocoTestCoverageVerification ---
 tasks.register<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
     dependsOn("jacocoTestReport")
 

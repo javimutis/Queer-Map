@@ -13,10 +13,6 @@ import javax.inject.Singleton
 
 // ¡¡¡CAMBIO CRÍTICO: Importa tu clase Result personalizada!!!
 import com.cursoandroid.queermap.util.Result // <--- ESTA LÍNEA ES FUNDAMENTAL
-// Si por alguna razón Android Studio no la encuentra, asegúrate de que el paquete sea correcto
-// (por ejemplo, si tu archivo Result.kt está en 'com.cursoandroid.queermap.common.Result',
-// entonces la importación debería ser `import com.cursoandroid.queermap.common.Result`)
-
 
 interface GoogleSignInDataSource {
     // CAMBIO: Asegura que el tipo de retorno use tu Result personalizado
