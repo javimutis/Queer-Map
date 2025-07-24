@@ -4,9 +4,10 @@ import com.cursoandroid.queermap.data.source.AuthRemoteDataSource
 import com.cursoandroid.queermap.data.source.local.SharedPreferencesDataSource
 import com.cursoandroid.queermap.domain.model.User
 import com.cursoandroid.queermap.domain.repository.AuthRepository
-import com.cursoandroid.queermap.util.Result // <-- VERIFY THIS IMPORT!
-import com.cursoandroid.queermap.util.failure // <-- ADD THIS IMPORT IF NOT PRESENT!
-import com.cursoandroid.queermap.util.success // <-- ADD THIS IMPORT IF NOT PRESENT!
+import com.cursoandroid.queermap.util.Result
+import com.cursoandroid.queermap.util.failure // Importa tus helpers
+import com.cursoandroid.queermap.util.success // Importa tus helpers
+import com.cursoandroid.queermap.util.getOrThrow // Asegúrate de importar tu extensión
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException
@@ -25,16 +26,17 @@ class AuthRepositoryImpl @Inject constructor(
 ) : AuthRepository {
 
     override suspend fun loginWithEmailAndPassword(email: String, password: String): Result<User> {
+        // Asume que remoteDataSource.loginWithEmailAndPassword ya devuelve tu custom Result<User>
         return remoteDataSource.loginWithEmailAndPassword(email, password)
     }
 
     override suspend fun verifyUserInFirestore(uid: String): Result<Boolean> {
         return try {
-            // Ensure getOrThrow is from your custom Result extension
+            // Usa getOrThrow de tu custom Result para obtener el snapshot
             val snapshot = remoteDataSource.verifyUserInFirestore(uid).getOrThrow()
-            success(snapshot.exists()) // Use your custom success
+            success(snapshot.exists()) // Usa tu custom success helper
         } catch (e: Exception) {
-            failure(e) // Use your custom failure
+            failure(e) // Usa tu custom failure helper
         }
     }
 
@@ -62,7 +64,7 @@ class AuthRepositoryImpl @Inject constructor(
         return try {
             val result = auth.createUserWithEmailAndPassword(user.email!!, password).await()
             val firebaseUser = result.user
-                ?: return failure(Exception("Usuario nulo después del registro.")) // Use your custom failure
+                ?: return failure(Exception("Usuario nulo después del registro."))
             val userId = firebaseUser.uid
 
             val userMap = mapOf(
@@ -73,13 +75,13 @@ class AuthRepositoryImpl @Inject constructor(
                 "birthday" to (user.birthday ?: "")
             )
             firestore.collection("users").document(userId).set(userMap).await()
-            success(Unit) // Use your custom success
+            success(Unit)
         } catch (e: Exception) {
             when (e) {
-                is FirebaseAuthUserCollisionException -> failure(Exception("Este email ya está registrado.")) // Use your custom failure
-                is FirebaseAuthWeakPasswordException -> failure(Exception("La contraseña es demasiado débil.")) // Use your custom failure
-                is FirebaseAuthInvalidCredentialsException -> failure(Exception("Email o contraseña inválidos.")) // Use your custom failure
-                else -> failure(e) // Use your custom failure
+                is FirebaseAuthUserCollisionException -> failure(Exception("Este email ya está registrado."))
+                is FirebaseAuthWeakPasswordException -> failure(Exception("La contraseña es demasiado débil."))
+                is FirebaseAuthInvalidCredentialsException -> failure(Exception("Email o contraseña inválidos."))
+                else -> failure(e)
             }
         }
     }
@@ -96,9 +98,9 @@ class AuthRepositoryImpl @Inject constructor(
             }
 
             firestore.collection("users").document(uid).set(userMap, SetOptions.merge()).await()
-            success(Unit) // Use your custom success
+            success(Unit)
         } catch (e: Exception) {
-            failure(e) // Use your custom failure
+            failure(e)
         }
     }
 }

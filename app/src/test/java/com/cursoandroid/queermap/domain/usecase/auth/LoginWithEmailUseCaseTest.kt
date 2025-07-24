@@ -10,6 +10,12 @@ import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 
+// IMPORTANTE: Asegúrate de importar tu clase Result personalizada y sus helpers
+import com.cursoandroid.queermap.util.Result
+import com.cursoandroid.queermap.util.success
+import com.cursoandroid.queermap.util.failure
+import java.lang.Exception // Asegúrate de que Exception también esté importado si lo usas directamente
+
 class LoginWithEmailUseCaseTest {
 
     // Mock relajado del repositorio de autenticación para simular comportamientos
@@ -35,13 +41,13 @@ class LoginWithEmailUseCaseTest {
         val expectedUser = User("123", email)
         coEvery {
             authRepository.loginWithEmailAndPassword(email, password)
-        } returns Result.success(expectedUser)
+        } returns success(expectedUser) // Usa tu función helper 'success'
 
         // When: se invoca el caso de uso con los datos
         val result = loginWithEmailUseCase(email, password)
 
         // Then: se espera un resultado exitoso con el usuario esperado
-        assertEquals(Result.success(expectedUser), result)
+        assertEquals(success(expectedUser), result) // Usa tu función helper 'success'
     }
 
     @Test
@@ -50,12 +56,14 @@ class LoginWithEmailUseCaseTest {
         val email = "test@example.com"
         val password = "password"
         val expectedException = Exception("Login failed")
-        coEvery { authRepository.loginWithEmailAndPassword(email, password) } returns Result.failure(expectedException)
+        coEvery {
+            authRepository.loginWithEmailAndPassword(email, password)
+        } returns failure(expectedException) // Usa tu función helper 'failure'
 
         // When: se ejecuta el caso de uso con las credenciales
         val result = loginWithEmailUseCase(email, password)
 
         // Then: se espera un resultado fallido con la excepción correspondiente
-        assertEquals(Result.failure<User>(expectedException), result)
+        assertEquals(failure<User>(expectedException), result) // Usa tu función helper 'failure'
     }
 }

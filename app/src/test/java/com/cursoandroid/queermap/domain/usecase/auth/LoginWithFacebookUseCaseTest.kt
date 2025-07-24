@@ -9,6 +9,13 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
+import java.lang.Exception // Asegúrate de que Exception también esté importado si lo usas directamente
+
+// IMPORTANTE: Asegúrate de importar tu clase Result personalizada y sus helpers
+import com.cursoandroid.queermap.util.Result
+import com.cursoandroid.queermap.util.success
+import com.cursoandroid.queermap.util.failure
+
 
 class LoginWithFacebookUseCaseTest {
 
@@ -33,16 +40,16 @@ class LoginWithFacebookUseCaseTest {
         // Given: token válido y se mockea retorno exitoso con un usuario
         val accessToken = "facebook_access_token"
         val expectedUser =
-            User("uidFb456", "fbuser@example.com", "fbusername", "Facebook User", "02/02/1999")
-        coEvery { authRepository.firebaseAuthWithFacebook(accessToken) } returns Result.success(
-            expectedUser
-        )
+            User("uidFb456", "fb@example.com", "fbusername", "Facebook User", "02/02/1999")
+        // Usa tu función helper 'success'
+        coEvery { authRepository.firebaseAuthWithFacebook(accessToken) } returns success(expectedUser)
 
         // When: se ejecuta el use case con el token de Facebook
         val result = loginWithFacebookUseCase(accessToken)
 
         // Then: se espera resultado exitoso con los datos del usuario
-        assertEquals(Result.success(expectedUser), result)
+        // Usa tu función helper 'success'
+        assertEquals(success(expectedUser), result)
     }
 
     @Test
@@ -50,14 +57,14 @@ class LoginWithFacebookUseCaseTest {
         // Given: token válido y se mockea una excepción al autenticar
         val accessToken = "facebook_access_token"
         val expectedException = Exception("Facebook authentication failed")
-        coEvery { authRepository.firebaseAuthWithFacebook(accessToken) } returns Result.failure(
-            expectedException
-        )
+        // Usa tu función helper 'failure'
+        coEvery { authRepository.firebaseAuthWithFacebook(accessToken) } returns failure(expectedException)
 
         // When: se ejecuta el use case con el token de Facebook
         val result = loginWithFacebookUseCase(accessToken)
 
         // Then: se espera resultado fallido con la excepción recibida
-        assertEquals(Result.failure<User>(expectedException), result)
+        // Usa tu función helper 'failure'
+        assertEquals(failure<User>(expectedException), result)
     }
 }

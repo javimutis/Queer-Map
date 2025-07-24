@@ -1,4 +1,5 @@
 package com.cursoandroid.queermap.util
+
 /**
  * Una clase sellada para representar el resultado de una operación que puede
  * ser exitosa o fallar.
@@ -46,9 +47,6 @@ inline fun <T> Result<T>.onFailure(action: (exception: Throwable) -> Unit): Resu
     return this
 }
 
-// Puedes considerar añadir estas funciones si las necesitas en otros lugares.
-// Son equivalentes a las de kotlin.Result y pueden ser útiles.
-
 /**
  * Retorna el valor en caso de éxito o lanza la excepción si es un fallo.
  * @throws Throwable La excepción almacenada si el resultado es un Failure.
@@ -84,5 +82,16 @@ fun <T> success(value: T): Result<T> = Result.Success(value)
 
 /**
  * Crea un Result.Failure con la excepción dada.
+ *
+ * CAMBIO CLAVE AQUÍ: Ahora acepta un mensaje opcional.
  */
-fun <T> failure(exception: Throwable): Result<T> = Result.Failure(exception)
+fun <T> failure(exception: Throwable, message: String? = null): Result<T> = Result.Failure(exception, message)
+
+// Funciones de extensión para verificar el estado del Result (si aún las necesitas como funciones)
+fun Result<*>.isSuccess(): Boolean {
+    return this is Result.Success
+}
+
+fun Result<*>.isFailure(): Boolean {
+    return this is Result.Failure
+}

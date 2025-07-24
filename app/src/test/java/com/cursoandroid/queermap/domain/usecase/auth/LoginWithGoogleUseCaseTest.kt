@@ -11,6 +11,11 @@ import org.junit.Before
 import org.junit.Test
 import java.lang.Exception
 
+// IMPORTANTE: Asegúrate de importar tu clase Result personalizada y sus helpers
+import com.cursoandroid.queermap.util.Result
+import com.cursoandroid.queermap.util.success
+import com.cursoandroid.queermap.util.failure
+
 class LoginWithGoogleUseCaseTest {
 
     // Simula el repositorio de autenticación
@@ -34,13 +39,15 @@ class LoginWithGoogleUseCaseTest {
         // Given: token válido y mock que retorna un usuario exitosamente
         val idToken = "google_id_token"
         val expectedUser = User("uid123", "test@example.com", "username", "Test User", "01/01/2000")
-        coEvery { authRepository.firebaseAuthWithGoogle(idToken) } returns Result.success(expectedUser)
+        // Usa tu función helper 'success'
+        coEvery { authRepository.firebaseAuthWithGoogle(idToken) } returns success(expectedUser)
 
         // When: se ejecuta el use case con el token
         val result = loginWithGoogleUseCase(idToken)
 
         // Then: se espera un resultado exitoso con el usuario esperado
-        assertEquals(Result.success(expectedUser), result)
+        // Usa tu función helper 'success'
+        assertEquals(success(expectedUser), result)
     }
 
     @Test
@@ -48,12 +55,14 @@ class LoginWithGoogleUseCaseTest {
         // Given: token válido y mock que retorna una excepción
         val idToken = "google_id_token"
         val expectedException = Exception("Google authentication failed")
-        coEvery { authRepository.firebaseAuthWithGoogle(idToken) } returns Result.failure(expectedException)
+        // Usa tu función helper 'failure'
+        coEvery { authRepository.firebaseAuthWithGoogle(idToken) } returns failure(expectedException)
 
         // When: se ejecuta el use case con el token
         val result = loginWithGoogleUseCase(idToken)
 
         // Then: se espera un resultado fallido con la excepción
-        assertEquals(Result.failure<User>(expectedException), result)
+        // Usa tu función helper 'failure'
+        assertEquals(failure<User>(expectedException), result)
     }
 }

@@ -11,6 +11,11 @@ import org.junit.Before
 import org.junit.Test
 import java.lang.Exception
 
+// IMPORTANTE: Asegúrate de importar tu clase Result personalizada y sus helpers
+import com.cursoandroid.queermap.util.Result
+import com.cursoandroid.queermap.util.success
+import com.cursoandroid.queermap.util.failure
+
 class CreateUserUseCaseTest {
 
     // Mock relajado del repositorio de autenticación
@@ -40,13 +45,15 @@ class CreateUserUseCaseTest {
             birthday = "05/10/2000"
         )
         val password = "securePassword123"
-        coEvery { authRepository.registerUser(user, password) } returns Result.success(Unit)
+        // Usa tu función helper 'success'
+        coEvery { authRepository.registerUser(user, password) } returns success(Unit)
 
         // When: se ejecuta el caso de uso con usuario y contraseña
         val result = createUserUseCase(user, password)
 
         // Then: se espera resultado exitoso sin datos (Unit)
-        assertEquals(Result.success(Unit), result)
+        // Usa tu función helper 'success'
+        assertEquals(success(Unit), result)
     }
 
     @Test
@@ -61,12 +68,14 @@ class CreateUserUseCaseTest {
         )
         val password = "anotherPassword"
         val expectedException = Exception("Registration failed due to network error")
-        coEvery { authRepository.registerUser(user, password) } returns Result.failure(expectedException)
+        // Usa tu función helper 'failure'
+        coEvery { authRepository.registerUser(user, password) } returns failure(expectedException)
 
         // When: se ejecuta el caso de uso con usuario y contraseña
         val result = createUserUseCase(user, password)
 
         // Then: se espera resultado fallido con la excepción esperada
-        assertEquals(Result.failure<Unit>(expectedException), result)
+        // Usa tu función helper 'failure'
+        assertEquals(failure<Unit>(expectedException), result)
     }
 }

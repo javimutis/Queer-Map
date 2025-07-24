@@ -2,6 +2,9 @@ package com.cursoandroid.queermap.data.source.remote
 
 import com.cursoandroid.queermap.data.source.AuthRemoteDataSource
 import com.cursoandroid.queermap.domain.model.User
+import com.cursoandroid.queermap.util.Result // <-- ¡IMPORTANTE! Asegúrate de importar tu clase Result personalizada aquí
+import com.cursoandroid.queermap.util.success // <-- ¡AÑADIDO! Importa tu función helper 'success'
+import com.cursoandroid.queermap.util.failure // <-- ¡AÑADIDO! Importa tu función helper 'failure'
 import com.google.firebase.auth.FacebookAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
@@ -24,30 +27,38 @@ class FirebaseAuthDataSource @Inject constructor(
                 val userDoc = firestore.collection("users").document(firebaseUser.uid).get().await()
                 if (userDoc.exists()) {
                     val userFromFirestore = userDoc.toObject(User::class.java)
-                    Result.success(userFromFirestore ?: User(firebaseUser.uid, firebaseUser.displayName, null, firebaseUser.email, null))
+                    // Usa tu función helper 'success'
+                    success(userFromFirestore ?: User(firebaseUser.uid, firebaseUser.displayName, null, firebaseUser.email, null))
                 } else {
                     // Si el usuario no está en Firestore, devolver con datos de Firebase Auth
-                    Result.success(User(firebaseUser.uid, firebaseUser.displayName, null, firebaseUser.email, null))
+                    // Usa tu función helper 'success'
+                    success(User(firebaseUser.uid, firebaseUser.displayName, null, firebaseUser.email, null))
                 }
             } else {
-                Result.failure(Exception("Usuario no encontrado."))
+                // Usa tu función helper 'failure'
+                failure(Exception("Usuario no encontrado."))
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            // Usa tu función helper 'failure'
+            failure(e)
         }
 
     override suspend fun verifyUserInFirestore(uid: String): Result<DocumentSnapshot> = try {
         val doc = firestore.collection("users").document(uid).get().await()
-        Result.success(doc)
+        // Usa tu función helper 'success'
+        success(doc)
     } catch (e: Exception) {
-        Result.failure(e)
+        // Usa tu función helper 'failure'
+        failure(e)
     }
 
     override suspend fun sendPasswordResetEmail(email: String): Result<Unit> = try {
         auth.sendPasswordResetEmail(email).await()
-        Result.success(Unit)
+        // Usa tu función helper 'success'
+        success(Unit)
     } catch (e: Exception) {
-        Result.failure(e)
+        // Usa tu función helper 'failure'
+        failure(e)
     }
 
     // Asegurar que el User devuelto tenga los campos necesarios
@@ -57,7 +68,8 @@ class FirebaseAuthDataSource @Inject constructor(
         val firebaseUser = authResult.user
         if (firebaseUser != null) {
             // Mejorar la creación del objeto User para reflejar el estado real
-            Result.success(User(
+            // Usa tu función helper 'success'
+            success(User(
                 id = firebaseUser.uid,
                 name = firebaseUser.displayName,
                 username = null, // Username aún no disponible para social login inicial
@@ -65,10 +77,12 @@ class FirebaseAuthDataSource @Inject constructor(
                 birthday = null // Birthday aún no disponible
             ))
         } else {
-            Result.failure(Exception("Autenticación con Google fallida: Usuario nulo."))
+            // Usa tu función helper 'failure'
+            failure(Exception("Autenticación con Google fallida: Usuario nulo."))
         }
     } catch (e: Exception) {
-        Result.failure(e)
+        // Usa tu función helper 'failure'
+        failure(e)
     }
 
     // Asegurar que el User devuelto tenga los campos necesarios
@@ -78,7 +92,8 @@ class FirebaseAuthDataSource @Inject constructor(
         val firebaseUser = authResult.user
         if (firebaseUser != null) {
             // Mejorar la creación del objeto User para reflejar el estado real
-            Result.success(User(
+            // Usa tu función helper 'success'
+            success(User(
                 id = firebaseUser.uid,
                 name = firebaseUser.displayName,
                 username = null, // Username aún no disponible para social login inicial
@@ -86,9 +101,11 @@ class FirebaseAuthDataSource @Inject constructor(
                 birthday = null // Birthday aún no disponible
             ))
         } else {
-            Result.failure(Exception("Autenticación con Facebook fallida: Usuario nulo."))
+            // Usa tu función helper 'failure'
+            failure(Exception("Autenticación con Facebook fallida: Usuario nulo."))
         }
     } catch (e: Exception) {
-        Result.failure(e)
+        // Usa tu función helper 'failure'
+        failure(e)
     }
 }
