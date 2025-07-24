@@ -9,8 +9,18 @@ import com.cursoandroid.queermap.domain.repository.AuthRepository
 import com.cursoandroid.queermap.domain.usecase.auth.CreateUserUseCase
 import com.cursoandroid.queermap.domain.usecase.auth.RegisterWithFacebookUseCase
 import com.cursoandroid.queermap.domain.usecase.auth.RegisterWithGoogleUseCase
+// Asegúrate de que estas importaciones son las de tu paquete util
+import com.cursoandroid.queermap.util.Result
 import com.cursoandroid.queermap.util.failure
 import com.cursoandroid.queermap.util.success
+// Las funciones de extensión isSuccess() e isFailure() se usan en el ViewModel,
+// pero en el test, cuando accedes a uiState.isSuccess, te refieres a la propiedad
+// booleana de SignUpUiState, no a la función de extensión de Result.
+// Por lo tanto, no necesitas importarlas aquí para las aserciones de uiState.
+// Si las usaras en el test para un objeto Result, sí las importarías.
+// import com.cursoandroid.queermap.util.isSuccess
+// import com.cursoandroid.queermap.util.isFailure
+
 import com.facebook.CallbackManager
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
@@ -99,6 +109,7 @@ class SignUpViewModelTest {
         every { signUpValidator.isValidFullName(any()) } returns true
         every { signUpValidator.isValidBirthday(any()) } returns true
 
+        // Asegúrate de que el mock de accessTokenChannel use tu Result personalizado
         every { facebookSignInDataSource.accessTokenChannel } returns flowOf()
 
         every { facebookSignInDataSource.registerCallback(any(), any()) } just runs
@@ -203,7 +214,8 @@ class SignUpViewModelTest {
         viewModel.onEvent(SignUpEvent.OnBirthdayChanged("01/01/2000"))
         advanceUntilIdle()
 
-        coEvery { createUserUseCase(any(), any()) } returns Result.success(Unit)
+        // Usando tu función helper 'success'
+        coEvery { createUserUseCase(any(), any()) } returns success(Unit)
 
         val emittedEvents = mutableListOf<SignUpEvent>()
         val job = launch { viewModel.event.toList(emittedEvents) }
@@ -212,7 +224,7 @@ class SignUpViewModelTest {
         advanceUntilIdle()
 
         val uiState = viewModel.uiState.first()
-        assertTrue(uiState.isSuccess)
+        assertTrue(uiState.isSuccess) // Accediendo a la propiedad booleana
         assertFalse(uiState.isLoading)
         assertNull(uiState.errorMessage)
 
@@ -309,7 +321,8 @@ class SignUpViewModelTest {
         val password = "password123"
         val exception = mockk<FirebaseAuthUserCollisionException>()
         every { exception.message } returns "The email address is already in use by another account."
-        coEvery { createUserUseCase(any(), any()) } returns Result.failure(exception)
+        // Usando tu función helper 'failure'
+        coEvery { createUserUseCase(any(), any()) } returns failure(exception)
 
         viewModel.onEvent(SignUpEvent.OnEmailChanged(email))
         viewModel.onEvent(SignUpEvent.OnPasswordChanged(password))
@@ -326,7 +339,7 @@ class SignUpViewModelTest {
         advanceUntilIdle()
 
         val uiState = viewModel.uiState.first()
-        assertFalse(uiState.isSuccess)
+        assertFalse(uiState.isSuccess) // Accediendo a la propiedad booleana
         assertFalse(uiState.isLoading)
         // La UIState.errorMessage debería ser actualizado por el ViewModel.
         // Si el ViewModel lo actualiza, esta aserción debería pasar.
@@ -342,7 +355,8 @@ class SignUpViewModelTest {
         val weakPassword = "123"
         val exception = mockk<FirebaseAuthWeakPasswordException>()
         every { exception.message } returns "The password is too weak."
-        coEvery { createUserUseCase(any(), any()) } returns Result.failure(exception)
+        // Usando tu función helper 'failure'
+        coEvery { createUserUseCase(any(), any()) } returns failure(exception)
 
         viewModel.onEvent(SignUpEvent.OnEmailChanged(email))
         viewModel.onEvent(SignUpEvent.OnPasswordChanged(weakPassword))
@@ -359,7 +373,7 @@ class SignUpViewModelTest {
         advanceUntilIdle()
 
         val uiState = viewModel.uiState.first()
-        assertFalse(uiState.isSuccess)
+        assertFalse(uiState.isSuccess) // Accediendo a la propiedad booleana
         assertFalse(uiState.isLoading)
         assertEquals(
             "La contraseña es demasiado débil. Usa una combinación de letras, números y símbolos.",
@@ -379,7 +393,7 @@ class SignUpViewModelTest {
 
         val launchedIntents = mutableListOf<Intent>()
         val job =
-            launch { viewModel.launchGoogleSignIn.toList(launchedIntents) } // CORRECCIÓN: Usar 'launchedIntents'
+            launch { viewModel.launchGoogleSignIn.toList(launchedIntents) }
 
         viewModel.onEvent(SignUpEvent.OnGoogleSignUpClicked)
         advanceUntilIdle()
@@ -399,10 +413,12 @@ class SignUpViewModelTest {
             every { firebaseUser.email } returns "google@example.com"
             every { firebaseUser.displayName } returns "Google User"
 
+            // Usando tu función helper 'success' para handleSignInResult
             coEvery { googleSignInDataSource.handleSignInResult(intentData) } returns success(
                 idToken
             )
-            coEvery { registerWithGoogleUseCase(idToken) } returns Result.success(
+            // Usando tu función helper 'success' para registerWithGoogleUseCase
+            coEvery { registerWithGoogleUseCase(idToken) } returns success(
                 User(
                     "googleUid",
                     "Google User",
@@ -411,8 +427,6 @@ class SignUpViewModelTest {
                     null
                 )
             )
-            // ELIMINADA LÍNEA: coEvery { authRepository.verifyUserInFirestore(firebaseUser.uid) } returns Result.success(true)
-
 
             val emittedEvents = mutableListOf<SignUpEvent>()
             val job = launch { viewModel.event.toList(emittedEvents) }
@@ -421,11 +435,10 @@ class SignUpViewModelTest {
             advanceUntilIdle()
 
             val uiState = viewModel.uiState.first()
-            assertTrue(uiState.isSuccess)
+            assertTrue(uiState.isSuccess) // Accediendo a la propiedad booleana
             assertFalse(uiState.isLoading)
 
             coVerify(exactly = 1) { registerWithGoogleUseCase(idToken) }
-            // ELIMINADA LÍNEA: coVerify(exactly = 1) { authRepository.verifyUserInFirestore(firebaseUser.uid) }
 
             assertTrue(emittedEvents.any { it is SignUpEvent.NavigateToHome })
             assertTrue(emittedEvents.any { it is SignUpEvent.ShowMessage && it.message == "Registro con Google exitoso. ¡Bienvenido/a!" })
@@ -436,6 +449,7 @@ class SignUpViewModelTest {
     fun `OnGoogleSignInResult handles Google sign-in failure`() = testScope.runTest {
         val intentData = mockk<Intent>()
         val exception = Exception("Google sign-in error")
+        // Usando tu función helper 'failure'
         coEvery { googleSignInDataSource.handleSignInResult(intentData) } returns failure(exception)
 
         val emittedEvents = mutableListOf<SignUpEvent>()
@@ -445,7 +459,7 @@ class SignUpViewModelTest {
         advanceUntilIdle()
 
         val uiState = viewModel.uiState.first()
-        assertFalse(uiState.isSuccess)
+        assertFalse(uiState.isSuccess) // Accediendo a la propiedad booleana
         assertFalse(uiState.isLoading)
         assertEquals("Google sign-in error", uiState.errorMessage)
 
@@ -460,10 +474,12 @@ class SignUpViewModelTest {
             val idToken = "google_id_token"
             val exception = mockk<FirebaseAuthUserCollisionException>()
             every { exception.message } returns "The email address is already in use by another account."
+            // Usando tu función helper 'success'
             coEvery { googleSignInDataSource.handleSignInResult(intentData) } returns success(
                 idToken
             )
-            coEvery { registerWithGoogleUseCase(idToken) } returns Result.failure(exception)
+            // Usando tu función helper 'failure'
+            coEvery { registerWithGoogleUseCase(idToken) } returns failure(exception)
 
             val emittedEvents = mutableListOf<SignUpEvent>()
             val job = launch { viewModel.event.toList(emittedEvents) }
@@ -472,7 +488,7 @@ class SignUpViewModelTest {
             advanceUntilIdle()
 
             val uiState = viewModel.uiState.first()
-            assertFalse(uiState.isSuccess)
+            assertFalse(uiState.isSuccess) // Accediendo a la propiedad booleana
             assertFalse(uiState.isLoading)
             assertEquals(
                 "El correo electrónico ya está registrado con otra cuenta.",
@@ -500,63 +516,62 @@ class SignUpViewModelTest {
     }
 
     @Test
-    fun `Facebook accessTokenChannel success registers user with Facebook and navigates to home`() = testScope.runTest {
-        val accessToken = "facebook_access_token"
+    fun `Facebook accessTokenChannel success registers user with Facebook and navigates to home`() =
+        testScope.runTest {
+            val accessToken = "facebook_access_token"
 
-        every { firebaseAuth.currentUser } returns firebaseUser
-        every { firebaseUser.uid } returns "fbUid"
-        every { firebaseUser.email } returns "fb@example.com"
-        every { firebaseUser.displayName } returns "FB User"
+            every { firebaseAuth.currentUser } returns firebaseUser
+            every { firebaseUser.uid } returns "fbUid"
+            every { firebaseUser.email } returns "fb@example.com"
+            every { firebaseUser.displayName } returns "FB User"
 
-        // Usa kotlin.Result
-        every { facebookSignInDataSource.accessTokenChannel } returns flowOf(
-            Result.success(accessToken)
-        )
+            // Usando tu función helper 'success' para el flowOf
+            every { facebookSignInDataSource.accessTokenChannel } returns flowOf(success(accessToken))
 
-        coEvery {
-            registerWithFacebookUseCase(accessToken)
-        } returns Result.success(
-            User("fbUid", "FB User", null, "fb@example.com", null)
-        )
+            // Usando tu función helper 'success' para registerWithFacebookUseCase
+            coEvery {
+                registerWithFacebookUseCase(accessToken)
+            } returns success(
+                User("fbUid", "FB User", null, "fb@example.com", null)
+            )
 
-        viewModel = SignUpViewModel(
-            createUserUseCase,
-            registerWithGoogleUseCase,
-            registerWithFacebookUseCase,
-            googleSignInDataSource,
-            facebookSignInDataSource,
-            facebookCallbackManager,
-            authRepository,
-            firebaseAuth,
-            signUpValidator
-        )
+            viewModel = SignUpViewModel(
+                createUserUseCase,
+                registerWithGoogleUseCase,
+                registerWithFacebookUseCase,
+                googleSignInDataSource,
+                facebookSignInDataSource,
+                facebookCallbackManager,
+                authRepository,
+                firebaseAuth,
+                signUpValidator
+            )
 
-        val emittedEvents = mutableListOf<SignUpEvent>()
-        val job = launch { viewModel.event.toList(emittedEvents) }
+            val emittedEvents = mutableListOf<SignUpEvent>()
+            val job = launch { viewModel.event.toList(emittedEvents) }
 
-        advanceUntilIdle()
+            advanceUntilIdle()
 
-        val uiState = viewModel.uiState.first()
-        assertTrue(uiState.isSuccess)
-        assertFalse(uiState.isLoading)
+            val uiState = viewModel.uiState.first()
+            assertTrue(uiState.isSuccess) // Accediendo a la propiedad booleana
+            assertFalse(uiState.isLoading)
 
-        coVerify(exactly = 1) { registerWithFacebookUseCase(accessToken) }
+            coVerify(exactly = 1) { registerWithFacebookUseCase(accessToken) }
 
-        assertTrue(emittedEvents.any { it is SignUpEvent.NavigateToHome })
-        assertTrue(emittedEvents.any {
-            it is SignUpEvent.ShowMessage && it.message == "Registro con Facebook exitoso. ¡Bienvenido/a!"
-        })
+            assertTrue(emittedEvents.any { it is SignUpEvent.NavigateToHome })
+            assertTrue(emittedEvents.any {
+                it is SignUpEvent.ShowMessage && it.message == "Registro con Facebook exitoso. ¡Bienvenido/a!"
+            })
 
-        job.cancel()
-    }
+            job.cancel()
+        }
 
     @Test
     fun `Facebook accessTokenChannel failure emits error message`() = runTest {
         val exception = Exception("Facebook login failed")
 
-        every { facebookSignInDataSource.accessTokenChannel } returns flowOf(
-            Result.failure(exception)
-        )
+        // Usando tu función helper 'failure' para el flowOf
+        every { facebookSignInDataSource.accessTokenChannel } returns flowOf(failure(exception))
 
         viewModel = SignUpViewModel(
             createUserUseCase,
@@ -582,7 +597,7 @@ class SignUpViewModelTest {
         }
 
         val uiState = viewModel.uiState.value
-        assertFalse(uiState.isSuccess)
+        assertFalse(uiState.isSuccess) // Accediendo a la propiedad booleana
         assertFalse(uiState.isLoading)
         assertEquals("Facebook login failed", uiState.errorMessage)
 
@@ -624,9 +639,8 @@ class SignUpViewModelTest {
                 email = socialEmail,
                 birthday = birthday
             )
-            coEvery { authRepository.updateUserProfile(uid, updatedUser) } returns Result.success(
-                Unit
-            )
+            // Usando tu función helper 'success' para updateUserProfile
+            coEvery { authRepository.updateUserProfile(uid, updatedUser) } returns success(Unit)
 
             val emittedEvents = mutableListOf<SignUpEvent>()
             val job = launch { viewModel.event.toList(emittedEvents) }
@@ -635,7 +649,7 @@ class SignUpViewModelTest {
             advanceUntilIdle()
 
             val uiState = viewModel.uiState.first()
-            assertTrue(uiState.isSuccess)
+            assertTrue(uiState.isSuccess) // Accediendo a la propiedad booleana
             assertFalse(uiState.isLoading)
             assertNull(uiState.errorMessage)
 
@@ -693,9 +707,8 @@ class SignUpViewModelTest {
             email = socialEmail,
             birthday = birthday
         )
-        coEvery { authRepository.updateUserProfile(uid, updatedUser) } returns Result.failure(
-            exception
-        )
+        // Usando tu función helper 'failure' para updateUserProfile
+        coEvery { authRepository.updateUserProfile(uid, updatedUser) } returns failure(exception)
 
         val emittedEvents = mutableListOf<SignUpEvent>()
         val job = launch { viewModel.event.toList(emittedEvents) }
@@ -704,7 +717,7 @@ class SignUpViewModelTest {
         advanceUntilIdle()
 
         val uiState = viewModel.uiState.first()
-        assertFalse(uiState.isSuccess)
+        assertFalse(uiState.isSuccess) // Accediendo a la propiedad booleana
         assertFalse(uiState.isLoading)
         assertEquals("Network error", uiState.errorMessage)
 

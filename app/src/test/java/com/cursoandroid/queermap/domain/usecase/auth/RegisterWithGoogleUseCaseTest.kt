@@ -20,6 +20,16 @@ import org.junit.Before
 import org.junit.Test
 import java.lang.Exception
 
+// IMPORTANTE: Asegúrate de que TODAS estas importaciones estén presentes y sean correctas.
+// Estas son las importaciones clave para tu clase Result personalizada y sus extensiones.
+import com.cursoandroid.queermap.util.Result
+import com.cursoandroid.queermap.util.success
+import com.cursoandroid.queermap.util.failure
+import com.cursoandroid.queermap.util.isSuccess
+import com.cursoandroid.queermap.util.isFailure
+import com.cursoandroid.queermap.util.getOrNull
+import com.cursoandroid.queermap.util.exceptionOrNull
+
 class RegisterWithGoogleUseCaseTest {
 
     @MockK
@@ -56,7 +66,8 @@ class RegisterWithGoogleUseCaseTest {
         // Given: usuario autenticado con Google y no existe en Firestore
         val idToken = "some_id_token"
         val firebaseUser = User("testUid", "test@example.com", null, "Test User", null)
-        coEvery { authRepository.firebaseAuthWithGoogle(idToken) } returns Result.success(firebaseUser)
+        // Usa tu función helper 'success'
+        coEvery { authRepository.firebaseAuthWithGoogle(idToken) } returns success(firebaseUser)
         every { documentSnapshot.exists() } returns false
 
         // When: se ejecuta el use case
@@ -67,7 +78,8 @@ class RegisterWithGoogleUseCaseTest {
         coVerify(exactly = 1) { userDocument.get() }
         coVerify(exactly = 1) { userDocument.set(any<Map<String, Any>>()) }
 
-        assertTrue(result.isSuccess)
+        // Usa tus extensiones de Result
+        assertTrue(result.isSuccess())
         assertEquals(firebaseUser, result.getOrNull())
     }
 
@@ -76,7 +88,8 @@ class RegisterWithGoogleUseCaseTest {
         // Given: usuario autenticado con Google y ya existe en Firestore
         val idToken = "some_id_token"
         val firebaseUser = User("testUid", "test@example.com", "existinguser", "Existing User", "01/01/1990")
-        coEvery { authRepository.firebaseAuthWithGoogle(idToken) } returns Result.success(firebaseUser)
+        // Usa tu función helper 'success'
+        coEvery { authRepository.firebaseAuthWithGoogle(idToken) } returns success(firebaseUser)
         every { documentSnapshot.exists() } returns true
 
         // When: se ejecuta el use case
@@ -87,7 +100,8 @@ class RegisterWithGoogleUseCaseTest {
         coVerify(exactly = 1) { userDocument.get() }
         coVerify(exactly = 0) { userDocument.set(any<Map<String, Any>>()) }
 
-        assertTrue(result.isSuccess)
+        // Usa tus extensiones de Result
+        assertTrue(result.isSuccess())
         assertEquals(firebaseUser, result.getOrNull())
     }
 
@@ -96,7 +110,8 @@ class RegisterWithGoogleUseCaseTest {
         // Given: autenticación de Google falla
         val idToken = "some_id_token"
         val expectedException = Exception("Firebase authentication failed")
-        coEvery { authRepository.firebaseAuthWithGoogle(idToken) } returns Result.failure(expectedException)
+        // Usa tu función helper 'failure'
+        coEvery { authRepository.firebaseAuthWithGoogle(idToken) } returns failure(expectedException)
 
         // When: se ejecuta el use case
         val result = registerWithGoogleUseCase(idToken)
@@ -105,7 +120,8 @@ class RegisterWithGoogleUseCaseTest {
         coVerify(exactly = 1) { authRepository.firebaseAuthWithGoogle(idToken) }
         verify(exactly = 0) { firestore.collection(any()) }
 
-        assertTrue(result.isFailure)
+        // Usa tus extensiones de Result
+        assertTrue(result.isFailure())
         assertEquals(expectedException, result.exceptionOrNull())
     }
 
@@ -114,7 +130,8 @@ class RegisterWithGoogleUseCaseTest {
         // Given: usuario autenticado pero con ID nulo
         val idToken = "some_id_token"
         val firebaseUserWithNullId = User(null, "test@example.com", null, "Test User", null)
-        coEvery { authRepository.firebaseAuthWithGoogle(idToken) } returns Result.success(firebaseUserWithNullId)
+        // Usa tu función helper 'success'
+        coEvery { authRepository.firebaseAuthWithGoogle(idToken) } returns success(firebaseUserWithNullId)
 
         // When: se ejecuta el use case
         val result = registerWithGoogleUseCase(idToken)
@@ -123,7 +140,8 @@ class RegisterWithGoogleUseCaseTest {
         coVerify(exactly = 1) { authRepository.firebaseAuthWithGoogle(idToken) }
         verify(exactly = 0) { firestore.collection(any()) }
 
-        assertTrue(result.isFailure)
+        // Usa tus extensiones de Result
+        assertTrue(result.isFailure())
         assertEquals("ID de usuario de Firebase es nulo después de la autenticación de Google.", result.exceptionOrNull()?.message)
     }
 
@@ -133,7 +151,8 @@ class RegisterWithGoogleUseCaseTest {
         val idToken = "some_id_token"
         val firebaseUser = User("testUid", "test@example.com", null, "Test User", null)
         val firestoreException = Exception("Firestore get failed")
-        coEvery { authRepository.firebaseAuthWithGoogle(idToken) } returns Result.success(firebaseUser)
+        // Usa tu función helper 'success'
+        coEvery { authRepository.firebaseAuthWithGoogle(idToken) } returns success(firebaseUser)
         coEvery { userDocument.get() } returns Tasks.forException(firestoreException)
 
         // When: se ejecuta el use case
@@ -144,7 +163,8 @@ class RegisterWithGoogleUseCaseTest {
         coVerify(exactly = 1) { userDocument.get() }
         coVerify(exactly = 0) { userDocument.set(any<Map<String, Any>>()) }
 
-        assertTrue(result.isFailure)
+        // Usa tus extensiones de Result
+        assertTrue(result.isFailure())
         assertEquals(firestoreException, result.exceptionOrNull())
     }
 
@@ -154,7 +174,8 @@ class RegisterWithGoogleUseCaseTest {
         val idToken = "some_id_token"
         val firebaseUser = User("testUid", "test@example.com", null, "Test User", null)
         val firestoreException = Exception("Firestore set failed")
-        coEvery { authRepository.firebaseAuthWithGoogle(idToken) } returns Result.success(firebaseUser)
+        // Usa tu función helper 'success'
+        coEvery { authRepository.firebaseAuthWithGoogle(idToken) } returns success(firebaseUser)
         every { documentSnapshot.exists() } returns false
         coEvery { userDocument.set(any<Map<String, Any>>()) } returns Tasks.forException(firestoreException)
 
@@ -166,7 +187,8 @@ class RegisterWithGoogleUseCaseTest {
         coVerify(exactly = 1) { userDocument.get() }
         coVerify(exactly = 1) { userDocument.set(any<Map<String, Any>>()) }
 
-        assertTrue(result.isFailure)
+        // Usa tus extensiones de Result
+        assertTrue(result.isFailure())
         assertEquals(firestoreException, result.exceptionOrNull())
     }
 }

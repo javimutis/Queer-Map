@@ -7,6 +7,10 @@ import com.cursoandroid.queermap.domain.usecase.auth.LoginWithFacebookUseCase
 import com.cursoandroid.queermap.domain.usecase.auth.LoginWithGoogleUseCase
 import com.cursoandroid.queermap.domain.repository.AuthRepository
 import com.cursoandroid.queermap.common.InputValidator
+import com.cursoandroid.queermap.domain.model.User
+import com.cursoandroid.queermap.util.Result // IMPORTANT: Importa tu clase Result personalizada
+import com.cursoandroid.queermap.util.onSuccess // Importa tus extensiones
+import com.cursoandroid.queermap.util.onFailure // Importa tus extensiones
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
@@ -69,18 +73,18 @@ class LoginViewModel @Inject constructor(
 
     private suspend fun handleEmailLogin(email: String, password: String) {
         val result = loginWithEmailUseCase(email, password)
-        result.fold(
-            onSuccess = {
+        // Usa tus extensiones onSuccess y onFailure en lugar de fold()
+        result
+            .onSuccess {
                 _uiState.value = _uiState.value.copy(isLoading = false, isSuccess = true)
                 _event.emit(LoginEvent.NavigateToHome)
                 _event.emit(LoginEvent.ShowMessage("Inicio de sesión exitoso"))
-            },
-            onFailure = { error ->
+            }
+            .onFailure { error -> // 'error' aquí es el Throwable de tu Result.Failure
                 val errorMessage = mapErrorToMessage(error)
                 _uiState.value = _uiState.value.copy(isLoading = false, errorMessage = errorMessage)
                 _event.emit(LoginEvent.ShowMessage(errorMessage))
             }
-        )
     }
 
     fun loginWithGoogle(idToken: String) {
@@ -91,6 +95,7 @@ class LoginViewModel @Inject constructor(
             errorMessage = null,
             isSuccess = false
         )
+        // La lambda debe devolver tu Result<User>
         performThirdPartyLogin { loginWithGoogleUseCase(idToken) }
     }
 
@@ -102,25 +107,28 @@ class LoginViewModel @Inject constructor(
             errorMessage = null,
             isSuccess = false
         )
+        // La lambda debe devolver tu Result<User>
         performThirdPartyLogin { loginWithFacebookUseCase(token) }
     }
 
-    private fun performThirdPartyLogin(loginAction: suspend () -> Result<Any>) {
+    // El tipo de retorno de loginAction debe ser tu Result<User>
+    private fun performThirdPartyLogin(loginAction: suspend () -> Result<User>) { // Cambiado de Result<Any> a Result<User>
         viewModelScope.launch {
             val result = loginAction()
             handleThirdPartyResult(result)
         }
     }
 
-    private suspend fun handleThirdPartyResult(result: Result<Any>) {
-        result.fold(
-            onSuccess = {
+    // El tipo de parámetro debe ser tu Result<User>
+    private suspend fun handleThirdPartyResult(result: Result<User>) { // Cambiado de Result<Any> a Result<User>
+        result
+            .onSuccess {
                 val currentUser = firebaseAuth.currentUser
                 if (currentUser != null) {
                     val userProfileExistsResult =
                         authRepository.verifyUserInFirestore(currentUser.uid)
-                    userProfileExistsResult.fold(
-                        onSuccess = { exists ->
+                    userProfileExistsResult
+                        .onSuccess { exists ->
                             if (exists) {
                                 _uiState.value = _uiState.value.copy(isLoading = false, isSuccess = true)
                                 _event.emit(LoginEvent.NavigateToHome)
@@ -136,25 +144,23 @@ class LoginViewModel @Inject constructor(
                                 )
                                 _event.emit(LoginEvent.ShowMessage("Completa tu perfil para continuar"))
                             }
-                        },
-                        onFailure = { error ->
+                        }
+                        .onFailure { error ->
                             val errorMessage = error.message ?: "Error al verificar perfil de usuario."
                             _uiState.value = _uiState.value.copy(isLoading = false, errorMessage = errorMessage)
                             _event.emit(LoginEvent.ShowMessage(errorMessage))
                         }
-                    )
                 } else {
                     val errorMessage = "Error: Usuario autenticado nulo después del login social."
                     _uiState.value = _uiState.value.copy(isLoading = false, errorMessage = errorMessage)
                     _event.emit(LoginEvent.ShowMessage(errorMessage))
                 }
-            },
-            onFailure = { error ->
+            }
+            .onFailure { error ->
                 val errorMessage = error.message ?: "Error inesperado"
                 _uiState.value = _uiState.value.copy(isLoading = false, errorMessage = errorMessage)
                 _event.emit(LoginEvent.ShowMessage(errorMessage))
             }
-        )
     }
 
     fun onForgotPasswordClicked() {
@@ -178,7 +184,13 @@ class LoginViewModel @Inject constructor(
     fun loadUserCredentials() {
         viewModelScope.launch {
             val (email, password) = authRepository.loadSavedCredentials()
-            _uiState.value = _uiState.value.copy(email = email, password = password)
+            // Only update if credentials are not null or blank
+            if (!email.isNullOrBlank()) {
+                _uiState.value = _uiState.value.copy(email = email)
+            }
+            if (!password.isNullOrBlank()) {
+                _uiState.value = _uiState.value.copy(password = password)
+            }
         }
     }
 

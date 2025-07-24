@@ -9,6 +9,12 @@ import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import java.io.IOException
+import java.lang.Exception // Asegúrate de que Exception también esté importado si lo usas directamente
+
+// IMPORTANTE: Asegúrate de importar tu clase Result personalizada y sus helpers
+import com.cursoandroid.queermap.util.Result
+import com.cursoandroid.queermap.util.success
+import com.cursoandroid.queermap.util.failure
 
 class SendResetPasswordUseCaseTest {
 
@@ -27,13 +33,15 @@ class SendResetPasswordUseCaseTest {
     fun `when send reset password email succeeds then return success`() = runTest {
         // Given: Se simula envío exitoso de correo de reseteo
         val email = "test@example.com"
-        coEvery { authRepository.sendResetPasswordEmail(email) } returns Result.success(Unit)
+        // Usa tu función helper 'success'
+        coEvery { authRepository.sendResetPasswordEmail(email) } returns success(Unit)
 
         // When: Se ejecuta el caso de uso
         val result = sendResetPasswordUseCase(email)
 
         // Then: Se espera resultado exitoso
-        assertEquals(Result.success(Unit), result)
+        // Usa tu función helper 'success'
+        assertEquals(success(Unit), result)
     }
 
     @Test
@@ -41,12 +49,14 @@ class SendResetPasswordUseCaseTest {
         // Given: Se simula error de red al enviar el correo
         val email = "test@example.com"
         val expectedException = IOException("Network error during password reset")
-        coEvery { authRepository.sendResetPasswordEmail(email) } returns Result.failure(expectedException)
+        // Usa tu función helper 'failure'
+        coEvery { authRepository.sendResetPasswordEmail(email) } returns failure(expectedException)
 
         // When: Se ejecuta el caso de uso
         val result = sendResetPasswordUseCase(email)
 
         // Then: Se espera resultado con excepción
-        assertEquals(Result.failure<Unit>(expectedException), result)
+        // Usa tu función helper 'failure'
+        assertEquals(failure<Unit>(expectedException), result)
     }
 }

@@ -1,6 +1,7 @@
 package com.cursoandroid.queermap.domain.repository
 
 import com.cursoandroid.queermap.domain.model.User
+import com.cursoandroid.queermap.util.Result 
 
 interface AuthRepository {
     suspend fun loginWithEmailAndPassword(email: String, password: String): Result<User>

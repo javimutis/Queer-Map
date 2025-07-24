@@ -3,6 +3,8 @@ package com.cursoandroid.queermap.ui.forgotpassword
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.cursoandroid.queermap.domain.usecase.auth.SendResetPasswordUseCase
+import com.cursoandroid.queermap.util.Result // IMPORTANT: Import your custom Result
+import com.cursoandroid.queermap.util.exceptionOrNull // Import your custom exceptionOrNull
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -40,18 +42,23 @@ class ForgotPasswordViewModel @Inject constructor(
             val result = sendResetPasswordUseCase(email)
             _uiState.value = _uiState.value.copy(isLoading = false) // Finalizar carga
 
-            if (result.isSuccess) {
-                _uiState.value = _uiState.value.copy(isSuccess = true) // Actualizar estado de éxito
-                _events.send(ForgotPasswordEvent.ShowMessage("Se ha enviado un correo de restablecimiento de contraseña."))
-                _events.send(ForgotPasswordEvent.NavigateBack) // Navegar al terminar
-            } else {
-                val errorMessage = when (val exception = result.exceptionOrNull()) {
-                    is FirebaseAuthInvalidUserException -> "No hay ninguna cuenta registrada con este correo electrónico."
-                    is FirebaseAuthInvalidCredentialsException -> "El formato del correo electrónico es inválido."
-                    else -> "Ocurrió un error inesperado. Intenta de nuevo más tarde."
+            // Usa 'when' para manejar tu Result sellado
+            when (result) {
+                is Result.Success -> {
+                    _uiState.value = _uiState.value.copy(isSuccess = true) // Actualizar estado de éxito
+                    _events.send(ForgotPasswordEvent.ShowMessage("Se ha enviado un correo de restablecimiento de contraseña."))
+                    _events.send(ForgotPasswordEvent.NavigateBack) // Navegar al terminar
                 }
-                _events.send(ForgotPasswordEvent.ShowMessage(errorMessage))
-                _uiState.value = _uiState.value.copy(isSuccess = false) // Asegurar que no está en éxito
+                is Result.Failure -> {
+                    // Accede directamente a la propiedad 'exception' de tu clase Result.Failure
+                    val errorMessage = when (val exception = result.exception) {
+                        is FirebaseAuthInvalidUserException -> "No hay ninguna cuenta registrada con este correo electrónico."
+                        is FirebaseAuthInvalidCredentialsException -> "El formato del correo electrónico es inválido."
+                        else -> "Ocurrió un error inesperado. Intenta de nuevo más tarde."
+                    }
+                    _events.send(ForgotPasswordEvent.ShowMessage(errorMessage))
+                    _uiState.value = _uiState.value.copy(isSuccess = false) // Asegurar que no está en éxito
+                }
             }
         }
     }

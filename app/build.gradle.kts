@@ -1,13 +1,20 @@
 // build.gradle.kts (app module)
 
+// --- INICIO DE IMPORTS REQUERIDOS POR GRADLE Y JACOCO ---
+import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
+import org.gradle.testing.jacoco.tasks.JacocoReport
+import org.gradle.testing.jacoco.tasks.JacocoCoverageVerification
+// --- FIN DE IMPORTS ---
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.hilt) // Applied here - GOOD
+    alias(libs.plugins.hilt)
     alias(libs.plugins.google.services)
     alias(libs.plugins.secrets)
-    kotlin("kapt") // Applied here - CRUCIAL AND GOOD
+    kotlin("kapt")
     id("androidx.navigation.safeargs.kotlin")
+    id("jacoco") // <--- Asegúrate de que el plugin de JaCoCo esté aplicado aquí
 }
 
 android {
@@ -26,8 +33,6 @@ android {
 
         testInstrumentationRunnerArguments.putAll(
             mapOf(
-                // La siguiente línea es crucial para Hilt en las pruebas.
-                // Asegúrate de que el paquete sea correcto si HiltTestApplication no está en el raíz.
                 "dagger.hilt.android.testing.HiltTestApplication_Application" to "com.cursoandroid.queermap.HiltTestApplication"
             )
         )
@@ -35,9 +40,11 @@ android {
 
     buildTypes {
         debug {
+            enableUnitTestCoverage = true
             enableAndroidTestCoverage = true
             isMinifyEnabled = false
         }
+
         release {
             isMinifyEnabled = true
             proguardFiles(
@@ -45,20 +52,18 @@ android {
                 "proguard-rules.pro"
             )
         }
-
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17 // Mantener en 17 es seguro y compatible con JDK 21
-        targetCompatibility = JavaVersion.VERSION_17 // Debe ser el mismo que sourceCompatibility
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     kotlinOptions {
-        jvmTarget = "17" // Mantener en 17
+        jvmTarget = "17"
         freeCompilerArgs += listOf(
-            "-Xjvm-default=all", // Para Default Method support en interfaces
-            "-opt-in=kotlin.RequiresOptIn" // Para anotaciones @OptIn
-            // ¡Las banderas -Xadd-exports y -Xadd-opens han sido ELIMINADAS de aquí!
+            "-Xjvm-default=all",
+            "-opt-in=kotlin.RequiresOptIn"
         )
     }
 
@@ -80,6 +85,18 @@ android {
         }
         jniLibs {
             useLegacyPackaging = true
+        }
+    }
+
+    // --- CONFIGURACIÓN DE TESTS Y JACOCO PARA UNIT TESTS ---
+    testOptions {
+        unitTests.all {
+            jacoco {
+                // NOTA: 'includeNoLocationClasses' no es accesible directamente aquí.
+                // Es una limitación conocida con algunas versiones de Gradle/JaCoCo y funciones inline de Kotlin.
+                // Tus tests para onSuccess/onFailure son correctos lógicamente,
+                // pero JaCoCo puede no reportar el 100% debido a cómo se instrumenta el bytecode de las funciones inline.
+            }
         }
     }
 }
@@ -128,11 +145,9 @@ dependencies {
     // Carga de imágenes
     implementation(libs.picasso)
 
-    // Hilt **¡Asegúrate de que estas dos líneas estén presentes y correctas!**
+    // Hilt
     implementation(libs.hilt.core)
-    // Removed: implementation(libs.androidx.navigation.common.android) // This looks like an accidental dependency or misplacement, it's not a Hilt core dependency.
-    // Removed: implementation(libs.espresso.core) // Same as above, not a core Hilt dependency.
-    kapt(libs.hilt.compiler)       // The annotation processor for main sources - GOOD.
+    kapt(libs.hilt.compiler)
 
     // --- DEPENDENCIAS DE PRUEBAS ---
 
@@ -161,13 +176,11 @@ dependencies {
 
     // Hilt para Pruebas de Instrumentación
     androidTestImplementation(libs.hilt.android.testing)
-    // The annotation processor for Hilt in instrumentation tests
-    kaptAndroidTest(libs.hilt.compiler) // CRUCIAL AND GOOD. This applies kapt to your androidTest source set.
+    kaptAndroidTest(libs.hilt.compiler)
 
     // Fragment Testing
     androidTestImplementation(libs.androidx.fragment.testing)
     debugImplementation(libs.androidx.fragment.testing)
-
 
     // Navigation Testing (for TestNavHostController)
     androidTestImplementation(libs.androidx.navigation.testing)
@@ -177,35 +190,60 @@ dependencies {
 }
 
 
-// Reporte de cobertura personalizado
+// --- INICIO DE LA CONFIGURACIÓN DE JACOCO MEJORADA Y CORREGIDA ---
+
+// Tarea para generar el reporte de cobertura de JaCoCo
 tasks.register<JacocoReport>("jacocoTestReport") {
-    dependsOn("testDebugUnitTest") // Usa "testReleaseUnitTest" si prefieres release
+    dependsOn("testDebugUnitTest")
 
     reports {
-        html.required.set(true)
         xml.required.set(true)
+        html.required.set(true)
+        html.outputLocation.set(layout.buildDirectory.dir("reports/jacoco/jacocoTestReport"))
         csv.required.set(false)
     }
 
-    val fileFilter = listOf(
-        "**/R.class",
-        "**/R$*.class",
-        "**/BuildConfig.*",
-        "**/Manifest*.*",
-        "**/*Test*.*",
-        "android/**/*.*",
-        "**/*Hilt*.*" // Opcional: filtra código generado por Hilt
+    classDirectories.setFrom(
+        fileTree("${layout.buildDirectory.get().asFile}/intermediates/javac/debug") {
+            exclude(
+                // --- EXCLUSIONES COMUNES PARA ANDROID Y KOTLIN ---
+                "**/*_Hilt*", "****/Dagger*", "**/*Module*", "**/*_Factory*",
+                "**/*_MembersInjector*", "**/*Bindings*", "**/*EntryPoint*", "**/*_Provide*",
+                "**/R.class", "**/R\$*.class", "**/BuildConfig.*", "**/Manifest*.*",
+                "**/*Test*.*", "android/**/*.*",
+                "**/data/remote/responses/**", "**/data/local/entities/**",
+                "**/*Binding.class", "**/*ViewBinding.class", "**/*DataBindingInfo", "**/*databinding*",
+                "**/*Activity*", "**/*Fragment*", "**/*Adapter*", "**/*Dialog*",
+                "**/*Application*", "**/*Navigator*", "**/*Event*", "**/*State*",
+                // Excluir clases generadas por el compilador Kotlin para inline functions que JaCoCo a veces malinterpreta.
+                // Estas pueden aparecer con nombres como 'YourClass$lambda$1', 'YourClass$WhenMappings', 'YourClass$$inlined'
+                "**/*Kt\$WhenMappings*", "**/*\$inlined*", "**/*lambda\$*", "**/*\$\$ExternalSyntheticAPI*",
+                "**/*\$jacocoInit", "**/*\$default",
+                "**/*ViewModel\$*get*$", "**/*ViewModel\$*set*$", // getters/setters auto-generados de ViewModels
+                // Tus exclusiones específicas del dominio
+                "**/model/User*.*", "**/QueerMapApp.class"
+            )
+        }.plus( // Incluir también las clases Kotlin desde su propio directorio intermedio
+            fileTree("${layout.buildDirectory.get().asFile}/tmp/kotlin-classes/debug") {
+                exclude(
+                    // Repite las mismas exclusiones para las clases Kotlin
+                    "**/*_Hilt*", "****/Dagger*", "**/*Module*", "**/*_Factory*",
+                    "**/*_MembersInjector*", "**/*Bindings*", "**/*EntryPoint*", "**/*_Provide*",
+                    "**/R.class", "**/R\$*.class", "**/BuildConfig.*", "**/Manifest*.*",
+                    "**/*Test*.*", "android/**/*.*",
+                    "**/data/remote/responses/**", "**/data/local/entities/**",
+                    "**/*Binding.class", "**/*ViewBinding.class", "**/*DataBindingInfo", "**/*databinding*",
+                    "**/*Activity*", "**/*Fragment*", "**/*Adapter*", "**/*Dialog*",
+                    "**/*Application*", "****/*Navigator*", "**/*Event*", "**/*State*",
+                    // Excluir clases generadas por el compilador Kotlin para inline functions
+                    "**/*Kt\$WhenMappings*", "**/*\$inlined*", "**/*lambda\$*", "**/*\$\$ExternalSyntheticAPI*",
+                    "**/*\$jacocoInit", "**/*\$default",
+                    "**/*ViewModel\$*get*$", "**/*ViewModel\$*set*$",
+                    "**/model/User*.*", "**/QueerMapApp.class"
+                )
+            }
+        )
     )
-
-    val kotlinClasses = fileTree("${buildDir}/tmp/kotlin-classes/debug") {
-        exclude(fileFilter)
-    }
-
-    val javaClasses = fileTree("${buildDir}/intermediates/javac/debug/classes") {
-        exclude(fileFilter)
-    }
-
-    classDirectories.setFrom(files(kotlinClasses, javaClasses))
 
     sourceDirectories.setFrom(
         files(
@@ -213,9 +251,33 @@ tasks.register<JacocoReport>("jacocoTestReport") {
             "$projectDir/src/main/kotlin"
         )
     )
+
     executionData.setFrom(
-        fileTree(buildDir).include(
-            "jacoco/testDebugUnitTest.exec"
+        fileTree(layout.buildDirectory.get().asFile).include(
+            "jacoco/testDebugUnitTest.exec", // Para tests unitarios
+            "**/*.exec" // Incluye cualquier otro archivo .exec generado
         )
     )
+}
+
+// --- OPCIONAL: Configuración para jacocoTestCoverageVerification ---
+tasks.register<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
+    dependsOn("jacocoTestReport")
+
+    violationRules {
+        rule {
+            element = "BUNDLE"
+
+            limit {
+                counter = "BRANCH"
+                value = "COVEREDRATIO"
+                minimum = 0.65.toBigDecimal()
+            }
+            limit {
+                counter = "LINE"
+                value = "COVEREDRATIO"
+                minimum = 0.70.toBigDecimal()
+            }
+        }
+    }
 }
