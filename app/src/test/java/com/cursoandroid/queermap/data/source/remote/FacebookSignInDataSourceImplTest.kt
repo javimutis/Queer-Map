@@ -32,22 +32,30 @@ import org.junit.Test
 
 class FacebookSignInDataSourceImplTest {
 
-    // Instancia de la clase a testear
+    // Instance of the class under test
     private lateinit var facebookSignInDataSource: FacebookSignInDataSourceImpl
 
+    // Mocks for dependencies
     private lateinit var mockCallbackManager: CallbackManager
     private lateinit var mockFragment: Fragment
 
 
     @Before
     fun setUp() {
-        MockKAnnotations.init(this, relaxUnitFun = true) // Esto sí está correcto
+        // Initialize MockK annotations and relax unit functions for easier mocking
+        MockKAnnotations.init(this, relaxUnitFun = true)
 
+        // Create mock objects for CallbackManager and Fragment
         mockCallbackManager = mockk()
         mockFragment = mockk()
 
+        // Mock the static LoginManager object as it's a singleton
         mockkObject(LoginManager)
+
+        // Define mock behavior for LoginManager's registerCallback method
         every { LoginManager.getInstance().registerCallback(any(), any()) } returns Unit
+
+        // Define mock behavior for LoginManager's logInWithReadPermissions method
         every {
             LoginManager.getInstance().logInWithReadPermissions(
                 ofType(androidx.fragment.app.Fragment::class),
@@ -55,31 +63,33 @@ class FacebookSignInDataSourceImplTest {
             )
         } returns Unit
 
-
+        // Initialize the class under test
         facebookSignInDataSource = FacebookSignInDataSourceImpl()
     }
 
 
     @After
     fun tearDown() {
-        // Desmockear el objeto estático LoginManager después de cada test
-        unmockkObject(LoginManager) // Correct capitalization
-        clearAllMocks() // Limpia todos los mocks para evitar interferencias entre tests
+        // Unmock the static LoginManager object after each test to prevent interference
+        unmockkObject(LoginManager)
+        // Clear all mocks to ensure a clean state for the next test
+        clearAllMocks()
     }
 
     @Test
-    fun `registerCallback registers the FacebookCallback with LoginManager`() {
-        // Given: Slot para capturar el callback
+    fun `when registerCallback is called then FacebookCallback is registered with LoginManager`() {
+        // Given: A slot to capture the FacebookCallback passed to LoginManager
         val callbackSlot = slot<FacebookCallback<LoginResult>>()
 
+        // Configure mock behavior: when registerCallback is called, capture the callback
         every {
             LoginManager.getInstance().registerCallback(mockCallbackManager, capture(callbackSlot))
         } returns Unit
 
-        // When
+        // When: registerCallback is called on the data source
         facebookSignInDataSource.registerCallback(mockCallbackManager, mockk(relaxed = true))
 
-        // Then
+        // Then: Verify that LoginManager's registerCallback was called exactly once with the captured callback
         verify(exactly = 1) {
             LoginManager.getInstance().registerCallback(mockCallbackManager, callbackSlot.captured)
         }
@@ -87,130 +97,135 @@ class FacebookSignInDataSourceImplTest {
 
 
     @Test
-    fun `logInWithReadPermissions calls LoginManager with correct fragment and permissions`() {
-        // Given: Una lista de permisos
+    fun `when logInWithReadPermissions is called then LoginManager is called with correct fragment and permissions`() {
+        // Given: A list of permissions to be used for login
         val permissions = listOf("email", "public_profile")
 
-        // When: Se llama a logInWithReadPermissions
+        // When: logInWithReadPermissions is called on the data source
         facebookSignInDataSource.logInWithReadPermissions(mockFragment, permissions)
 
-        // Then: Se verifica que LoginManager.getInstance().logInWithReadPermissions fue llamado
+        // Then: Verify that LoginManager.getInstance().logInWithReadPermissions was called exactly once
+        // with the provided fragment and permissions
         verify(exactly = 1) {
             LoginManager.getInstance().logInWithReadPermissions(mockFragment, permissions)
         }
     }
 
     @Test
-    fun `accessTokenChannel emits success when FacebookCallback onSuccess is triggered`() = runTest {
-        // Given: Un slot para capturar el FacebookCallback
+    fun `when FacebookCallback onSuccess is triggered then accessTokenChannel emits success`() = runTest {
+        // Given: A slot to capture the FacebookCallback registered by the data source
         val callbackSlot = slot<FacebookCallback<LoginResult>>()
 
-        // Cuando se llama a registerCallback, captura el FacebookCallback
+        // Configure mock behavior: when registerCallback is called, capture the callback
         every {
             LoginManager.getInstance().registerCallback(any(), capture(callbackSlot))
         } returns Unit
 
-        // Registra un callback (esto capturará el callback en callbackSlot)
+        // Register a callback with the data source (this will capture the callback in callbackSlot)
         facebookSignInDataSource.registerCallback(mockCallbackManager, mockk(relaxed = true))
 
-        // Mocks para simular un LoginResult exitoso
+        // Mocks to simulate a successful LoginResult with an access token
         val testAccessToken = "test_facebook_access_token"
         val mockAccessToken: AccessToken = mockk {
-            every { token } returns testAccessToken
+            every { token } returns testAccessToken // Mock the token value
         }
         val mockLoginResult: LoginResult = mockk {
-            every { accessToken } returns mockAccessToken
+            every { accessToken } returns mockAccessToken // Mock the LoginResult to return the access token
         }
 
-        // Simula directamente el callback (¡sin launch!)
+        // When: Directly trigger the onSuccess method of the captured FacebookCallback
         callbackSlot.captured.onSuccess(mockLoginResult)
 
-        // Then: Verifica que el canal emitió un Result.Success con el token correcto
+        // Then: Verify that the accessTokenChannel emitted a Result.Success containing the correct token
         val result = facebookSignInDataSource.accessTokenChannel.first()
-        assertTrue(result.isSuccess())
-        assertEquals(testAccessToken, result.getOrNull())
+        assertTrue(result.isSuccess()) // Assert that the result is a success
+        assertEquals(testAccessToken, result.getOrNull()) // Assert that the emitted token matches the test token
     }
 
 
     @Test
-    fun `accessTokenChannel emits failure when FacebookCallback onCancel is triggered`() = runTest {
-        // Given: Un slot para capturar el FacebookCallback
+    fun `when FacebookCallback onCancel is triggered then accessTokenChannel emits failure`() = runTest {
+        // Given: A slot to capture the FacebookCallback
         val callbackSlot = slot<FacebookCallback<LoginResult>>()
 
-        // Cuando se llama a registerCallback, captura el FacebookCallback
+        // Configure mock behavior: when registerCallback is called, capture the callback
         every {
             LoginManager.getInstance().registerCallback(any(), capture(callbackSlot))
         } returns Unit
 
-        // Registra un callback
+        // Register a callback with the data source
         facebookSignInDataSource.registerCallback(mockCallbackManager, mockk(relaxed = true))
 
-        // Lanza una corrutina para recolectar el primer valor del canal
+        // When: Launch a coroutine to trigger onCancel and collect the channel's first emission
         val job = launch {
-            // When: Se simula una llamada onCancel en el callback capturado
+            // Simulate a call to onCancel on the captured callback
             callbackSlot.captured.onCancel()
         }
 
-        // Then: Verifica que el canal emitió un Result.Failure
+        // Then: Verify that the accessTokenChannel emitted a Result.Failure with the expected message
         val result = facebookSignInDataSource.accessTokenChannel.first()
-        assertTrue(result.isFailure())
-        assertNotNull(result.exceptionOrNull())
-        assertEquals("Inicio de sesión cancelado.", result.exceptionOrNull()?.message)
+        assertTrue(result.isFailure()) // Assert that the result is a failure
+        assertNotNull(result.exceptionOrNull()) // Assert that an exception is present
+        assertEquals("Inicio de sesión cancelado.", result.exceptionOrNull()?.message) // Assert the exception message
 
-        job.cancel()
+        job.cancel() // Cancel the coroutine job
     }
 
     @Test
-    fun `accessTokenChannel emits failure when FacebookCallback onError is triggered`() = runTest {
-        // Given: Un slot para capturar el FacebookCallback y una excepción
+    fun `when FacebookCallback onError is triggered then accessTokenChannel emits failure`() = runTest {
+        // Given: A slot to capture the FacebookCallback and a test exception
         val callbackSlot = slot<FacebookCallback<LoginResult>>()
         val testException = FacebookException("Something went wrong with Facebook login")
 
-        // Cuando se llama a registerCallback, captura el FacebookCallback
+        // Configure mock behavior: when registerCallback is called, capture the callback
         every {
             LoginManager.getInstance().registerCallback(any(), capture(callbackSlot))
         } returns Unit
 
-        // Registra un callback
+        // Register a callback with the data source
         facebookSignInDataSource.registerCallback(mockCallbackManager, mockk(relaxed = true))
 
-        // Lanza una corrutina para recolectar el primer valor del canal
+        // When: Launch a coroutine to trigger onError and collect the channel's first emission
         val job = launch {
-            // When: Se simula una llamada onError en el callback capturado
+            // Simulate a call to onError on the captured callback
             callbackSlot.captured.onError(testException)
         }
 
-        // Then: Verifica que el canal emitió un Result.Failure con la excepción correcta
+        // Then: Verify that the accessTokenChannel emitted a Result.Failure with the correct exception
         val result = facebookSignInDataSource.accessTokenChannel.first()
-        assertTrue(result.isFailure())
-        assertEquals(testException, result.exceptionOrNull())
-        assertEquals("Something went wrong with Facebook login", result.exceptionOrNull()?.message)
+        assertTrue(result.isFailure()) // Assert that the result is a failure
+        assertEquals(testException, result.exceptionOrNull()) // Assert that the emitted exception is the test exception
+        assertEquals("Something went wrong with Facebook login", result.exceptionOrNull()?.message) // Assert the exception message
 
-        job.cancel()
+        job.cancel() // Cancel the coroutine job
     }
 
     @Test
-    fun `accessTokenChannel emits failure when FacebookCallback onSuccess is triggered but accessToken token is empty`() = runTest {
+    fun `when FacebookCallback onSuccess is triggered with empty accessToken then accessTokenChannel emits failure`() = runTest {
+        // Given: A slot to capture the FacebookCallback
         val callbackSlot = slot<FacebookCallback<LoginResult>>()
 
+        // Configure mock behavior: when registerCallback is called, capture the callback
         every {
             LoginManager.getInstance().registerCallback(any(), capture(callbackSlot))
         } returns Unit
 
+        // Register a callback with the data source
         facebookSignInDataSource.registerCallback(mockCallbackManager, mockk(relaxed = true))
 
+        // Mocks to simulate a LoginResult with an empty access token
         val mockAccessToken: AccessToken = mockk()
-        every { mockAccessToken.token } returns "" // No null, pero sí vacío
+        every { mockAccessToken.token } returns "" // Mock the token to be an empty string
 
         val mockLoginResult: LoginResult = mockk()
-        every { mockLoginResult.accessToken } returns mockAccessToken
+        every { mockLoginResult.accessToken } returns mockAccessToken // Mock LoginResult to return the empty token
 
+        // When: Directly trigger the onSuccess method of the captured FacebookCallback
         callbackSlot.captured.onSuccess(mockLoginResult)
 
+        // Then: Verify that the accessTokenChannel emitted a Result.Failure due to the empty token
         val result = facebookSignInDataSource.accessTokenChannel.first()
-        assertTrue(result.isFailure())
-        assertEquals("Token de acceso de Facebook nulo.", result.exceptionOrNull()?.message)
+        assertTrue(result.isFailure()) // Assert that the result is a failure
+        assertEquals("Token de acceso de Facebook nulo.", result.exceptionOrNull()?.message) // Assert the specific error message
     }
-
-
 }
