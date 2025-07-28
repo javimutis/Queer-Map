@@ -1,3 +1,5 @@
+# gradle/libs.versions.toml
+
 [versions]
 # Versiones del SDK y herramientas
 kotlin = "1.9.22"
@@ -40,7 +42,7 @@ core-splashscreen = "1.0.1"
 junit = "4.13.2"
 ext-junit = "1.1.5"
 espresso = "3.5.1"
-mockk = "1.13.10"
+mockk = "1.13.10" # <--- Asegúrate de que esta versión sea la misma para mockk-agent-jvm
 coroutines-test = "1.8.1"
 arch-core-testing = "2.2.0"
 fragment-testing = "1.7.0"
@@ -120,7 +122,7 @@ arch-core-testing = { module = "androidx.arch.core:core-testing", version.ref = 
 
 # Espresso
 androidx-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "espresso" }
-androidx-espresso-intents = { module = "androidx.test.espresso:espresso-intents", version = "3.5.1" } # Corregido para usar la versión de espresso
+androidx-espresso-intents = { module = "androidx.test.espresso:espresso-intents", version = "3.5.1" }
 androidx-espresso-contrib = { module = "androidx.test.espresso:espresso-contrib", version.ref = "espresso" }
 espresso-idling-resource = { module = "androidx.test.espresso:espresso-idling-resource", version.ref = "espresso" }
 
@@ -129,6 +131,8 @@ coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", ve
 # MockK
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 mockk-android = { module = "io.mockk:mockk-android", version.ref = "mockk" }
+# ¡¡¡NUEVA LÍNEA CRÍTICA!!!
+mockk-agent-jvm = { group = "io.mockk", name = "mockk-agent-jvm", version.ref = "mockk" } # <--- ¡AÑADE ESTO!
 
 # Hilt para Pruebas
 hilt-android-testing = { module = "com.google.dagger:hilt-android-testing", version.ref = "hilt" }

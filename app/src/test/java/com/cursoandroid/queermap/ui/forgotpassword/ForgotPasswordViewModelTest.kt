@@ -1,7 +1,6 @@
 package com.cursoandroid.queermap.ui.forgotpassword
 
-// IMPORTANTE: Asegúrate de importar tu clase Result personalizada y sus helpers
-// También las extensiones si las usas directamente en el ViewModel o en las aserciones
+
 import com.cursoandroid.queermap.domain.usecase.auth.SendResetPasswordUseCase
 import com.cursoandroid.queermap.util.failure
 import com.cursoandroid.queermap.util.success

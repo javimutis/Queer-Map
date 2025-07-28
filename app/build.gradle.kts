@@ -158,6 +158,11 @@ dependencies {
     testImplementation(libs.arch.core.testing)
     testImplementation(libs.kotest.assertions)
 
+    // ¡¡¡NUEVA LÍNEA CRÍTICA!!!
+    // Esto es crucial para que MockK funcione correctamente con KAPT en unit tests,
+    // especialmente para mockkObject y mocking de clases finales.
+    kaptTest(libs.mockk.agent.jvm) // <--- ¡AÑADE ESTO!
+
     // Pruebas de Instrumentación (Android Tests)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.androidx.test.runner)
