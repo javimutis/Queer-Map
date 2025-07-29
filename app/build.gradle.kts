@@ -156,12 +156,7 @@ dependencies {
     testImplementation(libs.kotest.assertions)
     testImplementation(libs.robolectric)
 
-<<<<<<< Updated upstream
-=======
 
-     kaptTest(libs.mockk.agent.jvm)
-
->>>>>>> Stashed changes
     // Pruebas de Instrumentación (Android Tests)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.androidx.test.runner)
