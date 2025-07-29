@@ -4,6 +4,7 @@
 import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
 import org.gradle.testing.jacoco.tasks.JacocoReport
 import org.gradle.testing.jacoco.tasks.JacocoCoverageVerification
+
 // --- FIN DE IMPORTS ---
 
 plugins {
@@ -88,16 +89,12 @@ android {
         }
     }
 
-    // --- CONFIGURACIÓN DE TESTS Y JACOCO PARA UNIT TESTS ---
     testOptions {
         unitTests.all {
             jacoco {
-                // NOTA: 'includeNoLocationClasses' no es accesible directamente aquí.
-                // Es una limitación conocida con algunas versiones de Gradle/JaCoCo y funciones inline de Kotlin.
-                // Tus tests para onSuccess/onFailure son correctos lógicamente,
-                // pero JaCoCo puede no reportar el 100% debido a cómo se instrumenta el bytecode de las funciones inline.
             }
         }
+        unitTests.isIncludeAndroidResources = true
     }
 }
 
@@ -157,7 +154,14 @@ dependencies {
     testImplementation(libs.coroutines.test)
     testImplementation(libs.arch.core.testing)
     testImplementation(libs.kotest.assertions)
+    testImplementation(libs.robolectric)
 
+<<<<<<< Updated upstream
+=======
+
+     kaptTest(libs.mockk.agent.jvm)
+
+>>>>>>> Stashed changes
     // Pruebas de Instrumentación (Android Tests)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.androidx.test.runner)
@@ -187,12 +191,11 @@ dependencies {
     // Google Truth for assertions
     androidTestImplementation(libs.google.truth)
     testImplementation(kotlin("test"))
+    testImplementation(libs.play.services.tasks)
 }
 
 
-// --- INICIO DE LA CONFIGURACIÓN DE JACOCO MEJORADA Y CORREGIDA ---
 
-// Tarea para generar el reporte de cobertura de JaCoCo
 tasks.register<JacocoReport>("jacocoTestReport") {
     dependsOn("testDebugUnitTest")
 
@@ -207,39 +210,86 @@ tasks.register<JacocoReport>("jacocoTestReport") {
         fileTree("${layout.buildDirectory.get().asFile}/intermediates/javac/debug") {
             exclude(
                 // --- EXCLUSIONES COMUNES PARA ANDROID Y KOTLIN ---
-                "**/*_Hilt*", "****/Dagger*", "**/*Module*", "**/*_Factory*",
-                "**/*_MembersInjector*", "**/*Bindings*", "**/*EntryPoint*", "**/*_Provide*",
-                "**/R.class", "**/R\$*.class", "**/BuildConfig.*", "**/Manifest*.*",
-                "**/*Test*.*", "android/**/*.*",
-                "**/data/remote/responses/**", "**/data/local/entities/**",
-                "**/*Binding.class", "**/*ViewBinding.class", "**/*DataBindingInfo", "**/*databinding*",
-                "**/*Activity*", "**/*Fragment*", "**/*Adapter*", "**/*Dialog*",
-                "**/*Application*", "**/*Navigator*", "**/*Event*", "**/*State*",
-                // Excluir clases generadas por el compilador Kotlin para inline functions que JaCoCo a veces malinterpreta.
-                // Estas pueden aparecer con nombres como 'YourClass$lambda$1', 'YourClass$WhenMappings', 'YourClass$$inlined'
-                "**/*Kt\$WhenMappings*", "**/*\$inlined*", "**/*lambda\$*", "**/*\$\$ExternalSyntheticAPI*",
-                "**/*\$jacocoInit", "**/*\$default",
-                "**/*ViewModel\$*get*$", "**/*ViewModel\$*set*$", // getters/setters auto-generados de ViewModels
-                // Tus exclusiones específicas del dominio
-                "**/model/User*.*", "**/QueerMapApp.class"
+                "**/*_Hilt*",
+                "****/Dagger*",
+                "**/*Module*",
+                "**/*_Factory*",
+                "**/*_MembersInjector*",
+                "**/*Bindings*",
+                "**/*EntryPoint*",
+                "**/*_Provide*",
+                "**/R.class",
+                "**/R\$*.class",
+                "**/BuildConfig.*",
+                "**/Manifest*.*",
+                "**/*Test*.*",
+                "android/**/*.*",
+                "**/data/remote/responses/**",
+                "**/data/local/entities/**",
+                "**/*Binding.class",
+                "**/*ViewBinding.class",
+                "**/*DataBindingInfo",
+                "**/*databinding*",
+                "**/*Activity*",
+                "**/*Fragment*",
+                "**/*Adapter*",
+                "**/*Dialog*",
+                "**/*Application*",
+                "**/*Navigator*",
+                "**/*Event*",
+                "**/*State*",
+                "**/*Kt\$WhenMappings*",
+                "**/*\$inlined*",
+                "**/*lambda\$*",
+                "**/*\$\$ExternalSyntheticAPI*",
+                "**/*\$jacocoInit",
+                "**/*\$default",
+                "**/*ViewModel\$*get*$",
+                "**/*ViewModel\$*set*$",
+                "**/model/User*.*",
+                "**/QueerMapApp.class"
             )
-        }.plus( // Incluir también las clases Kotlin desde su propio directorio intermedio
+        }.plus(
             fileTree("${layout.buildDirectory.get().asFile}/tmp/kotlin-classes/debug") {
                 exclude(
-                    // Repite las mismas exclusiones para las clases Kotlin
-                    "**/*_Hilt*", "****/Dagger*", "**/*Module*", "**/*_Factory*",
-                    "**/*_MembersInjector*", "**/*Bindings*", "**/*EntryPoint*", "**/*_Provide*",
-                    "**/R.class", "**/R\$*.class", "**/BuildConfig.*", "**/Manifest*.*",
-                    "**/*Test*.*", "android/**/*.*",
-                    "**/data/remote/responses/**", "**/data/local/entities/**",
-                    "**/*Binding.class", "**/*ViewBinding.class", "**/*DataBindingInfo", "**/*databinding*",
-                    "**/*Activity*", "**/*Fragment*", "**/*Adapter*", "**/*Dialog*",
-                    "**/*Application*", "****/*Navigator*", "**/*Event*", "**/*State*",
-                    // Excluir clases generadas por el compilador Kotlin para inline functions
-                    "**/*Kt\$WhenMappings*", "**/*\$inlined*", "**/*lambda\$*", "**/*\$\$ExternalSyntheticAPI*",
-                    "**/*\$jacocoInit", "**/*\$default",
-                    "**/*ViewModel\$*get*$", "**/*ViewModel\$*set*$",
-                    "**/model/User*.*", "**/QueerMapApp.class"
+                    "**/*_Hilt*",
+                    "****/Dagger*",
+                    "**/*Module*",
+                    "**/*_Factory*",
+                    "**/*_MembersInjector*",
+                    "**/*Bindings*",
+                    "**/*EntryPoint*",
+                    "**/*_Provide*",
+                    "**/R.class",
+                    "**/R\$*.class",
+                    "**/BuildConfig.*",
+                    "**/Manifest*.*",
+                    "**/*Test*.*",
+                    "android/**/*.*",
+                    "**/data/remote/responses/**",
+                    "**/data/local/entities/**",
+                    "**/*Binding.class",
+                    "**/*ViewBinding.class",
+                    "**/*DataBindingInfo",
+                    "**/*databinding*",
+                    "**/*Activity*",
+                    "**/*Fragment*",
+                    "**/*Adapter*",
+                    "**/*Dialog*",
+                    "**/*Application*",
+                    "****/*Navigator*",
+                    "**/*Event*",
+                    "**/*State*",
+                    "**/*Kt\$WhenMappings*",
+                    "**/*\$inlined*",
+                    "**/*lambda\$*",
+                    "**/*\$\$ExternalSyntheticAPI*",
+                    "**/*\$jacocoInit",
+                    "**/*\$default",
+                    "**/*ViewModel\$*get*$",
+                    "**/*ViewModel\$*set*$",
+                    "**/model/User*.*",
+                    "**/QueerMapApp.class"
                 )
             }
         )
@@ -255,12 +305,11 @@ tasks.register<JacocoReport>("jacocoTestReport") {
     executionData.setFrom(
         fileTree(layout.buildDirectory.get().asFile).include(
             "jacoco/testDebugUnitTest.exec", // Para tests unitarios
-            "**/*.exec" // Incluye cualquier otro archivo .exec generado
+            "**/*.exec"
         )
     )
 }
 
-// --- OPCIONAL: Configuración para jacocoTestCoverageVerification ---
 tasks.register<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
     dependsOn("jacocoTestReport")
 

@@ -35,12 +35,12 @@ class FirebaseAuthDataSource @Inject constructor(
                     success(User(firebaseUser.uid, firebaseUser.displayName, null, firebaseUser.email, null))
                 }
             } else {
-                // Usa tu función helper 'failure'
-                failure(Exception("Usuario no encontrado."))
+                // FIX: Explicitly pass the message to the failure helper
+                failure(Exception("Usuario no encontrado."), "Usuario no encontrado.")
             }
         } catch (e: Exception) {
-            // Usa tu función helper 'failure'
-            failure(e)
+            // FIX: Explicitly pass the exception's message to the failure helper
+            failure(e, e.message)
         }
 
     override suspend fun verifyUserInFirestore(uid: String): Result<DocumentSnapshot> = try {
@@ -48,8 +48,8 @@ class FirebaseAuthDataSource @Inject constructor(
         // Usa tu función helper 'success'
         success(doc)
     } catch (e: Exception) {
-        // Usa tu función helper 'failure'
-        failure(e)
+        // FIX: Explicitly pass the exception's message to the failure helper
+        failure(e, e.message)
     }
 
     override suspend fun sendPasswordResetEmail(email: String): Result<Unit> = try {
@@ -57,8 +57,8 @@ class FirebaseAuthDataSource @Inject constructor(
         // Usa tu función helper 'success'
         success(Unit)
     } catch (e: Exception) {
-        // Usa tu función helper 'failure'
-        failure(e)
+        // FIX: Explicitly pass the exception's message to the failure helper
+        failure(e, e.message)
     }
 
     // Asegurar que el User devuelto tenga los campos necesarios
@@ -77,12 +77,12 @@ class FirebaseAuthDataSource @Inject constructor(
                 birthday = null // Birthday aún no disponible
             ))
         } else {
-            // Usa tu función helper 'failure'
-            failure(Exception("Autenticación con Google fallida: Usuario nulo."))
+            // FIX: Explicitly pass the message to the failure helper
+            failure(Exception("Autenticación con Google fallida: Usuario nulo."), "Autenticación con Google fallida: Usuario nulo.")
         }
     } catch (e: Exception) {
-        // Usa tu función helper 'failure'
-        failure(e)
+        // FIX: Explicitly pass the exception's message to the failure helper
+        failure(e, e.message)
     }
 
     // Asegurar que el User devuelto tenga los campos necesarios
@@ -101,11 +101,11 @@ class FirebaseAuthDataSource @Inject constructor(
                 birthday = null // Birthday aún no disponible
             ))
         } else {
-            // Usa tu función helper 'failure'
-            failure(Exception("Autenticación con Facebook fallida: Usuario nulo."))
+            // FIX: Explicitly pass the message to the failure helper
+            failure(Exception("Autenticación con Facebook fallida: Usuario nulo."), "Autenticación con Facebook fallida: Usuario nulo.")
         }
     } catch (e: Exception) {
-        // Usa tu función helper 'failure'
-        failure(e)
+        // FIX: Explicitly pass the exception's message to the failure helper
+        failure(e, e.message)
     }
 }
