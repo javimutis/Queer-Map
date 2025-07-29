@@ -4,6 +4,7 @@
 import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
 import org.gradle.testing.jacoco.tasks.JacocoReport
 import org.gradle.testing.jacoco.tasks.JacocoCoverageVerification
+import org.gradle.api.tasks.testing.Test // Importar Test task
 
 // --- FIN DE IMPORTS ---
 
@@ -41,6 +42,7 @@ android {
 
     buildTypes {
         debug {
+            // Habilitar la cobertura para tests unitarios y de instrumentación en la variante debug
             enableUnitTestCoverage = true
             enableAndroidTestCoverage = true
             isMinifyEnabled = false
@@ -90,11 +92,8 @@ android {
     }
 
     testOptions {
-        unitTests.all {
-            jacoco {
-            }
-        }
         unitTests.isIncludeAndroidResources = true
+        // La configuración Jacoco específica para los Test tasks se hará en tasks.withType<Test>().configureEach
     }
 }
 
@@ -156,12 +155,7 @@ dependencies {
     testImplementation(libs.kotest.assertions)
     testImplementation(libs.robolectric)
 
-<<<<<<< Updated upstream
-=======
 
-     kaptTest(libs.mockk.agent.jvm)
-
->>>>>>> Stashed changes
     // Pruebas de Instrumentación (Android Tests)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.androidx.test.runner)
@@ -194,22 +188,37 @@ dependencies {
     testImplementation(libs.play.services.tasks)
 }
 
+// Configura Jacoco para todas las tareas de Test (incluyendo testDebugUnitTest)
+tasks.withType<Test>().configureEach {
+    // Accede a la extensión Jacoco de la tarea de test de forma explícita
+    // Esto asegura que el contexto sea JacocoTaskExtension
+    extensions.configure(JacocoTaskExtension::class.java) {
+        // ¡Usar los métodos setters explícitos!
+        setIncludeNoLocationClasses(true)
+        setExcludes(listOf("jdk.internal.*")) // setExcludes toma una lista
+    }
+}
 
-
+// Task para generar el reporte de cobertura de tests unitarios
 tasks.register<JacocoReport>("jacocoTestReport") {
+    // Asegura que los tests unitarios se ejecuten antes de generar el reporte
     dependsOn("testDebugUnitTest")
 
     reports {
         xml.required.set(true)
         html.required.set(true)
+        // Define la ubicación de salida para el reporte HTML
         html.outputLocation.set(layout.buildDirectory.dir("reports/jacoco/jacocoTestReport"))
         csv.required.set(false)
     }
 
+    // Define las clases que se incluirán en el reporte (código fuente compilado)
+    // Excluye archivos generados y de boilerplate
     classDirectories.setFrom(
         fileTree("${layout.buildDirectory.get().asFile}/intermediates/javac/debug") {
+            // Todas las cadenas de exclusión deben usar COMILLAS DOBLES
             exclude(
-                // --- EXCLUSIONES COMUNES PARA ANDROID Y KOTLIN ---
+                // Exclusiones de Hilt/Dagger, R, BuildConfig, Manifest
                 "**/*_Hilt*",
                 "****/Dagger*",
                 "**/*Module*",
@@ -222,35 +231,40 @@ tasks.register<JacocoReport>("jacocoTestReport") {
                 "**/R\$*.class",
                 "**/BuildConfig.*",
                 "**/Manifest*.*",
+                // Excluye las propias clases de test (para que no aparezcan en la cobertura del código de la app)
                 "**/*Test*.*",
+                // Excluye clases del framework Android (no son parte de tu código de app)
                 "android/**/*.*",
+                // Excluye clases de respuesta/entidades de datos (generalmente no tienen lógica ejecutable)
                 "**/data/remote/responses/**",
                 "**/data/local/entities/**",
+                "**/model/User*.*", // Asumiendo que User es una data class sin lógica compleja
+                // Exclusiones de Data Binding y View Binding
                 "**/*Binding.class",
                 "**/*ViewBinding.class",
                 "**/*DataBindingInfo",
                 "**/*databinding*",
+                // Exclusiones de componentes UI (Actividades, Fragmentos, Adaptadores, Diálogos, etc.)
+                // Esto es para enfocar los unit tests en la lógica de negocio y dejar la UI para instrumentados.
                 "**/*Activity*",
                 "**/*Fragment*",
                 "**/*Adapter*",
                 "**/*Dialog*",
                 "**/*Application*",
                 "**/*Navigator*",
-                "**/*Event*",
-                "**/*State*",
+                // Exclusiones de código generado por Kotlin/JVM (lambdas, inlined functions, etc.)
                 "**/*Kt\$WhenMappings*",
                 "**/*\$inlined*",
                 "**/*lambda\$*",
                 "**/*\$\$ExternalSyntheticAPI*",
                 "**/*\$jacocoInit",
                 "**/*\$default",
-                "**/*ViewModel\$*get*$",
-                "**/*ViewModel\$*set*$",
-                "**/model/User*.*",
+                // Exclusión de la clase Application principal
                 "**/QueerMapApp.class"
             )
         }.plus(
             fileTree("${layout.buildDirectory.get().asFile}/tmp/kotlin-classes/debug") {
+                // Mismas exclusiones para las clases Kotlin compiladas
                 exclude(
                     "**/*_Hilt*",
                     "****/Dagger*",
@@ -268,6 +282,7 @@ tasks.register<JacocoReport>("jacocoTestReport") {
                     "android/**/*.*",
                     "**/data/remote/responses/**",
                     "**/data/local/entities/**",
+                    "**/model/User*.*",
                     "**/*Binding.class",
                     "**/*ViewBinding.class",
                     "**/*DataBindingInfo",
@@ -278,23 +293,19 @@ tasks.register<JacocoReport>("jacocoTestReport") {
                     "**/*Dialog*",
                     "**/*Application*",
                     "****/*Navigator*",
-                    "**/*Event*",
-                    "**/*State*",
                     "**/*Kt\$WhenMappings*",
                     "**/*\$inlined*",
                     "**/*lambda\$*",
                     "**/*\$\$ExternalSyntheticAPI*",
                     "**/*\$jacocoInit",
                     "**/*\$default",
-                    "**/*ViewModel\$*get*$",
-                    "**/*ViewModel\$*set*$",
-                    "**/model/User*.*",
                     "**/QueerMapApp.class"
                 )
             }
         )
     )
 
+    // Define los directorios que contienen el código fuente (para el reporte HTML, muestra el código)
     sourceDirectories.setFrom(
         files(
             "$projectDir/src/main/java",
@@ -302,20 +313,27 @@ tasks.register<JacocoReport>("jacocoTestReport") {
         )
     )
 
+    // Define los archivos .exec que contienen los datos de ejecución de las pruebas
+    // ¡Esta es la parte más crítica y donde suele estar el error!
+    // Se buscan los archivos .exec generados por testDebugUnitTest.
     executionData.setFrom(
-        fileTree(layout.buildDirectory.get().asFile).include(
-            "jacoco/testDebugUnitTest.exec", // Para tests unitarios
-            "**/*.exec"
-        )
+        fileTree(layout.buildDirectory.get().asFile) {
+            // Todas las cadenas de inclusión deben usar COMILLAS DOBLES
+            include(
+                "jacoco/testDebugUnitTest.exec", // Ruta común en algunas configuraciones JaCoCo
+                "outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec" // Ruta MUY común para AGP
+            )
+        }
     )
 }
 
+// Task para verificar la cobertura (opcional, pero útil para CI/CD)
 tasks.register<JacocoCoverageVerification>("jacocoTestCoverageVerification") {
-    dependsOn("jacocoTestReport")
+    dependsOn("jacocoTestReport") // Depende del reporte para asegurar que los datos estén actualizados
 
     violationRules {
         rule {
-            element = "BUNDLE"
+            element = "BUNDLE" // Aplica la regla a todo el módulo (bundle)
 
             limit {
                 counter = "BRANCH"

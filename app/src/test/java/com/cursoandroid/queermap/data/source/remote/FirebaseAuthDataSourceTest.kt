@@ -174,4 +174,100 @@ class FirebaseAuthDataSourceTest {
         assertTrue(result is Result.Failure)
         assertEquals("Email not found", (result as Result.Failure).exception.message)
     }
+    @Test
+    fun `when firebaseAuthWithGoogle succeeds then return User`() = runTest {
+        val idToken = "fake-google-token"
+        val mockCredential = mockk<AuthCredential>()
+        val mockResult: AuthResult = mockk()
+        val mockUser: FirebaseUser = mockk()
+
+        every { mockUser.uid } returns "uid123"
+        every { mockUser.displayName } returns "Google User"
+        every { mockUser.email } returns "google@example.com"
+
+        every { mockResult.user } returns mockUser
+        mockkStatic(GoogleAuthProvider::class)
+        every { GoogleAuthProvider.getCredential(idToken, null) } returns mockCredential
+        every { mockAuth.signInWithCredential(mockCredential) } returns Tasks.forResult(mockResult)
+
+        val result = dataSource.firebaseAuthWithGoogle(idToken)
+
+        assertTrue(result is Result.Success)
+        val user = (result as Result.Success).data
+        assertEquals("uid123", user.id)
+        assertEquals("Google User", user.name)
+        assertEquals("google@example.com", user.email)
+    }
+    @Test
+    fun `when firebaseAuthWithGoogle returns null user then return failure`() = runTest {
+        val idToken = "fake-google-token"
+        val mockCredential = mockk<AuthCredential>()
+        val mockResult: AuthResult = mockk()
+
+        every { mockResult.user } returns null
+        mockkStatic(GoogleAuthProvider::class)
+        every { GoogleAuthProvider.getCredential(idToken, null) } returns mockCredential
+        every { mockAuth.signInWithCredential(mockCredential) } returns Tasks.forResult(mockResult)
+
+        val result = dataSource.firebaseAuthWithGoogle(idToken)
+
+        assertTrue(result is Result.Failure)
+        assertEquals("Autenticación con Google fallida: Usuario nulo.", (result as Result.Failure).exception.message)
+    }
+    @Test
+    fun `when firebaseAuthWithGoogle fails then return failure`() = runTest {
+        val idToken = "fake-google-token"
+        val mockCredential = mockk<AuthCredential>()
+        val exception = Exception("Google sign-in failed")
+
+        mockkStatic(GoogleAuthProvider::class)
+        every { GoogleAuthProvider.getCredential(idToken, null) } returns mockCredential
+        every { mockAuth.signInWithCredential(mockCredential) } returns Tasks.forException(exception)
+
+        val result = dataSource.firebaseAuthWithGoogle(idToken)
+
+        assertTrue(result is Result.Failure)
+        assertEquals("Google sign-in failed", (result as Result.Failure).exception.message)
+    }
+    @Test
+    fun `when firebaseAuthWithFacebook succeeds then return User`() = runTest {
+        val accessToken = "fake-facebook-token"
+        val mockCredential = mockk<AuthCredential>()
+        val mockResult: AuthResult = mockk()
+        val mockUser: FirebaseUser = mockk()
+
+        every { mockUser.uid } returns "uid456"
+        every { mockUser.displayName } returns "Facebook User"
+        every { mockUser.email } returns "fb@example.com"
+
+        every { mockResult.user } returns mockUser
+        mockkStatic(FacebookAuthProvider::class)
+        every { FacebookAuthProvider.getCredential(accessToken) } returns mockCredential
+        every { mockAuth.signInWithCredential(mockCredential) } returns Tasks.forResult(mockResult)
+
+        val result = dataSource.firebaseAuthWithFacebook(accessToken)
+
+        assertTrue(result is Result.Success)
+        val user = (result as Result.Success).data
+        assertEquals("uid456", user.id)
+        assertEquals("Facebook User", user.name)
+        assertEquals("fb@example.com", user.email)
+    }
+    @Test
+    fun `when firebaseAuthWithFacebook returns null user then return failure`() = runTest {
+        val accessToken = "fake-facebook-token"
+        val mockCredential = mockk<AuthCredential>()
+        val mockResult: AuthResult = mockk()
+
+        every { mockResult.user } returns null
+        mockkStatic(FacebookAuthProvider::class)
+        every { FacebookAuthProvider.getCredential(accessToken) } returns mockCredential
+        every { mockAuth.signInWithCredential(mockCredential) } returns Tasks.forResult(mockResult)
+
+        val result = dataSource.firebaseAuthWithFacebook(accessToken)
+
+        assertTrue(result is Result.Failure)
+        assertEquals("Autenticación con Facebook fallida: Usuario nulo.", (result as Result.Failure).exception.message)
+    }
+
 }

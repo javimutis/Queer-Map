@@ -10,7 +10,7 @@ plugins {
 }
 
     jacoco {
-        toolVersion = "0.8.11" // Versión actual y compatible con Gradle 8.4
+        toolVersion = "0.8.12" // Versión actual y compatible con Gradle 8.4
     }
 
 
