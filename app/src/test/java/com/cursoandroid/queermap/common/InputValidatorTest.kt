@@ -20,89 +20,195 @@ class InputValidatorTest {
         validator = InputValidator()
     }
 
-    // Email tests
     @Test
-    fun `isValidEmail returns true for valid email`() {
-        assertTrue(validator.isValidEmail("user@example.com"))
+    fun `when email is valid then return true`() {
+        // Given
+        val email = "user@example.com"
+
+        // When
+        val result = validator.isValidEmail(email)
+
+        // Then
+        assertTrue(result)
     }
 
     @Test
-    fun `isValidEmail returns false for invalid email`() {
-        assertFalse(validator.isValidEmail("invalid-email"))
-    }
+    fun `when email is invalid then return false`() {
+        // Given
+        val email = "invalid-email"
 
-    // Password length tests
-    @Test
-    fun `isValidPassword returns true for password of minimum length`() {
-        assertTrue(validator.isValidPassword("123456"))
-    }
+        // When
+        val result = validator.isValidEmail(email)
 
-    @Test
-    fun `isValidPassword returns false for short password`() {
-        assertFalse(validator.isValidPassword("123"))
-    }
-
-    // Strong password tests
-    @Test
-    fun `isStrongPassword returns true for complex valid password`() {
-        assertTrue(validator.isStrongPassword("Aa1@abcd"))
+        // Then
+        assertFalse(result)
     }
 
     @Test
-    fun `isStrongPassword returns false for password without uppercase`() {
-        assertFalse(validator.isStrongPassword("aa1@abcd"))
+    fun `when password meets minimum length then return true`() {
+        // Given
+        val password = "123456"
+
+        // When
+        val result = validator.isValidPassword(password)
+
+        // Then
+        assertTrue(result)
     }
 
     @Test
-    fun `isStrongPassword returns false for password without lowercase`() {
-        assertFalse(validator.isStrongPassword("AA1@ABCD"))
+    fun `when password is too short then return false`() {
+        // Given
+        val password = "123"
+
+        // When
+        val result = validator.isValidPassword(password)
+
+        // Then
+        assertFalse(result)
     }
 
     @Test
-    fun `isStrongPassword returns false for password without digit`() {
-        assertFalse(validator.isStrongPassword("Aa@bcdef"))
+    fun `when password is strong then return true`() {
+        // Given
+        val password = "Aa1@abcd"
+
+        // When
+        val result = validator.isStrongPassword(password)
+
+        // Then
+        assertTrue(result)
     }
 
     @Test
-    fun `isStrongPassword returns false for password without special char`() {
-        assertFalse(validator.isStrongPassword("Aa1bcdef"))
+    fun `when password lacks uppercase then return false`() {
+        // Given
+        val password = "aa1@abcd"
+
+        // When
+        val result = validator.isStrongPassword(password)
+
+        // Then
+        assertFalse(result)
     }
 
     @Test
-    fun `isStrongPassword returns false for short password`() {
-        assertFalse(validator.isStrongPassword("Aa1@a"))
-    }
+    fun `when password lacks lowercase then return false`() {
+        // Given
+        val password = "AA1@ABCD"
 
-    // Username tests
-    @Test
-    fun `isValidUsername returns true for non-blank username`() {
-        assertTrue(validator.isValidUsername("username"))
-    }
+        // When
+        val result = validator.isStrongPassword(password)
 
-    @Test
-    fun `isValidUsername returns false for blank username`() {
-        assertFalse(validator.isValidUsername(""))
-    }
-
-    // Full name tests
-    @Test
-    fun `isValidFullName returns true for non-blank name`() {
-        assertTrue(validator.isValidFullName("Jane Doe"))
+        // Then
+        assertFalse(result)
     }
 
     @Test
-    fun `isValidFullName returns false for blank name`() {
-        assertFalse(validator.isValidFullName(""))
+    fun `when password lacks digit then return false`() {
+        // Given
+        val password = "Aa@bcdef"
+
+        // When
+        val result = validator.isStrongPassword(password)
+
+        // Then
+        assertFalse(result)
     }
 
-    // Birthday tests
     @Test
-    fun `isValidBirthday returns true for non-blank birthday`() {
-        assertTrue(validator.isValidBirthday("2000-01-01"))
+    fun `when password lacks special character then return false`() {
+        // Given
+        val password = "Aa1bcdef"
+
+        // When
+        val result = validator.isStrongPassword(password)
+
+        // Then
+        assertFalse(result)
     }
 
     @Test
-    fun `isValidBirthday returns false for blank birthday`() {
-        assertFalse(validator.isValidBirthday(""))
+    fun `when password is too short to be strong then return false`() {
+        // Given
+        val password = "Aa1@a"
+
+        // When
+        val result = validator.isStrongPassword(password)
+
+        // Then
+        assertFalse(result)
+    }
+
+    @Test
+    fun `when username is not blank then return true`() {
+        // Given
+        val username = "username"
+
+        // When
+        val result = validator.isValidUsername(username)
+
+        // Then
+        assertTrue(result)
+    }
+
+    @Test
+    fun `when username is blank then return false`() {
+        // Given
+        val username = ""
+
+        // When
+        val result = validator.isValidUsername(username)
+
+        // Then
+        assertFalse(result)
+    }
+
+    @Test
+    fun `when full name is not blank then return true`() {
+        // Given
+        val fullName = "Jane Doe"
+
+        // When
+        val result = validator.isValidFullName(fullName)
+
+        // Then
+        assertTrue(result)
+    }
+
+    @Test
+    fun `when full name is blank then return false`() {
+        // Given
+        val fullName = ""
+
+        // When
+        val result = validator.isValidFullName(fullName)
+
+        // Then
+        assertFalse(result)
+    }
+
+    @Test
+    fun `when birthday is not blank then return true`() {
+        // Given
+        val birthday = "2000-01-01"
+
+        // When
+        val result = validator.isValidBirthday(birthday)
+
+        // Then
+        assertTrue(result)
+    }
+
+    @Test
+    fun `when birthday is blank then return false`() {
+        // Given
+        val birthday = ""
+
+        // When
+        val result = validator.isValidBirthday(birthday)
+
+        // Then
+        assertFalse(result)
     }
 }

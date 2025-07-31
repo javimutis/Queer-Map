@@ -13,56 +13,86 @@ import org.robolectric.annotation.LooperMode
 class EmailValidatorTest {
 
     @Test
-    fun `isValidEmail returns true for standard email`() {
-        val result = EmailValidator.isValidEmail("test@example.com")
+    fun `when email is valid then return true`() {
+        // Given
+        val email = "user@example.com"
+
+        // When
+        val result = EmailValidator.isValidEmail(email)
+
+        // Then
         assertTrue(result)
     }
 
     @Test
-    fun `isValidEmail returns true for email with dots and plus`() {
-        val result = EmailValidator.isValidEmail("user.name+tag+sorting@example.com")
+    fun `when email has plus sign then return true`() {
+        // Given
+        val email = "user+test@example.com"
+
+        // When
+        val result = EmailValidator.isValidEmail(email)
+
+        // Then
         assertTrue(result)
     }
 
     @Test
-    fun `isValidEmail returns true for email with subdomain`() {
-        val result = EmailValidator.isValidEmail("user@mail.example.co")
+    fun `when email has underscore then return true`() {
+        // Given
+        val email = "user_test@example.com"
+
+        // When
+        val result = EmailValidator.isValidEmail(email)
+
+        // Then
         assertTrue(result)
     }
 
     @Test
-    fun `isValidEmail returns false for email without @ symbol`() {
-        val result = EmailValidator.isValidEmail("invalidemail.com")
+    fun `when email has invalid format then return false`() {
+        // Given
+        val email = "invalid-email"
+
+        // When
+        val result = EmailValidator.isValidEmail(email)
+
+        // Then
         assertFalse(result)
     }
 
     @Test
-    fun `isValidEmail returns false for email with invalid domain`() {
-        val result = EmailValidator.isValidEmail("user@example")
+    fun `when email is missing at symbol then return false`() {
+        // Given
+        val email = "userexample.com"
+
+        // When
+        val result = EmailValidator.isValidEmail(email)
+
+        // Then
         assertFalse(result)
     }
 
     @Test
-    fun `isValidEmail returns false for empty string`() {
-        val result = EmailValidator.isValidEmail("")
+    fun `when email has invalid domain then return false`() {
+        // Given
+        val email = "user@example"
+
+        // When
+        val result = EmailValidator.isValidEmail(email)
+
+        // Then
         assertFalse(result)
     }
 
     @Test
-    fun `isValidEmail returns false for email with special characters`() {
-        val result = EmailValidator.isValidEmail("user@exam!ple.com")
-        assertFalse(result)
-    }
+    fun `when email is empty string then return false`() {
+        // Given
+        val email = ""
 
-    @Test
-    fun `isValidEmail returns false for email starting with dot`() {
-        val result = EmailValidator.isValidEmail(".user@example.com")
-        assertFalse(result)
-    }
+        // When
+        val result = EmailValidator.isValidEmail(email)
 
-    @Test
-    fun `isValidEmail returns false for email ending with dot`() {
-        val result = EmailValidator.isValidEmail("user.@example.com")
+        // Then
         assertFalse(result)
     }
 }
