@@ -2,6 +2,9 @@ package com.cursoandroid.queermap.domain.usecase.auth
 
 import com.cursoandroid.queermap.domain.model.User
 import com.cursoandroid.queermap.domain.repository.AuthRepository
+import com.cursoandroid.queermap.util.Result
+import com.cursoandroid.queermap.util.failure
+import com.cursoandroid.queermap.util.success
 import io.mockk.MockKAnnotations
 import io.mockk.coEvery
 import io.mockk.impl.annotations.RelaxedMockK
@@ -11,32 +14,29 @@ import org.junit.Before
 import org.junit.Test
 import java.lang.Exception
 
-// IMPORTANTE: Asegúrate de importar tu clase Result personalizada y sus helpers
-import com.cursoandroid.queermap.util.Result
-import com.cursoandroid.queermap.util.success
-import com.cursoandroid.queermap.util.failure
-
 class CreateUserUseCaseTest {
 
-    // Mock relajado del repositorio de autenticación
+    // Mock relajado del repositorio de autenticación.
+    // Esto nos permite simular el comportamiento de `AuthRepository` sin tener que
+    // usar una implementación real.
     @RelaxedMockK
     private lateinit var authRepository: AuthRepository
 
-    // Caso de uso para crear usuario
+    // La instancia del caso de uso que vamos a probar.
     private lateinit var createUserUseCase: CreateUserUseCase
 
     @Before
     fun setUp() {
-        // Inicializa mocks para pruebas
+        // Inicializa los mocks para esta suite de pruebas.
         MockKAnnotations.init(this)
 
-        // Instancia el caso de uso con el mock del repositorio
+        // Instancia el caso de uso, inyectándole el mock del repositorio.
         createUserUseCase = CreateUserUseCase(authRepository)
     }
 
     @Test
     fun `when user registration succeeds then return success`() = runTest {
-        // Given: usuario válido y mock que simula registro exitoso
+        // Given: Prepara los datos de prueba.
         val user = User(
             id = "newUserId",
             email = "newuser@example.com",
@@ -45,20 +45,21 @@ class CreateUserUseCaseTest {
             birthday = "05/10/2000"
         )
         val password = "securePassword123"
-        // Usa tu función helper 'success'
+
+        // Configura el mock para que, cuando se llame a `registerUser`,
+        // devuelva un resultado de éxito con `Unit` (sin datos).
         coEvery { authRepository.registerUser(user, password) } returns success(Unit)
 
-        // When: se ejecuta el caso de uso con usuario y contraseña
+        // When: Ejecuta el caso de uso con los datos de prueba.
         val result = createUserUseCase(user, password)
 
-        // Then: se espera resultado exitoso sin datos (Unit)
-        // Usa tu función helper 'success'
+        // Then: Comprueba que el resultado sea el esperado (un resultado de éxito).
         assertEquals(success(Unit), result)
     }
 
     @Test
     fun `when user registration fails then return failure with exception`() = runTest {
-        // Given: usuario válido y mock que simula fallo con excepción
+        // Given: Prepara los datos de prueba para un escenario de fallo.
         val user = User(
             id = "newUserId",
             email = "failuser@example.com",
@@ -68,14 +69,16 @@ class CreateUserUseCaseTest {
         )
         val password = "anotherPassword"
         val expectedException = Exception("Registration failed due to network error")
-        // Usa tu función helper 'failure'
+
+        // Configura el mock para que, cuando se llame a `registerUser`,
+        // lance una excepción y devuelva un resultado de fallo.
         coEvery { authRepository.registerUser(user, password) } returns failure(expectedException)
 
-        // When: se ejecuta el caso de uso con usuario y contraseña
+        // When: Ejecuta el caso de uso con los datos de prueba.
         val result = createUserUseCase(user, password)
 
-        // Then: se espera resultado fallido con la excepción esperada
-        // Usa tu función helper 'failure'
+        // Then: Comprueba que el resultado sea el esperado (un resultado de fallo
+        // que contenga la excepción).
         assertEquals(failure<Unit>(expectedException), result)
     }
 }

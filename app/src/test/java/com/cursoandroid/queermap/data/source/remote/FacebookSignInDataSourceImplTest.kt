@@ -35,7 +35,7 @@ class FacebookSignInDataSourceTest {
     }
 
     @Test
-    fun `registerCallback should register the given callback with LoginManager`() {
+    fun `when registerCallback is called then it should register the callback with LoginManager`() {
         // Given
         val mockCallbackManager = mockk<CallbackManager>()
         val mockFacebookCallback = mockk<FacebookCallback<LoginResult>>()
@@ -54,7 +54,7 @@ class FacebookSignInDataSourceTest {
     }
 
     @Test
-    fun `logInWithReadPermissions should call LoginManager with provided fragment and permissions`() {
+    fun `when logInWithReadPermissions is called then it should invoke LoginManager with given fragment and permissions`() {
         // Given
         val mockFragment = mockk<Fragment>()
         val permissions = listOf("email", "public_profile")
@@ -73,7 +73,7 @@ class FacebookSignInDataSourceTest {
     }
 
     @Test
-    fun `accessTokenChannel should emit Result when offered manually`() = runTest {
+    fun `when value is sent through accessTokenChannel then it should emit Result successfully`() = runTest {
         // Given
         val accessToken = "mock_token"
         val result = success(accessToken)

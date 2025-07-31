@@ -2,6 +2,9 @@ package com.cursoandroid.queermap.domain.usecase.auth
 
 import com.cursoandroid.queermap.domain.model.User
 import com.cursoandroid.queermap.domain.repository.AuthRepository
+import com.cursoandroid.queermap.util.Result
+import com.cursoandroid.queermap.util.failure
+import com.cursoandroid.queermap.util.success
 import io.mockk.MockKAnnotations
 import io.mockk.coEvery
 import io.mockk.impl.annotations.RelaxedMockK
@@ -9,62 +12,65 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
-import java.lang.Exception // Asegúrate de que Exception también esté importado si lo usas directamente
-
-// IMPORTANTE: Asegúrate de importar tu clase Result personalizada y sus helpers
-import com.cursoandroid.queermap.util.Result
-import com.cursoandroid.queermap.util.success
-import com.cursoandroid.queermap.util.failure
-
+import java.lang.Exception
 
 class LoginWithFacebookUseCaseTest {
 
-    // Mock relajado del repositorio de autenticación
+    // Mock relajado del repositorio de autenticación, lo que nos permite
+    // simular su comportamiento sin una implementación real.
     @RelaxedMockK
     private lateinit var authRepository: AuthRepository
 
-    // Use case que se está testeando
+    // La instancia del caso de uso que se va a probar.
     private lateinit var loginWithFacebookUseCase: LoginWithFacebookUseCase
 
     @Before
     fun setUp() {
-        // Inicializa los mocks de MockK
+        // Inicializa los mocks para esta suite de pruebas.
         MockKAnnotations.init(this)
 
-        // Inyección del mock en el use case
+        // Instancia el caso de uso inyectándole el mock del repositorio.
         loginWithFacebookUseCase = LoginWithFacebookUseCase(authRepository)
     }
 
     @Test
     fun `when firebase auth with facebook succeeds then return success with user`() = runTest {
-        // Given: token válido y se mockea retorno exitoso con un usuario
-        val accessToken = "facebook_access_token"
-        val expectedUser =
-            User("uidFb456", "fb@example.com", "fbusername", "Facebook User", "02/02/1999")
-        // Usa tu función helper 'success'
+        // Given: Se prepara un token de acceso de Facebook y se crea el usuario esperado.
+        val accessToken = "facebook_access_token_12345"
+        val expectedUser = User(
+            id = "uidFb456",
+            email = "fb@example.com",
+            username = "fbusername",
+            name = "Facebook User",
+            birthday = "02/02/1999"
+        )
+
+        // Se configura el mock: cuando se llame a `firebaseAuthWithFacebook` con el token
+        // simulado, debe retornar un resultado de éxito con el usuario.
         coEvery { authRepository.firebaseAuthWithFacebook(accessToken) } returns success(expectedUser)
 
-        // When: se ejecuta el use case con el token de Facebook
+        // When: Se ejecuta el caso de uso con el token.
         val result = loginWithFacebookUseCase(accessToken)
 
-        // Then: se espera resultado exitoso con los datos del usuario
-        // Usa tu función helper 'success'
+        // Then: Se verifica que el resultado sea el esperado (un resultado de éxito).
         assertEquals(success(expectedUser), result)
     }
 
     @Test
     fun `when firebase auth with facebook fails then return failure with exception`() = runTest {
-        // Given: token válido y se mockea una excepción al autenticar
-        val accessToken = "facebook_access_token"
-        val expectedException = Exception("Facebook authentication failed")
-        // Usa tu función helper 'failure'
+        // Given: Se prepara un token y se simula una excepción de autenticación.
+        val accessToken = "invalid_facebook_token"
+        val expectedException = Exception("Facebook authentication failed: Token is invalid")
+
+        // Se configura el mock para que, cuando se llame al método,
+        // retorne un resultado de fallo con la excepción esperada.
         coEvery { authRepository.firebaseAuthWithFacebook(accessToken) } returns failure(expectedException)
 
-        // When: se ejecuta el use case con el token de Facebook
+        // When: Se ejecuta el caso de uso con el token inválido.
         val result = loginWithFacebookUseCase(accessToken)
 
-        // Then: se espera resultado fallido con la excepción recibida
-        // Usa tu función helper 'failure'
+        // Then: Se verifica que el resultado sea el esperado (un resultado de fallo
+        // con la excepción correspondiente).
         assertEquals(failure<User>(expectedException), result)
     }
 }

@@ -6,12 +6,11 @@ import com.cursoandroid.queermap.domain.model.User
 import com.cursoandroid.queermap.util.Result
 import com.cursoandroid.queermap.util.failure
 import com.cursoandroid.queermap.util.success
-import com.cursoandroid.queermap.util.getOrThrow
+import com.google.android.gms.tasks.Tasks
 import com.google.firebase.auth.*
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
-import com.google.android.gms.tasks.Tasks
 import io.mockk.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
@@ -53,7 +52,12 @@ class AuthRepositoryImplTest {
         val email = "email@test.com"
         val password = "password"
         val expectedResult = success(User("id", "name", null, email, null))
-        coEvery { mockRemoteDataSource.loginWithEmailAndPassword(email, password) } returns expectedResult
+        coEvery {
+            mockRemoteDataSource.loginWithEmailAndPassword(
+                email,
+                password
+            )
+        } returns expectedResult
 
         val result = repository.loginWithEmailAndPassword(email, password)
 
@@ -167,7 +171,13 @@ class AuthRepositoryImplTest {
 
     @Test
     fun `registerUser success creates user and saves in firestore`() = runTest {
-        val user = User(id = "", name = "Test", username = "testuser", email = "test@example.com", birthday = "2000-01-01")
+        val user = User(
+            id = "",
+            name = "Test",
+            username = "testuser",
+            email = "test@example.com",
+            birthday = "2000-01-01"
+        )
         val password = "password123"
         val mockAuthResult = mockk<com.google.firebase.auth.AuthResult>()
         val mockFirebaseUser = mockk<com.google.firebase.auth.FirebaseUser>()
@@ -178,7 +188,12 @@ class AuthRepositoryImplTest {
         every { mockAuthResult.user } returns mockFirebaseUser
         every { mockFirebaseUser.email } returns user.email
         every { mockFirebaseUser.displayName } returns user.name
-        coEvery { mockFirebaseAuth.createUserWithEmailAndPassword(user.email!!, password) } returns Tasks.forResult(mockAuthResult)
+        coEvery {
+            mockFirebaseAuth.createUserWithEmailAndPassword(
+                user.email!!,
+                password
+            )
+        } returns Tasks.forResult(mockAuthResult)
         every { mockFirestore.collection("users") } returns mockCollection
         every { mockCollection.document("uid123") } returns mockDoc
         coEvery { mockDoc.set(any<Map<String, Any>>()) } returns Tasks.forResult(null)
@@ -186,28 +201,53 @@ class AuthRepositoryImplTest {
         val result = repository.registerUser(user, password)
 
         assertTrue(result is Result.Success)
-        coVerify(exactly = 1) { mockFirebaseAuth.createUserWithEmailAndPassword(user.email!!, password) }
+        coVerify(exactly = 1) {
+            mockFirebaseAuth.createUserWithEmailAndPassword(
+                user.email!!,
+                password
+            )
+        }
         coVerify(exactly = 1) { mockDoc.set(any<Map<String, Any>>()) }
     }
 
     @Test
     fun `registerUser returns failure when user is null after registration`() = runTest {
-        val user = User(id = "", name = "Test", username = "testuser", email = "test@example.com", birthday = "2000-01-01")
+        val user = User(
+            id = "",
+            name = "Test",
+            username = "testuser",
+            email = "test@example.com",
+            birthday = "2000-01-01"
+        )
         val password = "password123"
         val mockAuthResult = mockk<com.google.firebase.auth.AuthResult>()
 
         every { mockAuthResult.user } returns null
-        coEvery { mockFirebaseAuth.createUserWithEmailAndPassword(user.email!!, password) } returns Tasks.forResult(mockAuthResult)
+        coEvery {
+            mockFirebaseAuth.createUserWithEmailAndPassword(
+                user.email!!,
+                password
+            )
+        } returns Tasks.forResult(mockAuthResult)
 
         val result = repository.registerUser(user, password)
 
         assertTrue(result is Result.Failure)
-        assertEquals("Usuario nulo después del registro.", (result as Result.Failure).exception.message)
+        assertEquals(
+            "Usuario nulo después del registro.",
+            (result as Result.Failure).exception.message
+        )
     }
 
     @Test
     fun `registerUser returns failure when firestore set fails`() = runTest {
-        val user = User(id = "", name = "Test", username = "testuser", email = "test@example.com", birthday = "2000-01-01")
+        val user = User(
+            id = "",
+            name = "Test",
+            username = "testuser",
+            email = "test@example.com",
+            birthday = "2000-01-01"
+        )
         val password = "password123"
         val mockAuthResult = mockk<com.google.firebase.auth.AuthResult>()
         val mockFirebaseUser = mockk<com.google.firebase.auth.FirebaseUser>()
@@ -217,7 +257,12 @@ class AuthRepositoryImplTest {
 
         every { mockFirebaseUser.uid } returns "uid123"
         every { mockAuthResult.user } returns mockFirebaseUser
-        coEvery { mockFirebaseAuth.createUserWithEmailAndPassword(user.email!!, password) } returns Tasks.forResult(mockAuthResult)
+        coEvery {
+            mockFirebaseAuth.createUserWithEmailAndPassword(
+                user.email!!,
+                password
+            )
+        } returns Tasks.forResult(mockAuthResult)
         every { mockFirestore.collection("users") } returns mockCollection
         every { mockCollection.document("uid123") } returns mockDoc
         coEvery { mockDoc.set(any<Map<String, Any>>()) } returns Tasks.forException(exception)
@@ -230,11 +275,22 @@ class AuthRepositoryImplTest {
 
     @Test
     fun `registerUser returns mapped exception for user collision`() = runTest {
-        val user = User(id = "", name = "Test", username = "testuser", email = "test@example.com", birthday = "2000-01-01")
+        val user = User(
+            id = "",
+            name = "Test",
+            username = "testuser",
+            email = "test@example.com",
+            birthday = "2000-01-01"
+        )
         val password = "password123"
         val ex = FirebaseAuthUserCollisionException("code", "collision")
 
-        coEvery { mockFirebaseAuth.createUserWithEmailAndPassword(user.email!!, password) } returns Tasks.forException(ex)
+        coEvery {
+            mockFirebaseAuth.createUserWithEmailAndPassword(
+                user.email!!,
+                password
+            )
+        } returns Tasks.forException(ex)
 
         val result = repository.registerUser(user, password)
 
@@ -244,26 +300,51 @@ class AuthRepositoryImplTest {
 
     @Test
     fun `registerUser returns mapped exception for weak password`() = runTest {
-        val user = User(id = "", name = "Test", username = "testuser", email = "test@example.com", birthday = "2000-01-01")
+        val user = User(
+            id = "",
+            name = "Test",
+            username = "testuser",
+            email = "test@example.com",
+            birthday = "2000-01-01"
+        )
         val password = "weak"
         val ex = FirebaseAuthWeakPasswordException("code", "weak password", "weak_password")
 
-        coEvery { mockFirebaseAuth.createUserWithEmailAndPassword(user.email!!, password) } returns Tasks.forException(ex)
+        coEvery {
+            mockFirebaseAuth.createUserWithEmailAndPassword(
+                user.email!!,
+                password
+            )
+        } returns Tasks.forException(ex)
 
         val result = repository.registerUser(user, password)
 
         assertTrue(result is Result.Failure)
-        assertEquals("La contraseña es demasiado débil.", (result as Result.Failure).exception.message)
+        assertEquals(
+            "La contraseña es demasiado débil.",
+            (result as Result.Failure).exception.message
+        )
     }
 
 
     @Test
     fun `registerUser returns mapped exception for invalid credentials`() = runTest {
-        val user = User(id = "", name = "Test", username = "testuser", email = "test@example.com", birthday = "2000-01-01")
+        val user = User(
+            id = "",
+            name = "Test",
+            username = "testuser",
+            email = "test@example.com",
+            birthday = "2000-01-01"
+        )
         val password = "invalid"
         val ex = FirebaseAuthInvalidCredentialsException("code", "invalid credentials")
 
-        coEvery { mockFirebaseAuth.createUserWithEmailAndPassword(user.email!!, password) } returns Tasks.forException(ex)
+        coEvery {
+            mockFirebaseAuth.createUserWithEmailAndPassword(
+                user.email!!,
+                password
+            )
+        } returns Tasks.forException(ex)
 
         val result = repository.registerUser(user, password)
 
@@ -276,13 +357,24 @@ class AuthRepositoryImplTest {
     @Test
     fun `updateUserProfile success updates firestore`() = runTest {
         val uid = "uid123"
-        val user = User(id = uid, name = "Name", username = "username", email = "email@test.com", birthday = "2000-01-01")
+        val user = User(
+            id = uid,
+            name = "Name",
+            username = "username",
+            email = "email@test.com",
+            birthday = "2000-01-01"
+        )
         val mockCollection = mockk<com.google.firebase.firestore.CollectionReference>()
         val mockDoc = mockk<com.google.firebase.firestore.DocumentReference>()
 
         every { mockFirestore.collection("users") } returns mockCollection
         every { mockCollection.document(uid) } returns mockDoc
-        coEvery { mockDoc.set(any<Map<String, Any>>(), SetOptions.merge()) } returns Tasks.forResult(null)
+        coEvery {
+            mockDoc.set(
+                any<Map<String, Any>>(),
+                SetOptions.merge()
+            )
+        } returns Tasks.forResult(null)
 
         val result = repository.updateUserProfile(uid, user)
 
@@ -293,18 +385,78 @@ class AuthRepositoryImplTest {
     @Test
     fun `updateUserProfile failure returns failure`() = runTest {
         val uid = "uid123"
-        val user = User(id = uid, name = "Name", username = "username", email = "email@test.com", birthday = "2000-01-01")
+        val user = User(
+            id = uid,
+            name = "Name",
+            username = "username",
+            email = "email@test.com",
+            birthday = "2000-01-01"
+        )
         val mockCollection = mockk<com.google.firebase.firestore.CollectionReference>()
         val mockDoc = mockk<com.google.firebase.firestore.DocumentReference>()
         val ex = Exception("update failed")
 
         every { mockFirestore.collection("users") } returns mockCollection
         every { mockCollection.document(uid) } returns mockDoc
-        coEvery { mockDoc.set(any<Map<String, Any>>(), SetOptions.merge()) } returns Tasks.forException(ex)
+        coEvery {
+            mockDoc.set(
+                any<Map<String, Any>>(),
+                SetOptions.merge()
+            )
+        } returns Tasks.forException(ex)
 
         val result = repository.updateUserProfile(uid, user)
 
         assertTrue(result is Result.Failure)
         assertEquals("update failed", (result as Result.Failure).exception.message)
     }
+
+    @Test
+    fun `registerUser returns failure for unknown exception`() = runTest {
+        val user = User(
+            id = "",
+            name = "Test",
+            username = "testuser",
+            email = "test@example.com",
+            birthday = "2000-01-01"
+        )
+        val password = "password123"
+        val ex = Exception("Unknown error")
+
+        coEvery {
+            mockFirebaseAuth.createUserWithEmailAndPassword(
+                user.email!!,
+                password
+            )
+        } returns Tasks.forException(ex)
+
+        val result = repository.registerUser(user, password)
+
+        assertTrue(result is Result.Failure)
+        assertEquals("Unknown error", (result as Result.Failure).exception.message)
+    }
+
+    @Test
+    fun `updateUserProfile success updates firestore without email when email is null`() = runTest {
+        val uid = "uid123"
+        val user = User(id = uid, name = "Name", username = "username", email = null, birthday = "2000-01-01")
+        val mockCollection = mockk<com.google.firebase.firestore.CollectionReference>()
+        val mockDoc = mockk<com.google.firebase.firestore.DocumentReference>()
+
+        every { mockFirestore.collection("users") } returns mockCollection
+        every { mockCollection.document(uid) } returns mockDoc
+        coEvery { mockDoc.set(any<Map<String, Any>>(), SetOptions.merge()) } returns Tasks.forResult(null)
+
+        val result = repository.updateUserProfile(uid, user)
+
+        assertTrue(result is Result.Success)
+
+        coVerify(exactly = 1) {
+            mockDoc.set(withArg { arg ->
+                val map = arg as Map<String, Any>  // casteo explícito
+                assert(!map.containsKey("email"))
+            }, SetOptions.merge())
+        }
+    }
+
 }

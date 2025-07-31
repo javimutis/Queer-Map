@@ -2,6 +2,9 @@ package com.cursoandroid.queermap.domain.usecase.auth
 
 import com.cursoandroid.queermap.domain.repository.AuthRepository
 import com.cursoandroid.queermap.domain.model.User
+import com.cursoandroid.queermap.util.Result
+import com.cursoandroid.queermap.util.failure
+import com.cursoandroid.queermap.util.success
 import io.mockk.MockKAnnotations
 import io.mockk.coEvery
 import io.mockk.impl.annotations.RelaxedMockK
@@ -9,61 +12,64 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
-
-// IMPORTANTE: Asegúrate de importar tu clase Result personalizada y sus helpers
-import com.cursoandroid.queermap.util.Result
-import com.cursoandroid.queermap.util.success
-import com.cursoandroid.queermap.util.failure
-import java.lang.Exception // Asegúrate de que Exception también esté importado si lo usas directamente
+import java.lang.Exception
 
 class LoginWithEmailUseCaseTest {
 
-    // Mock relajado del repositorio de autenticación para simular comportamientos
+    // Se usa @RelaxedMockK para crear un mock del AuthRepository.
+    // Un mock relajado devuelve valores predeterminados para las funciones no configuradas.
     @RelaxedMockK
     private lateinit var authRepository: AuthRepository
 
-    // Instancia del caso de uso que se probará
+    // La instancia del caso de uso que vamos a probar.
     private lateinit var loginWithEmailUseCase: LoginWithEmailUseCase
 
     @Before
     fun setUp() {
-        // Inicializa los mocks anotados en la clase
+        // Inicializa todos los mocks anotados en la clase.
         MockKAnnotations.init(this)
-        // Crea instancia del use case con el mock de repositorio
+        // Crea la instancia de la clase de caso de uso, inyectando el mock del repositorio.
         loginWithEmailUseCase = LoginWithEmailUseCase(authRepository)
     }
 
     @Test
     fun `when login succeeds then return user`() = runTest {
-        // Given: datos de login válidos y respuesta exitosa simulada
+        // Given: Se definen los datos de prueba y se configura el mock.
         val email = "test@example.com"
-        val password = "password"
-        val expectedUser = User("123", email)
+        val password = "password123"
+        val expectedUser = User(id = "user-123", email = email, username = "testuser")
+
+        // Se configura el comportamiento del mock: cuando se llame a loginWithEmailAndPassword
+        // con los datos de prueba, debe retornar un resultado de éxito con el usuario esperado.
         coEvery {
             authRepository.loginWithEmailAndPassword(email, password)
-        } returns success(expectedUser) // Usa tu función helper 'success'
+        } returns success(expectedUser)
 
-        // When: se invoca el caso de uso con los datos
+        // When: Se ejecuta la función que se está probando.
         val result = loginWithEmailUseCase(email, password)
 
-        // Then: se espera un resultado exitoso con el usuario esperado
-        assertEquals(success(expectedUser), result) // Usa tu función helper 'success'
+        // Then: Se verifica que el resultado sea exactamente el resultado de éxito esperado.
+        assertEquals(success(expectedUser), result)
     }
 
     @Test
     fun `when login fails then return error`() = runTest {
-        // Given: datos de login y simulación de error en autenticación
-        val email = "test@example.com"
-        val password = "password"
-        val expectedException = Exception("Login failed")
+        // Given: Se definen los datos de prueba para un escenario de fallo.
+        val email = "fail@example.com"
+        val password = "wrongpassword"
+        val expectedException = Exception("Authentication failed with invalid credentials")
+
+        // Se configura el mock para que devuelva un resultado de fallo
+        // con la excepción esperada.
         coEvery {
             authRepository.loginWithEmailAndPassword(email, password)
-        } returns failure(expectedException) // Usa tu función helper 'failure'
+        } returns failure(expectedException)
 
-        // When: se ejecuta el caso de uso con las credenciales
+        // When: Se ejecuta la función que se está probando.
         val result = loginWithEmailUseCase(email, password)
 
-        // Then: se espera un resultado fallido con la excepción correspondiente
-        assertEquals(failure<User>(expectedException), result) // Usa tu función helper 'failure'
+        // Then: Se verifica que el resultado sea exactamente el resultado de fallo esperado.
+        // Se usa el helper <User> para que el compilador sepa el tipo esperado.
+        assertEquals(failure<User>(expectedException), result)
     }
 }
