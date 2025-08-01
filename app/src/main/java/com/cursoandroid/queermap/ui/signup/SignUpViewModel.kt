@@ -58,6 +58,10 @@ class SignUpViewModel @Inject constructor(
 
     private val _launchGoogleSignIn = MutableSharedFlow<Intent>()
     val launchGoogleSignIn = _launchGoogleSignIn.asSharedFlow()
+    // Añade esto solo para pruebas
+    internal suspend fun handleFacebookAuthWithFirebaseForTest(accessToken: String) {
+        handleFacebookAuthWithFirebase(accessToken)
+    }
 
     init {
         facebookSignInDataSource.registerCallback(

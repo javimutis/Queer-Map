@@ -150,4 +150,35 @@ class ResultTest {
         val result = failure<Unit>(exception)
         assertEquals(exception, result.exceptionOrNull())
     }
+    @Test
+    fun `onSuccess does not invoke block for Failure but still returns original Failure`() {
+        val exception = RuntimeException("Some error")
+        val result = failure<String>(exception)
+
+        var successCalled = false
+
+        val returned = result.onSuccess {
+            successCalled = true
+        }
+
+        assertFalse(successCalled)
+        assertTrue(returned is Result.Failure)
+        assertEquals(exception, (returned as Result.Failure).exception)
+    }
+    @Test
+    fun `onFailure does not invoke block for Success but still returns original Success`() {
+        val result = success("OK")
+
+        var failureCalled = false
+
+        val returned = result.onFailure {
+            failureCalled = true
+        }
+
+        assertFalse(failureCalled)
+        assertTrue(returned is Result.Success)
+        assertEquals("OK", (returned as Result.Success).data)
+    }
+
+
 }

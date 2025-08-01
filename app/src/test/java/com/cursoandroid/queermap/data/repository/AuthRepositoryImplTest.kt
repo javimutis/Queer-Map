@@ -458,5 +458,51 @@ class AuthRepositoryImplTest {
             }, SetOptions.merge())
         }
     }
+    @Test
+    fun `verifyUserInFirestore returns failure when exception thrown`() = runTest {
+        val uid = "uid-exception"
+        coEvery { mockRemoteDataSource.verifyUserInFirestore(uid) } throws Exception("Exception thrown")
+
+        val result = repository.verifyUserInFirestore(uid)
+
+        assertTrue(result is Result.Failure)
+        assertEquals("Exception thrown", (result as Result.Failure).exception.message)
+    }
+
+    @Test
+    fun `registerUser returns failure when createUserWithEmailAndPassword throws exception`() = runTest {
+        val user = User("","Test", "testuser", "test@example.com", "2000-01-01")
+        val password = "password123"
+        val ex = Exception("create user failed")
+
+        coEvery {
+            mockFirebaseAuth.createUserWithEmailAndPassword(user.email!!, password)
+        } throws ex
+
+        val result = repository.registerUser(user, password)
+
+        assertTrue(result is Result.Failure)
+        assertEquals("create user failed", (result as Result.Failure).exception.message)
+    }
+
+    @Test
+    fun `updateUserProfile returns failure when exception thrown`() = runTest {
+        val uid = "uid123"
+        val user = User(uid, "Name", "username", "email@test.com", "2000-01-01")
+        val ex = Exception("firestore update error")
+
+        val mockCollection = mockk<com.google.firebase.firestore.CollectionReference>()
+        val mockDoc = mockk<com.google.firebase.firestore.DocumentReference>()
+
+        every { mockFirestore.collection("users") } returns mockCollection
+        every { mockCollection.document(uid) } returns mockDoc
+        coEvery { mockDoc.set(any<Map<String, Any>>(), SetOptions.merge()) } returns Tasks.forException(ex)
+
+        val result = repository.updateUserProfile(uid, user)
+
+        assertTrue(result is Result.Failure)
+        assertEquals("firestore update error", (result as Result.Failure).exception.message)
+    }
+
 
 }

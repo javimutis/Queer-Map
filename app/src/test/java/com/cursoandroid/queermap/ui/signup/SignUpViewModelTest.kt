@@ -34,6 +34,7 @@ import io.mockk.slot
 import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
@@ -1775,6 +1776,139 @@ class SignUpViewModelTest {
             job.cancel()
         }
 
+    @Test
+    fun `when handleGoogleSignUpClicked and not social login then emit launchGoogleIntent`() =
+        testScope.runTest {
+            // Given
+            val mockIntent = mockk<Intent>()
+            every { googleSignInDataSource.getSignInIntent() } returns mockIntent
+
+            // Create a job to collect the emitted intent
+            val resultDeferred = async { viewModel.launchGoogleSignIn.first() }
+
+            // When
+            viewModel.onEvent(SignUpEvent.OnGoogleSignUpClicked)
+
+            // Then
+            val emittedIntent = resultDeferred.await()
+            assertEquals(mockIntent, emittedIntent)
+        }
+
+
+    @Test
+    fun `when handleGoogleSignUpClicked and isSocialLoginFlow then emit message only`() =
+        testScope.runTest {
+            // Given
+            viewModel.setSocialLoginData(true, null, null)
+
+            // When
+            viewModel.onEvent(SignUpEvent.OnGoogleSignUpClicked)
+            advanceUntilIdle()
+
+            // Then
+            val event = viewModel.event.first()
+            assertTrue(event is SignUpEvent.ShowMessage)
+            assertEquals(
+                "Ya autenticado socialmente. Completa tu perfil.",
+                (event as SignUpEvent.ShowMessage).message
+            )
+        }
+
+    @Test
+    fun `when handleFacebookSignUpClicked and not social login then loading is true and message emitted`() =
+        testScope.runTest {
+            // When
+            viewModel.onEvent(SignUpEvent.OnFacebookSignUpClicked)
+            advanceUntilIdle()
+
+            // Then
+            val uiState = viewModel.uiState.first()
+            assertTrue(uiState.isLoading)
+
+            val event = viewModel.event.first()
+            assertTrue(event is SignUpEvent.ShowMessage)
+            assertEquals(
+                "Iniciando sesión con Facebook...",
+                (event as SignUpEvent.ShowMessage).message
+            )
+        }
+
+    @Test
+    fun `when handleFacebookSignUpClicked and isSocialLoginFlow then show already authenticated message`() =
+        testScope.runTest {
+            // Given
+            viewModel.setSocialLoginData(true, null, null)
+
+            // When
+            viewModel.onEvent(SignUpEvent.OnFacebookSignUpClicked)
+            advanceUntilIdle()
+
+            // Then
+            val event = viewModel.event.first()
+            assertTrue(event is SignUpEvent.ShowMessage)
+            assertEquals(
+                "Ya autenticado socialmente. Completa tu perfil.",
+                (event as SignUpEvent.ShowMessage).message
+            )
+        }
+
+    @Test
+    fun `when onSignupClicked and FirebaseAuthWeakPasswordException then show weak password message`() =
+        testScope.runTest {
+            // Given
+            every { signUpValidator.isValidEmail(any()) } returns true
+            every { signUpValidator.isValidPassword(any()) } returns true
+            every { signUpValidator.isValidUsername(any()) } returns true
+            every { signUpValidator.isValidFullName(any()) } returns true
+            every { signUpValidator.isValidBirthday(any()) } returns true
+
+            val weakException = mockk<FirebaseAuthWeakPasswordException>(relaxed = true)
+            coEvery { createUserUseCase(any(), any()) } returns failure(weakException)
+
+            viewModel.onEvent(SignUpEvent.OnEmailChanged("email@example.com"))
+            viewModel.onEvent(SignUpEvent.OnPasswordChanged("password123"))
+            viewModel.onEvent(SignUpEvent.OnConfirmPasswordChanged("password123"))
+            viewModel.onEvent(SignUpEvent.OnUsernameChanged("username"))
+            viewModel.onEvent(SignUpEvent.OnFullNameChanged("Full Name"))
+            viewModel.onEvent(SignUpEvent.OnBirthdayChanged("2000-01-01"))
+
+            // When
+            viewModel.onEvent(SignUpEvent.OnRegisterClicked)
+            advanceUntilIdle()
+
+            // Then
+            val event = viewModel.event.first()
+            assertTrue(event is SignUpEvent.ShowMessage)
+            assertEquals(
+                "La contraseña es demasiado débil. Usa una combinación de letras, números y símbolos.",
+                (event as SignUpEvent.ShowMessage).message
+            )
+        }
+
+
+    @Test
+    fun `when handleFacebookAuthWithFirebase returns FirebaseAuthUserCollisionException then show collision error`() = testScope.runTest {
+        // Given
+        val collisionException = mockk<FirebaseAuthUserCollisionException>(relaxed = true)
+        coEvery { registerWithFacebookUseCase(any()) } returns failure(collisionException)
+
+        viewModel.onEvent(SignUpEvent.OnFacebookSignUpClicked)
+        advanceUntilIdle()
+
+        viewModel.setSocialLoginData(false, null, null)
+
+        // Llama al método suspendido internal
+        viewModel.handleFacebookAuthWithFirebaseForTest("fake_token")
+        advanceUntilIdle()
+
+        // Then
+        val event = viewModel.event.first()
+        assertTrue(event is SignUpEvent.ShowMessage)
+        assertEquals(
+            "El correo electrónico ya está registrado con otra cuenta.",
+            (event as SignUpEvent.ShowMessage).message
+        )
+    }
 }
 
 
