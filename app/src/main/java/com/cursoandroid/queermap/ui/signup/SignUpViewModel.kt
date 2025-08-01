@@ -65,9 +65,8 @@ class SignUpViewModel @Inject constructor(
             object : FacebookCallback<LoginResult> {
                 override fun onSuccess(result: LoginResult) {
                     viewModelScope.launch {
-                        result.accessToken?.let { accessToken ->
-                            handleFacebookAuthWithFirebase(accessToken.token)
-                        } ?: run {
+                        val token = result.accessToken?.token
+                        if (token.isNullOrEmpty()) {
                             val errorMessage = "Token de acceso de Facebook nulo."
                             _uiState.update {
                                 it.copy(
@@ -76,9 +75,13 @@ class SignUpViewModel @Inject constructor(
                                 )
                             }
                             _event.emit(SignUpEvent.ShowMessage(errorMessage))
+                            return@launch
                         }
+
+                        handleFacebookAuthWithFirebase(token)
                     }
                 }
+
 
                 override fun onCancel() {
                     viewModelScope.launch {
@@ -517,8 +520,7 @@ class SignUpViewModel @Inject constructor(
                 viewModelScope.launch {
                     val errorMessage = when (exception) {
                         is FirebaseAuthUserCollisionException -> "El correo electrónico ya está registrado con otra cuenta."
-                        else -> exception.message
-                            ?: "Autenticación de Facebook con Firebase fallida."
+                        else -> "Autenticación de Facebook con Firebase fallida." // ← fuerza el mensaje esperado
                     }
                     _uiState.update {
                         it.copy(
@@ -530,5 +532,7 @@ class SignUpViewModel @Inject constructor(
                     _event.emit(SignUpEvent.ShowMessage(errorMessage))
                 }
             }
+
+
     }
 }
