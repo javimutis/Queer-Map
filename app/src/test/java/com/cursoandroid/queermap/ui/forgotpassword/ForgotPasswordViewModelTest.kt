@@ -15,6 +15,7 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
@@ -252,4 +253,105 @@ class ForgotPasswordViewModelTest {
 
         job.cancel()
     }
+
+    @Test
+    fun `uiState isLoading true when sending reset`() = testScope.runTest {
+        val email = "test@example.com"
+        coEvery { forgotPasswordValidator.isValidEmail(email) } returns true
+        coEvery { sendResetPasswordUseCase(email) } coAnswers {
+            delay(100) // Simula retardo para probar estado loading
+            success(Unit)
+        }
+
+        val loadingStates = mutableListOf<Boolean>()
+        val job = launch {
+            viewModel.uiState.collect { loadingStates.add(it.isLoading) }
+        }
+
+        viewModel.sendPasswordReset(email)
+        advanceUntilIdle()
+
+        // Al menos en algún momento el isLoading debe ser true
+        assertTrue(loadingStates.contains(true))
+
+        job.cancel()
+    }
+
+    @Test
+    fun `uiState isSuccess true after successful password reset`() = testScope.runTest {
+        val email = "success@example.com"
+        coEvery { forgotPasswordValidator.isValidEmail(email) } returns true
+        coEvery { sendResetPasswordUseCase(email) } returns success(Unit)
+
+        viewModel.sendPasswordReset(email)
+        advanceUntilIdle()
+
+        val uiState = viewModel.uiState.first()
+        assertTrue(uiState.isSuccess)
+        assertFalse(uiState.isLoading)
+    }
+
+    @Test
+    fun `errorMessage for FirebaseAuthInvalidUserException is shown`() = testScope.runTest {
+        val email = "invaliduser@example.com"
+        val exception = mockk<FirebaseAuthInvalidUserException>()
+        coEvery { forgotPasswordValidator.isValidEmail(email) } returns true
+        coEvery { sendResetPasswordUseCase(email) } returns failure(exception)
+
+        val emittedEvents = mutableListOf<ForgotPasswordEvent>()
+        val job = launch { viewModel.events.toList(emittedEvents) }
+
+        viewModel.sendPasswordReset(email)
+        advanceUntilIdle()
+
+        val uiState = viewModel.uiState.first()
+        assertFalse(uiState.isSuccess)
+        assertFalse(uiState.isLoading)
+        assertTrue(emittedEvents.any { it is ForgotPasswordEvent.ShowMessage && it.message == "No hay ninguna cuenta registrada con este correo electrónico." })
+
+        job.cancel()
+    }
+
+    @Test
+    fun `errorMessage for FirebaseAuthInvalidCredentialsException is shown`() = testScope.runTest {
+        val email = "badformat@example.com"
+        val exception = mockk<FirebaseAuthInvalidCredentialsException>()
+        coEvery { forgotPasswordValidator.isValidEmail(email) } returns true
+        coEvery { sendResetPasswordUseCase(email) } returns failure(exception)
+
+        val emittedEvents = mutableListOf<ForgotPasswordEvent>()
+        val job = launch { viewModel.events.toList(emittedEvents) }
+
+        viewModel.sendPasswordReset(email)
+        advanceUntilIdle()
+
+        val uiState = viewModel.uiState.first()
+        assertFalse(uiState.isSuccess)
+        assertFalse(uiState.isLoading)
+        assertTrue(emittedEvents.any { it is ForgotPasswordEvent.ShowMessage && it.message == "El formato del correo electrónico es inválido." })
+
+        job.cancel()
+    }
+
+    @Test
+    fun `errorMessage for unknown exception is shown`() = testScope.runTest {
+        val email = "unknownerror@example.com"
+        val exception = Exception("Unexpected")
+        coEvery { forgotPasswordValidator.isValidEmail(email) } returns true
+        coEvery { sendResetPasswordUseCase(email) } returns failure(exception)
+
+        val emittedEvents = mutableListOf<ForgotPasswordEvent>()
+        val job = launch { viewModel.events.toList(emittedEvents) }
+
+        viewModel.sendPasswordReset(email)
+        advanceUntilIdle()
+
+        val uiState = viewModel.uiState.first()
+        assertFalse(uiState.isSuccess)
+        assertFalse(uiState.isLoading)
+        assertTrue(emittedEvents.any { it is ForgotPasswordEvent.ShowMessage && it.message == "Ocurrió un error inesperado. Intenta de nuevo más tarde." })
+
+        job.cancel()
+    }
+
 }
