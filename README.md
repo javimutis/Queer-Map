@@ -2,92 +2,92 @@
 
 # Queermap
 
-> **Una app que geolocaliza espacios seguros, culturales, de salud y ocio para la comunidad LGBTIQ+ en Chile.**
+> **An Android app that geolocates safe, cultural, healthcare, and recreational spaces for the LGBTIQ+ community in Chile.**
 
 ---
 
 <div align="justify">
 
-En un mundo donde la diversidad y la inclusión son valores fundamentales, surge **Queermap** como una herramienta transformadora para la comunidad LGBTIQ+. Esta aplicación nace de la necesidad de contar con espacios seguros, acogedores y visibilizados, donde todas las personas puedan ser plenamente ellas mismas.
+In a world where diversity and inclusion are essential, **Queermap** emerges as a transformative tool for the LGBTIQ+ community. This application was born from the need for visible, safe, and welcoming spaces where people can fully be themselves.
 
-**Queermap** conecta personas con servicios locales confiables en salud, entretenimiento, cultura, educación, orientación y seguridad.
-
----
-
-## 🚀 Estado Actual del Proyecto
-
-- Arquitectura limpia y modular basada en **Clean Architecture** y **MVVM**.
-- Implementación completa del **login** con correo electrónico mediante **Firebase Authentication**.
-- Pantallas iniciales: **Splash** y **Cover de bienvenida**.
-- Cobertura de tests unitarios y de UI en componentes clave (`Login`, `MainActivity`).
-- Inyección de dependencias con **Hilt** en integración inicial.
-- Flujos sociales integrados: login con Google y Facebook.
-- Estado estable y pruebas automatizadas con **JaCoCo** > 95% instrucciones.
-
-### Funcionalidades en desarrollo / pendientes
-
-- Mapa interactivo con geolocalización de espacios seguros.
-- Perfil de usuario y guardado de lugares favoritos.
-- Funcionalidades sociales (comentarios, comunidades).
-- Notificaciones y alertas.
-- Botón de emergencia para apoyo en crisis.
-- Demarcación de zonas de riesgo.
+**Queermap** connects users with trusted local services across health, culture, entertainment, education, guidance, and safety.
 
 ---
 
-## 🧰 Stack Tecnológico y Arquitectura
+## 🚀 Project Status
 
-- **Lenguaje:** Kotlin
-- **Arquitectura:** Clean Architecture con separación clara en `domain`, `data`, `ui` y `di`.
-- **Patrón:** MVVM con gestión reactiva de estado usando Flows/Coroutines.
-- **Inyección de dependencias:** Hilt/Dagger.
-- **Autenticación:** Firebase Authentication (email/password, Google, Facebook).
-- **Navegación:** Jetpack Navigation Component.
-- **Testing:** Unit tests, Instrumented UI tests con Espresso y cobertura con JaCoCo.
-- **Modularización:** Capas y módulos separados para facilitar escalabilidad y mantenimiento.
+- Clean, modular architecture following **Clean Architecture** and **MVVM** principles.
+- Fully implemented **email login** using **Firebase Authentication**.
+- Onboarding screens: **Splash** and **Cover**.
+- High test coverage in unit and UI layers (`Login`, `MainActivity`).
+- Dependency injection setup with **Hilt**.
+- Social login flows integrated: **Google** and **Facebook**.
+- Stable state with automated test coverage over **95%** (JaCoCo).
 
----
+### 🔧 Features in Development
 
-## 📖 Buenas Prácticas Implementadas
-
-- **Testing exhaustivo:**  
-  Cobertura de código sobre 95%, con tests unitarios en lógica de negocio y pruebas instrumentadas en UI para flujos críticos.
-
-- **Manejo de estados UI:**  
-  Uso de estados inmutables y eventos para comunicación unidireccional entre ViewModel y UI.
-
-- **Seguridad y privacidad:**  
-  Manejo correcto de datos sensibles y flujos seguros de autenticación social.
-
-- **UX adaptable:**  
-  El diseño UI se adapta a distintos estados (login tradicional, social, errores de validación, carga).
-
-- **Código limpio y mantenible:**  
-  Aplicación de principios SOLID, separación de responsabilidades y modularización.
+- Interactive map displaying verified safe spaces.
+- User profiles and favorite locations.
+- Community features (comments, groups).
+- Notifications and real-time alerts.
+- Emergency support button for crisis situations.
+- Visualization of risk zones in urban areas.
 
 ---
 
-## 🔗 Enfoque Social y Misión
+## 🧰 Tech Stack & Architecture
 
-Queermap no solo es tecnología; es una herramienta de impacto social. Busca ser un **espacio seguro digital** que apoye a la comunidad LGBTIQ+ en Chile, visibilizando servicios y lugares amigables, fomentando la inclusión, el respeto y la solidaridad. Además, ofrece recursos para prevenir la discriminación, violencia y crisis de salud mental.
-
----
-
-## 👩‍💻 Cómo Colaborar
-
-¡Queremos que formes parte de este proyecto! Para contribuir:
-
-1. Haz un fork del repositorio.
-2. Crea una rama para tu feature o fix:  
-   `git checkout -b feature/nombre-de-tu-feature`
-3. Realiza tus cambios y pruebas.
-4. Envía un pull request con descripción clara de tus aportes.
+- **Language:** Kotlin
+- **Architecture:** Clean Architecture with modular separation: `domain`, `data`, `ui`, and `di`.
+- **Pattern:** MVVM with reactive state management using Coroutines and StateFlow.
+- **Dependency Injection:** Hilt (Dagger).
+- **Authentication:** Firebase (Email/Password, Google, Facebook).
+- **Navigation:** Jetpack Navigation Component.
+- **Testing:** Unit tests, UI Instrumentation tests with Espresso, and JaCoCo for test coverage.
+- **Modularity:** Well-defined module layers for scalable and maintainable code.
 
 ---
 
-## 📬 Contacto
+## 📖 Best Practices
 
-Si quieres saber más, colaborar o aportar ideas, ¡escríbeme!
+- **Comprehensive Testing**
+  > Over 95% code coverage across core business logic and UI workflows with cleanly isolated unit and instrumentation tests.
+
+- **Robust UI State Management**
+  > Unidirectional data flow between ViewModel and UI using immutable states and event channels.
+
+- **Security & Privacy**
+  > Secure authentication flows with sensitive data handling best practices applied.
+
+- **Responsive UX**
+  > Adaptive UI that gracefully handles different login methods, validation errors, and loading states.
+
+- **Maintainable Code**
+  > SOLID principles, clear separation of concerns, and scalable modularization strategies.
+
+---
+
+## 🌈 Social Mission
+
+**Queermap** is more than just technology—it's a digital safe space with a social mission. Our goal is to empower the LGBTIQ+ community by highlighting inclusive places and trustworthy services. The app promotes visibility, dignity, inclusion, and safety, while providing support to prevent discrimination, violence, and mental health crises.
+
+---
+
+## 🤝 How to Contribute
+
+We welcome contributions from developers, designers, activists, and allies. To contribute:
+
+1. Fork the repository.
+2. Create a branch for your feature or fix:  
+   `git checkout -b feature/your-feature-name`
+3. Commit your changes and test thoroughly.
+4. Submit a pull request with a clear description of your contribution.
+
+---
+
+## 📬 Contact
+
+Feel free to reach out for collaboration, feedback, or questions:
 
 [![LinkedIn](https://img.shields.io/badge/-javimutis-blue?style=flat-square&logo=Linkedin&logoColor=white&link=https://www.linkedin.com/in/javimutis/)](https://www.linkedin.com/in/javimutis/)  
 [![Instagram](https://img.shields.io/badge/-javi.mutis-E4405F?style=flat-square&logo=instagram&logoColor=white&link=https://www.instagram.com/javi.mutis/)](https://www.instagram.com/javi.mutis/)  
@@ -96,10 +96,8 @@ Si quieres saber más, colaborar o aportar ideas, ¡escríbeme!
 
 ---
 
-## ❤️ Agradecimientos
+## 🙏 Acknowledgements
 
-Gracias a todas las personas y organizaciones que apoyan con tiempo, ideas y pasión para construir un espacio más inclusivo y seguro para la comunidad LGBTIQ+.
-
----
+A heartfelt thank you to everyone who contributes time, talent, and passion to build a more inclusive and safe world for the LGBTIQ+ community.
 
 </div>
