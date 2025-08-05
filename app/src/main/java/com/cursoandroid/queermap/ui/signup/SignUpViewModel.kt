@@ -539,4 +539,8 @@ class SignUpViewModel @Inject constructor(
 
 
     }
+    fun setUiStateForTesting(newState: SignUpUiState) {
+        _uiState.value = newState
+    }
+
 }

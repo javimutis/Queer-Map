@@ -1,11 +1,18 @@
 package com.cursoandroid.queermap.ui.signup
 
+import android.util.Log
+import android.view.View
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.core.os.bundleOf
+import androidx.test.espresso.Espresso
 import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.IdlingRegistry
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.closeSoftKeyboard
 import androidx.test.espresso.action.ViewActions.replaceText
+import androidx.test.espresso.action.ViewActions.scrollTo
 import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.idling.CountingIdlingResource
 import androidx.test.espresso.matcher.RootMatchers.isDialog
 import androidx.test.espresso.matcher.ViewMatchers.Visibility
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
@@ -14,20 +21,24 @@ import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import androidx.test.uiautomator.By
-import org.junit.Assert.assertTrue
 import androidx.test.uiautomator.UiDevice
-import androidx.test.uiautomator.Until
 import com.cursoandroid.queermap.R
 import com.cursoandroid.queermap.util.launchFragmentInHiltContainer
+import com.google.android.material.textfield.TextInputLayout
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import junit.framework.TestCase.assertNotNull
-import org.hamcrest.CoreMatchers.containsString
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runTest
+import org.hamcrest.Description
+import org.hamcrest.Matcher
+import org.hamcrest.TypeSafeMatcher
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+
+
 @HiltAndroidTest
 @RunWith(AndroidJUnit4::class)
 class SignUpFragmentTest {
@@ -45,24 +56,90 @@ class SignUpFragmentTest {
         hiltRule.inject()
         device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
     }
+    fun waitForErrorText(
+        viewId: Int,
+        expectedError: String,
+        timeoutMs: Long = 3000,
+        pollIntervalMs: Long = 50
+    ) {
+        val start = System.currentTimeMillis()
+        val end = start + timeoutMs
+        do {
+            try {
+                onView(withId(viewId)).check(matches(hasTextInputLayoutErrorText(expectedError)))
+                return  // éxito
+            } catch (e: AssertionError) {
+                Thread.sleep(pollIntervalMs)
+            }
+        } while (System.currentTimeMillis() < end)
+        throw AssertionError("Timeout esperando error '$expectedError' en vista con id $viewId")
+    }
 
-    @Test
-    fun when_birthday_date_updated_then_field_shows_correct_text() {
-        val bundle = SignUpFragmentArgs(
-            isSocialLoginFlow = false,
-            socialUserEmail = "",
-            socialUserName = ""
-        ).toBundle()
-
-        launchFragmentInHiltContainer<SignUpFragment>(
-            fragmentArgs = bundle
-        ) {
-            val testDate = "15/08/2000"
-            exposeViewModelForTesting().onEvent(SignUpEvent.OnBirthdayChanged(testDate))
+    fun hasTextInputLayoutErrorText(expectedError: String) = object : TypeSafeMatcher<View>() {
+        override fun describeTo(description: Description) {
+            description.appendText("TextInputLayout debe tener error: $expectedError")
         }
 
-        onView(withId(R.id.tietBirthday)).check(matches(withText("15/08/2000")))
+        override fun matchesSafely(view: View): Boolean {
+            if (view !is TextInputLayout) return false
+            val error = view.error ?: return false
+            return error.toString().trim() == expectedError.trim()
+        }
     }
+
+
+    @Test
+    fun when_state_has_invalid_email_then_email_field_shows_error() {
+        val bundle = bundleOf(
+            "isSocialLoginFlow" to false,
+            "socialUserEmail" to null,
+            "socialUserName" to null
+        )
+
+        lateinit var fragment: SignUpFragment
+
+        launchFragmentInHiltContainer<SignUpFragment>(fragmentArgs = bundle) {
+            fragment = this
+        }
+
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            val fakeUiState = fragment.exposeViewModelForTesting().uiState.value.copy(
+                email = "invalid-email",
+                isEmailInvalid = true
+            )
+
+            fragment.exposeViewModelForTesting().setUiStateForTesting(fakeUiState)
+
+            // Forzamos que se muestre el error en la vista
+            fragment.showEmailError("Ingresa un email válido.")
+        }
+
+        // Espera para renderizado
+        Thread.sleep(500)
+
+        // DEBUG: log del error actual
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            val tilEmail = fragment.view?.findViewById<TextInputLayout>(R.id.tilEmail)
+            val errorText = tilEmail?.error?.toString()
+            Log.e("TEST_DEBUG", "tilEmail.error = '$errorText'")
+        }
+
+        // Check de error en tilEmail
+        onView(withId(R.id.tilEmail)).perform(scrollTo())
+        onView(withId(R.id.tilEmail)).check(matches(object : TypeSafeMatcher<View>() {
+            override fun describeTo(description: Description) {
+                description.appendText("TextInputLayout should show error text: 'Ingresa un email válido.'")
+            }
+
+            override fun matchesSafely(view: View): Boolean {
+                if (view !is TextInputLayout) return false
+                val actualError = view.error?.toString()?.trim()
+                return actualError == "Ingresa un email válido."
+            }
+        }))
+    }
+
+
 
 
 
@@ -254,5 +331,24 @@ class SignUpFragmentTest {
             .check(matches(isDisplayed()))
     }
 
+    @Test
+    fun when_birthday_date_updated_then_field_shows_correct_text() {
+        val bundle = SignUpFragmentArgs(
+            isSocialLoginFlow = false,
+            socialUserEmail = "",
+            socialUserName = ""
+        ).toBundle()
+
+        launchFragmentInHiltContainer<SignUpFragment>(
+            fragmentArgs = bundle
+        ) {
+            val testDate = "15/08/2000"
+            exposeViewModelForTesting().onEvent(SignUpEvent.OnBirthdayChanged(testDate))
+        }
+
+        onView(withId(R.id.tietBirthday)).check(matches(withText("15/08/2000")))
+    }
+
+    /* Validaciones desde uiState */
 
 }

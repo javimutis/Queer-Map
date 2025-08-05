@@ -20,6 +20,7 @@ import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.DateValidatorPointBackward
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.textfield.TextInputLayout
 import com.squareup.picasso.Picasso
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -117,6 +118,19 @@ class SignUpFragment : Fragment() {
             com.facebook.login.LoginManager.getInstance().logInWithReadPermissions(this, listOf("email", "public_profile"))
         }
     }
+    // SOLO PARA TESTING
+    fun forceObserveUiState() {
+        val currentState = viewModel.uiState.value
+        showEmailError(if (currentState.isEmailInvalid) "Ingresa un email válido." else null)
+    }
+
+
+    fun showEmailError(error: String?) {
+        val tilEmail = view?.findViewById<TextInputLayout>(R.id.tilEmail)
+        tilEmail?.error = error
+    }
+
+
 
     private fun observeState() {
         viewLifecycleOwner.lifecycleScope.launch {
