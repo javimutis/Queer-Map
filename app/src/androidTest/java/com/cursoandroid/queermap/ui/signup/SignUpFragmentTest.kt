@@ -2,6 +2,7 @@ package com.cursoandroid.queermap.ui.signup
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.action.ViewActions.typeText
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -13,6 +14,9 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import androidx.test.espresso.action.ViewActions.replaceText
+import androidx.test.espresso.action.ViewActions.closeSoftKeyboard
+
 
 @HiltAndroidTest
 @RunWith(AndroidJUnit4::class)
@@ -112,5 +116,22 @@ class SignUpFragmentTest {
         onView(withId(R.id.btnRegister)).check(matches(withText("Registrarme")))
     }
 
+/* Interacción con campos de entrada */
+
+    @Test
+    fun when_typing_email_then_text_is_updated() {
+        val bundle = SignUpFragmentArgs(
+            isSocialLoginFlow = false,
+            socialUserEmail = null,
+            socialUserName = null
+        ).toBundle()
+
+        launchFragmentInHiltContainer<SignUpFragment>(fragmentArgs = bundle)
+
+        val testEmail = "test@example.com"
+
+        onView(withId(R.id.etEmailRegister)).perform(replaceText(testEmail), closeSoftKeyboard())
+        onView(withId(R.id.etEmailRegister)).check(matches(withText(testEmail)))
+    }
 
 }
