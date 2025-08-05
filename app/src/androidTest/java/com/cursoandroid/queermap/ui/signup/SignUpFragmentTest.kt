@@ -166,4 +166,20 @@ class SignUpFragmentTest {
         onView(withId(R.id.etRepeatPassword)).check(matches(withText(testRepeatPassword)))
     }
 
+    @Test
+    fun when_typing_username_then_text_is_updated() {
+        val bundle = SignUpFragmentArgs(
+            isSocialLoginFlow = false,
+            socialUserEmail = null,
+            socialUserName = null
+        ).toBundle()
+
+        launchFragmentInHiltContainer<SignUpFragment>(fragmentArgs = bundle)
+
+        val testUsername = "testuser123"
+
+        onView(withId(R.id.etUser)).perform(replaceText(testUsername), closeSoftKeyboard())
+        onView(withId(R.id.etUser)).check(matches(withText(testUsername)))
+    }
+
 }
