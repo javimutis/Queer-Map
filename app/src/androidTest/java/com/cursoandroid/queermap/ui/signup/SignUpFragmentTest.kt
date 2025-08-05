@@ -56,5 +56,36 @@ class SignUpFragmentTest {
         onView(withId(R.id.progressBar))
             .check(matches(withEffectiveVisibility(Visibility.GONE)))
     }
+    @Test
+    fun when_social_login_flow_is_true_then_only_required_views_are_visible() {
+        val bundle = SignUpFragmentArgs(
+            isSocialLoginFlow = true,
+            socialUserEmail = "correo@social.com",
+            socialUserName = "Nombre Social"
+        ).toBundle()
+
+        launchFragmentInHiltContainer<SignUpFragment>(fragmentArgs = bundle)
+
+        // Campos visibles en flujo social
+        onView(withId(R.id.etUser)).check(matches(isDisplayed()))
+        onView(withId(R.id.etName)).check(matches(isDisplayed()))
+        onView(withId(R.id.tietBirthday)).check(matches(isDisplayed()))
+        onView(withId(R.id.btnRegister)).check(matches(isDisplayed()))
+        onView(withId(R.id.ivBack)).check(matches(isDisplayed()))
+
+        // Campos ocultos en flujo social
+        onView(withId(R.id.tilEmail)).check(matches(withEffectiveVisibility(Visibility.GONE)))
+        onView(withId(R.id.tilPassword)).check(matches(withEffectiveVisibility(Visibility.GONE)))
+        onView(withId(R.id.tilRepeatPassword)).check(matches(withEffectiveVisibility(Visibility.GONE)))
+        onView(withId(R.id.ivGoogleSignIn)).check(matches(withEffectiveVisibility(Visibility.GONE)))
+        onView(withId(R.id.ivFacebookLSignIn)).check(matches(withEffectiveVisibility(Visibility.GONE)))
+
+        // Texto del botón debe ser el del flujo social
+        onView(withId(R.id.btnRegister)).check(matches(withText("Completar mi Perfil")))
+
+        // Progress bar oculto por defecto
+        onView(withId(R.id.progressBar))
+            .check(matches(withEffectiveVisibility(Visibility.GONE)))
+    }
 
 }
