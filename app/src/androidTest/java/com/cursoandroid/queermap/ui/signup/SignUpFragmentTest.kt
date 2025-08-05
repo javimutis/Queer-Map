@@ -2,9 +2,16 @@ package com.cursoandroid.queermap.ui.signup
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.action.ViewActions.typeText
+import androidx.test.espresso.action.ViewActions.click
+import androidx.test.espresso.action.ViewActions.closeSoftKeyboard
+import androidx.test.espresso.action.ViewActions.replaceText
 import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.matcher.ViewMatchers.*
+import androidx.test.espresso.matcher.RootMatchers.isDialog
+import androidx.test.espresso.matcher.ViewMatchers.Visibility
+import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
+import androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility
+import androidx.test.espresso.matcher.ViewMatchers.withId
+import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.cursoandroid.queermap.R
 import com.cursoandroid.queermap.util.launchFragmentInHiltContainer
@@ -14,8 +21,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import androidx.test.espresso.action.ViewActions.replaceText
-import androidx.test.espresso.action.ViewActions.closeSoftKeyboard
 
 
 @HiltAndroidTest
@@ -61,6 +66,7 @@ class SignUpFragmentTest {
         onView(withId(R.id.progressBar))
             .check(matches(withEffectiveVisibility(Visibility.GONE)))
     }
+
     @Test
     fun when_social_login_flow_is_true_then_only_required_views_are_visible() {
         val bundle = SignUpFragmentArgs(
@@ -116,7 +122,7 @@ class SignUpFragmentTest {
         onView(withId(R.id.btnRegister)).check(matches(withText("Registrarme")))
     }
 
-/* Interacción con campos de entrada */
+    /* Interacción con campos de entrada */
 
     @Test
     fun when_typing_email_then_text_is_updated() {
@@ -162,7 +168,10 @@ class SignUpFragmentTest {
 
         val testRepeatPassword = "myStrongPass123"
 
-        onView(withId(R.id.etRepeatPassword)).perform(replaceText(testRepeatPassword), closeSoftKeyboard())
+        onView(withId(R.id.etRepeatPassword)).perform(
+            replaceText(testRepeatPassword),
+            closeSoftKeyboard()
+        )
         onView(withId(R.id.etRepeatPassword)).check(matches(withText(testRepeatPassword)))
     }
 
@@ -196,6 +205,25 @@ class SignUpFragmentTest {
 
         onView(withId(R.id.etName)).perform(replaceText(testFullName), closeSoftKeyboard())
         onView(withId(R.id.etName)).check(matches(withText(testFullName)))
+    }
+
+    /* Date Picker */
+    @Test
+    fun when_clicking_on_birthday_field_then_date_picker_is_shown() {
+        val bundle = SignUpFragmentArgs(
+            isSocialLoginFlow = false,
+            socialUserEmail = null,
+            socialUserName = null
+        ).toBundle()
+
+        launchFragmentInHiltContainer<SignUpFragment>(fragmentArgs = bundle)
+
+        onView(withId(R.id.tietBirthday)).perform(click())
+
+        // Verificar que el date picker se muestra con el título específico
+        onView(withText("Selecciona tu fecha de nacimiento"))
+            .inRoot(isDialog()) // Buscar dentro del diálogo
+            .check(matches(isDisplayed()))
     }
 
 }
