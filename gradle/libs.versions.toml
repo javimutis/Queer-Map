@@ -53,6 +53,7 @@ espresso-core = "3.6.1"
 jacoco = "0.8.12"
 robolectric = "4.11.1"
 play-services-tasks = "18.0.2"
+uiautomator = "2.2.0"
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -121,7 +122,7 @@ androidx-test-rules = { module = "androidx.test:rules", version.ref = "test-rule
 arch-core-testing = { module = "androidx.arch.core:core-testing", version.ref = "arch-core-testing" }
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric"}
 play-services-tasks = { module = "com.google.android.gms:play-services-tasks", version.ref = "play-services-tasks" }
-
+uiautomator = { module = "androidx.test.uiautomator:uiautomator", version.ref = "uiautomator" }
 
 
 # Espresso

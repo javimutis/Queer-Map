@@ -33,7 +33,8 @@ class SignUpFragment : Fragment() {
     private var _binding: FragmentSignupBinding? = null
     private val binding get() = _binding!!
 
-    private val viewModel: SignUpViewModel by viewModels()
+    internal val viewModel: SignUpViewModel by viewModels()
+
     private val args: SignUpFragmentArgs by navArgs()
 
     private val googleSignInLauncher: ActivityResultLauncher<Intent> =
@@ -256,6 +257,7 @@ class SignUpFragment : Fragment() {
             val formattedDate = sdf.format(date)
             binding.tietBirthday.setText(formattedDate)
             viewModel.onEvent(SignUpEvent.OnBirthdayChanged(formattedDate))
+            viewModel.onEvent(SignUpEvent.OnBirthdayChanged(formattedDate))
             binding.tilBirthday.error = null
         }
 
@@ -266,4 +268,7 @@ class SignUpFragment : Fragment() {
         Picasso.get().load(R.drawable.google_icon).into(binding.ivGoogleSignIn)
         Picasso.get().load(R.drawable.facebook_icon).into(binding.ivFacebookLSignIn)
     }
+    // SOLO PARA TESTING
+    fun exposeViewModelForTesting(): SignUpViewModel = viewModel
+
 }

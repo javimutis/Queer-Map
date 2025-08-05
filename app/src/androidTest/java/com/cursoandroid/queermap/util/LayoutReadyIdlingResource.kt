@@ -5,11 +5,6 @@ import android.view.View
 import androidx.test.espresso.IdlingResource
 import java.util.concurrent.atomic.AtomicBoolean
 
-/**
- * An [IdlingResource] that waits until a specific [View]'s layout is no longer requested.
- * This is useful when the UI is continually showing "is-layout-requested=true" errors,
- * indicating that layout passes are still occurring even after standard Espresso idles.
- */
 class LayoutReadyIdlingResource(
     private val viewProvider: () -> View?,
     private val name: String = "LayoutReadyIdlingResource"

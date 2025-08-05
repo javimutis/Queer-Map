@@ -13,16 +13,21 @@ import androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.uiautomator.By
+import org.junit.Assert.assertTrue
+import androidx.test.uiautomator.UiDevice
+import androidx.test.uiautomator.Until
 import com.cursoandroid.queermap.R
 import com.cursoandroid.queermap.util.launchFragmentInHiltContainer
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import junit.framework.TestCase.assertNotNull
+import org.hamcrest.CoreMatchers.containsString
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-
-
 @HiltAndroidTest
 @RunWith(AndroidJUnit4::class)
 class SignUpFragmentTest {
@@ -33,10 +38,33 @@ class SignUpFragmentTest {
     @get:Rule
     val instantTaskExecutorRule = InstantTaskExecutorRule()
 
+    private lateinit var device: UiDevice
+
     @Before
     fun setup() {
         hiltRule.inject()
+        device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
     }
+
+    @Test
+    fun when_birthday_date_updated_then_field_shows_correct_text() {
+        val bundle = SignUpFragmentArgs(
+            isSocialLoginFlow = false,
+            socialUserEmail = "",
+            socialUserName = ""
+        ).toBundle()
+
+        launchFragmentInHiltContainer<SignUpFragment>(
+            fragmentArgs = bundle
+        ) {
+            val testDate = "15/08/2000"
+            exposeViewModelForTesting().onEvent(SignUpEvent.OnBirthdayChanged(testDate))
+        }
+
+        onView(withId(R.id.tietBirthday)).check(matches(withText("15/08/2000")))
+    }
+
+
 
     /* Inicialización y UI estática */
     @Test
@@ -225,5 +253,6 @@ class SignUpFragmentTest {
             .inRoot(isDialog()) // Buscar dentro del diálogo
             .check(matches(isDisplayed()))
     }
+
 
 }
