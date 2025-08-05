@@ -182,4 +182,20 @@ class SignUpFragmentTest {
         onView(withId(R.id.etUser)).check(matches(withText(testUsername)))
     }
 
+    @Test
+    fun when_typing_full_name_then_text_is_updated() {
+        val bundle = SignUpFragmentArgs(
+            isSocialLoginFlow = false,
+            socialUserEmail = null,
+            socialUserName = null
+        ).toBundle()
+
+        launchFragmentInHiltContainer<SignUpFragment>(fragmentArgs = bundle)
+
+        val testFullName = "Test User Fullname"
+
+        onView(withId(R.id.etName)).perform(replaceText(testFullName), closeSoftKeyboard())
+        onView(withId(R.id.etName)).check(matches(withText(testFullName)))
+    }
+
 }
