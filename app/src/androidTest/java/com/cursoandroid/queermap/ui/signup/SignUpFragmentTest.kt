@@ -29,6 +29,7 @@ class SignUpFragmentTest {
         hiltRule.inject()
     }
 
+    /* Inicialización y UI estática */
     @Test
     fun when_signup_fragment_is_launched_then_all_required_views_are_displayed() {
         val bundle = SignUpFragmentArgs(
@@ -87,5 +88,29 @@ class SignUpFragmentTest {
         onView(withId(R.id.progressBar))
             .check(matches(withEffectiveVisibility(Visibility.GONE)))
     }
+
+    @Test
+    fun when_social_login_flow_is_false_then_all_fields_are_visible() {
+        val bundle = SignUpFragmentArgs(
+            isSocialLoginFlow = false,
+            socialUserEmail = null,
+            socialUserName = null
+        ).toBundle()
+
+        launchFragmentInHiltContainer<SignUpFragment>(fragmentArgs = bundle)
+
+        // Verifica campos de texto
+        onView(withId(R.id.etEmailRegister)).check(matches(isDisplayed()))
+        onView(withId(R.id.etPassword)).check(matches(isDisplayed()))
+        onView(withId(R.id.etRepeatPassword)).check(matches(isDisplayed()))
+
+        // Verifica visibilidad efectiva de íconos sociales
+        onView(withId(R.id.ivGoogleSignIn)).check(matches(withEffectiveVisibility(Visibility.VISIBLE)))
+        onView(withId(R.id.ivFacebookLSignIn)).check(matches(withEffectiveVisibility(Visibility.VISIBLE)))
+
+        // Verifica texto del botón
+        onView(withId(R.id.btnRegister)).check(matches(withText("Registrarme")))
+    }
+
 
 }
