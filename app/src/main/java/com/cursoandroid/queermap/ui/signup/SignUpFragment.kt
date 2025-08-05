@@ -20,6 +20,7 @@ import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.DateValidatorPointBackward
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.textfield.TextInputLayout
 import com.squareup.picasso.Picasso
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -33,7 +34,8 @@ class SignUpFragment : Fragment() {
     private var _binding: FragmentSignupBinding? = null
     private val binding get() = _binding!!
 
-    private val viewModel: SignUpViewModel by viewModels()
+    internal val viewModel: SignUpViewModel by viewModels()
+
     private val args: SignUpFragmentArgs by navArgs()
 
     private val googleSignInLauncher: ActivityResultLauncher<Intent> =
@@ -116,6 +118,19 @@ class SignUpFragment : Fragment() {
             com.facebook.login.LoginManager.getInstance().logInWithReadPermissions(this, listOf("email", "public_profile"))
         }
     }
+    // SOLO PARA TESTING
+    fun forceObserveUiState() {
+        val currentState = viewModel.uiState.value
+        showEmailError(if (currentState.isEmailInvalid) "Ingresa un email válido." else null)
+    }
+
+
+    fun showEmailError(error: String?) {
+        val tilEmail = view?.findViewById<TextInputLayout>(R.id.tilEmail)
+        tilEmail?.error = error
+    }
+
+
 
     private fun observeState() {
         viewLifecycleOwner.lifecycleScope.launch {
@@ -256,6 +271,7 @@ class SignUpFragment : Fragment() {
             val formattedDate = sdf.format(date)
             binding.tietBirthday.setText(formattedDate)
             viewModel.onEvent(SignUpEvent.OnBirthdayChanged(formattedDate))
+            viewModel.onEvent(SignUpEvent.OnBirthdayChanged(formattedDate))
             binding.tilBirthday.error = null
         }
 
@@ -266,4 +282,7 @@ class SignUpFragment : Fragment() {
         Picasso.get().load(R.drawable.google_icon).into(binding.ivGoogleSignIn)
         Picasso.get().load(R.drawable.facebook_icon).into(binding.ivFacebookLSignIn)
     }
+    // SOLO PARA TESTING
+    fun exposeViewModelForTesting(): SignUpViewModel = viewModel
+
 }

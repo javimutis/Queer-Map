@@ -21,9 +21,6 @@ import javax.inject.Singleton
     components = [SingletonComponent::class],
     replaces = [DataSourceModule::class, UseCaseModule::class]
 )
-// --- CHANGE IS HERE ---
-// Convert to an abstract class, and put @Provides methods inside a companion object.
-// This is a common and robust pattern for Hilt modules.
 abstract class TestLoginModule { // Changed from 'class TestLoginModule @Inject constructor()'
 
     companion object { // Add a companion object

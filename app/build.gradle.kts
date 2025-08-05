@@ -186,6 +186,9 @@ dependencies {
     androidTestImplementation(libs.google.truth)
     testImplementation(kotlin("test"))
     testImplementation(libs.play.services.tasks)
+
+    androidTestImplementation(libs.uiautomator)
+
 }
 
 // Configura Jacoco para todas las tareas de Test (incluyendo testDebugUnitTest)
