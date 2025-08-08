@@ -409,7 +409,8 @@ class SignUpFragmentTest {
             fragment.exposeViewModelForTesting().setUiStateForTesting(fakeUiState)
 
             // Forzamos la actualización del error en el TextInputLayout de forma segura
-            fragment.view?.findViewById<TextInputLayout>(R.id.tilRepeatPassword)?.error = "Las contraseñas no coinciden."
+            fragment.view?.findViewById<TextInputLayout>(R.id.tilRepeatPassword)?.error =
+                "Las contraseñas no coinciden."
         }
 
         // Espera para dar tiempo al renderizado de la UI
@@ -447,7 +448,8 @@ class SignUpFragmentTest {
             fragment.exposeViewModelForTesting().setUiStateForTesting(fakeUiState)
 
             // Forzamos la actualización del error en el TextInputLayout de la fecha de nacimiento.
-            fragment.view?.findViewById<TextInputLayout>(R.id.tilBirthday)?.error = "Ingresa una fecha de nacimiento válida."
+            fragment.view?.findViewById<TextInputLayout>(R.id.tilBirthday)?.error =
+                "Ingresa una fecha de nacimiento válida."
         }
 
         // Espera un momento para que la UI se actualice
@@ -553,6 +555,7 @@ class SignUpFragmentTest {
         onView(withId(R.id.etRepeatPassword))
             .check(matches(withText(testConfirmPassword)))
     }
+
     @Test
     fun when_state_has_username_then_username_field_is_updated() {
         // 1. Arrange: Configurar el fragmento
@@ -582,5 +585,36 @@ class SignUpFragmentTest {
         // 3. Assert: Verificar que el campo de texto muestre el nuevo valor
         onView(withId(R.id.etUser))
             .check(matches(withText(testUsername)))
+    }
+
+    @Test
+    fun when_state_has_full_name_then_full_name_field_is_updated() {
+        // 1. Arrange: Configurar el fragmento
+        val testFullName = "Nombre de Prueba Completo"
+        val bundle = bundleOf(
+            "isSocialLoginFlow" to false,
+            "socialUserEmail" to null,
+            "socialUserName" to null
+        )
+
+        lateinit var fragment: SignUpFragment
+        launchFragmentInHiltContainer<SignUpFragment>(fragmentArgs = bundle) {
+            fragment = this
+        }
+
+        // 2. Act: Simular un cambio en el uiState del ViewModel
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            val fakeUiState = fragment.exposeViewModelForTesting().uiState.value.copy(
+                fullName = testFullName
+            )
+            fragment.exposeViewModelForTesting().setUiStateForTesting(fakeUiState)
+        }
+
+        // Espera para dar tiempo a la UI de actualizarse.
+        Thread.sleep(500)
+
+        // 3. Assert: Verificar que el campo de texto muestre el nuevo valor
+        onView(withId(R.id.etName))
+            .check(matches(withText(testFullName)))
     }
 }
