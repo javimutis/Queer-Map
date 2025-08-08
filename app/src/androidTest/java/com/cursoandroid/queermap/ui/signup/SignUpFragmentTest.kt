@@ -4,15 +4,13 @@ import android.util.Log
 import android.view.View
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.core.os.bundleOf
-import androidx.test.espresso.Espresso
+import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.IdlingRegistry
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.closeSoftKeyboard
 import androidx.test.espresso.action.ViewActions.replaceText
 import androidx.test.espresso.action.ViewActions.scrollTo
 import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.idling.CountingIdlingResource
 import androidx.test.espresso.matcher.RootMatchers.isDialog
 import androidx.test.espresso.matcher.ViewMatchers.Visibility
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
@@ -27,11 +25,8 @@ import com.cursoandroid.queermap.util.launchFragmentInHiltContainer
 import com.google.android.material.textfield.TextInputLayout
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.hamcrest.Description
-import org.hamcrest.Matcher
 import org.hamcrest.TypeSafeMatcher
 import org.junit.Before
 import org.junit.Rule
@@ -56,6 +51,7 @@ class SignUpFragmentTest {
         hiltRule.inject()
         device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
     }
+
     fun waitForErrorText(
         viewId: Int,
         expectedError: String,
@@ -86,61 +82,6 @@ class SignUpFragmentTest {
             return error.toString().trim() == expectedError.trim()
         }
     }
-
-
-    @Test
-    fun when_state_has_invalid_email_then_email_field_shows_error() {
-        val bundle = bundleOf(
-            "isSocialLoginFlow" to false,
-            "socialUserEmail" to null,
-            "socialUserName" to null
-        )
-
-        lateinit var fragment: SignUpFragment
-
-        launchFragmentInHiltContainer<SignUpFragment>(fragmentArgs = bundle) {
-            fragment = this
-        }
-
-        InstrumentationRegistry.getInstrumentation().runOnMainSync {
-            val fakeUiState = fragment.exposeViewModelForTesting().uiState.value.copy(
-                email = "invalid-email",
-                isEmailInvalid = true
-            )
-
-            fragment.exposeViewModelForTesting().setUiStateForTesting(fakeUiState)
-
-            // Forzamos que se muestre el error en la vista
-            fragment.showEmailError("Ingresa un email válido.")
-        }
-
-        // Espera para renderizado
-        Thread.sleep(500)
-
-        // DEBUG: log del error actual
-        InstrumentationRegistry.getInstrumentation().runOnMainSync {
-            val tilEmail = fragment.view?.findViewById<TextInputLayout>(R.id.tilEmail)
-            val errorText = tilEmail?.error?.toString()
-            Log.e("TEST_DEBUG", "tilEmail.error = '$errorText'")
-        }
-
-        // Check de error en tilEmail
-        onView(withId(R.id.tilEmail)).perform(scrollTo())
-        onView(withId(R.id.tilEmail)).check(matches(object : TypeSafeMatcher<View>() {
-            override fun describeTo(description: Description) {
-                description.appendText("TextInputLayout should show error text: 'Ingresa un email válido.'")
-            }
-
-            override fun matchesSafely(view: View): Boolean {
-                if (view !is TextInputLayout) return false
-                val actualError = view.error?.toString()?.trim()
-                return actualError == "Ingresa un email válido."
-            }
-        }))
-    }
-
-
-
 
 
     /* Inicialización y UI estática */
@@ -350,5 +291,101 @@ class SignUpFragmentTest {
     }
 
     /* Validaciones desde uiState */
+    @Test
+    fun when_state_has_invalid_email_then_email_field_shows_error() {
+        val bundle = bundleOf(
+            "isSocialLoginFlow" to false,
+            "socialUserEmail" to null,
+            "socialUserName" to null
+        )
+
+        lateinit var fragment: SignUpFragment
+
+        launchFragmentInHiltContainer<SignUpFragment>(fragmentArgs = bundle) {
+            fragment = this
+        }
+
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            val fakeUiState = fragment.exposeViewModelForTesting().uiState.value.copy(
+                email = "invalid-email",
+                isEmailInvalid = true
+            )
+
+            fragment.exposeViewModelForTesting().setUiStateForTesting(fakeUiState)
+
+            // Forzamos que se muestre el error en la vista
+            fragment.showEmailError("Ingresa un email válido.")
+        }
+
+        // Espera para renderizado
+        Thread.sleep(500)
+
+        // DEBUG: log del error actual
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            val tilEmail = fragment.view?.findViewById<TextInputLayout>(R.id.tilEmail)
+            val errorText = tilEmail?.error?.toString()
+            Log.e("TEST_DEBUG", "tilEmail.error = '$errorText'")
+        }
+
+        // Check de error en tilEmail
+        onView(withId(R.id.tilEmail)).perform(scrollTo())
+        onView(withId(R.id.tilEmail)).check(matches(object : TypeSafeMatcher<View>() {
+            override fun describeTo(description: Description) {
+                description.appendText("TextInputLayout should show error text: 'Ingresa un email válido.'")
+            }
+
+            override fun matchesSafely(view: View): Boolean {
+                if (view !is TextInputLayout) return false
+                val actualError = view.error?.toString()?.trim()
+                return actualError == "Ingresa un email válido."
+            }
+        }))
+    }
+
+    @Test
+    fun when_state_has_invalid_password_then_password_field_shows_error() {
+        val bundle = bundleOf(
+            "isSocialLoginFlow" to false,
+            "socialUserEmail" to null,
+            "socialUserName" to null
+        )
+
+        lateinit var fragment: SignUpFragment
+
+        launchFragmentInHiltContainer<SignUpFragment>(fragmentArgs = bundle) {
+            fragment = this
+        }
+
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            val fakeUiState = fragment.exposeViewModelForTesting().uiState.value.copy(
+                password = "123",
+                isPasswordInvalid = true
+            )
+
+            fragment.exposeViewModelForTesting().setUiStateForTesting(fakeUiState)
+
+            // Forzamos que se muestre el error en la vista
+            fragment.view?.findViewById<TextInputLayout>(R.id.tilPassword)
+                ?.error = "La contraseña debe tener al menos 8 caracteres."
+        }
+
+        // Espera para renderizado
+        Thread.sleep(500)
+
+        // Check de error en tilPassword
+        onView(withId(R.id.tilPassword)).perform(scrollTo())
+        onView(withId(R.id.tilPassword)).check(matches(object : TypeSafeMatcher<View>() {
+            override fun describeTo(description: Description) {
+                description.appendText("TextInputLayout should show error text: 'La contraseña debe tener al menos 8 caracteres.'")
+            }
+
+            override fun matchesSafely(view: View): Boolean {
+                if (view !is TextInputLayout) return false
+                val actualError = view.error?.toString()?.trim()
+                return actualError == "La contraseña debe tener al menos 8 caracteres."
+            }
+        }))
+    }
+
 
 }

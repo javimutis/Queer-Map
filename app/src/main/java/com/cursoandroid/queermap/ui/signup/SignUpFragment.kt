@@ -124,7 +124,6 @@ class SignUpFragment : Fragment() {
         showEmailError(if (currentState.isEmailInvalid) "Ingresa un email válido." else null)
     }
 
-
     fun showEmailError(error: String?) {
         val tilEmail = view?.findViewById<TextInputLayout>(R.id.tilEmail)
         tilEmail?.error = error
