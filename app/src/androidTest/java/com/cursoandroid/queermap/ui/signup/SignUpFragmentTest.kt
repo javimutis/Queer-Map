@@ -6,7 +6,6 @@ import android.view.View
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.core.os.bundleOf
 import androidx.navigation.Navigation
-import com.cursoandroid.queermap.ui.signup.SignUpUiState
 import androidx.navigation.testing.TestNavHostController
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso.onView
@@ -33,8 +32,11 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import org.hamcrest.Description
 import org.hamcrest.TypeSafeMatcher
 import org.junit.Assert.assertEquals
@@ -55,6 +57,9 @@ class SignUpFragmentTest {
     val instantTaskExecutorRule = InstantTaskExecutorRule()
 
     private lateinit var device: UiDevice
+    private val uiStateFlow = MutableStateFlow(SignUpUiState())
+    private val eventFlow = MutableSharedFlow<SignUpEvent>()
+    private val launchGoogleSignInFlow = MutableSharedFlow<Intent>()
 
     @BindValue
     val viewModel: SignUpViewModel = mockk(relaxed = true)
@@ -63,6 +68,9 @@ class SignUpFragmentTest {
     fun setup() {
         hiltRule.inject()
         device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
+        every { viewModel.uiState } returns uiStateFlow
+        every { viewModel.event } returns eventFlow
+        every { viewModel.launchGoogleSignIn } returns launchGoogleSignInFlow
     }
 
     fun waitForErrorText(
@@ -96,6 +104,39 @@ class SignUpFragmentTest {
         }
     }
 
+    @Test
+    fun when_event_navigate_back_is_emitted_then_navController_pops_backstack() {
+        // 1. Arrange: Configura el NavController
+        val testNavController = TestNavHostController(ApplicationProvider.getApplicationContext())
+        val bundle = bundleOf(
+            "isSocialLoginFlow" to false,
+            "socialUserEmail" to null,
+            "socialUserName" to null
+        )
+
+        // Lanza el fragmento y asigna el NavController
+        launchFragmentInHiltContainer<SignUpFragment>(fragmentArgs = bundle) {
+            testNavController.setGraph(R.navigation.nav_graph)
+            testNavController.navigate(R.id.loginFragment)
+            testNavController.navigate(R.id.signupFragment)
+            Navigation.setViewNavController(this.requireView(), testNavController)
+        }
+
+        // 2. Act: Emitir el evento de retroceso desde el ViewModel mockeado
+        // Usamos una corrutina para emitir el evento y nos aseguramos de que el `Job` termine
+        val emitJob = CoroutineScope(Dispatchers.Main).launch {
+            eventFlow.emit(SignUpEvent.NavigateBack)
+        }
+
+        // Esperamos a que la corrutina de emisión del evento termine
+        // y le damos tiempo al Fragment para procesar el evento.
+        // La mejor práctica es usar `runBlockingTest` o `TestCoroutineDispatcher` en un entorno real,
+        // pero para evitar más dependencias, una pausa es suficiente para este caso.
+        Thread.sleep(500)
+
+        // 3. Assert: Verificar que el NavController ha regresado al fragmento de login
+        assertEquals(R.id.loginFragment, testNavController.currentDestination?.id)
+    }
 
     /* Inicialización y UI estática */
     @Test
@@ -790,5 +831,8 @@ class SignUpFragmentTest {
         // con el evento OnFacebookSignUpClicked
         verify(exactly = 1) { viewModel.onEvent(SignUpEvent.OnFacebookSignUpClicked) }
     }
+
+    /* Observación de eventos */
+
 
 }
