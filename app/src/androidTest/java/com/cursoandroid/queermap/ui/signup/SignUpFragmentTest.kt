@@ -648,4 +648,44 @@ class SignUpFragmentTest {
         onView(withId(R.id.tietBirthday))
             .check(matches(withText(testBirthday)))
     }
+
+    /* Interacciones con botones */
+    @Test
+    fun when_clicking_register_button_then_onRegisterClicked_event_is_triggered() {
+        // 1. Arrange: Lanzar el fragmento y rellenar todos los campos con datos válidos
+        val bundle = bundleOf(
+            "isSocialLoginFlow" to false,
+            "socialUserEmail" to null,
+            "socialUserName" to null
+        )
+
+        lateinit var fragment: SignUpFragment
+        launchFragmentInHiltContainer<SignUpFragment>(fragmentArgs = bundle) {
+            fragment = this
+        }
+
+        // Rellenar campos de texto para pasar las validaciones básicas
+        onView(withId(R.id.etUser)).perform(replaceText("testuser"), closeSoftKeyboard())
+        onView(withId(R.id.etName)).perform(replaceText("Test User"), closeSoftKeyboard())
+        onView(withId(R.id.etPassword)).perform(replaceText("Password123"), closeSoftKeyboard())
+        onView(withId(R.id.etRepeatPassword)).perform(replaceText("Password123"), closeSoftKeyboard())
+        onView(withId(R.id.etEmailRegister)).perform(replaceText("test@example.com"), closeSoftKeyboard())
+
+        // Simular que el cumpleaños es válido para pasar la validación
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            val fakeUiState = fragment.exposeViewModelForTesting().uiState.value.copy(
+                birthday = "01/01/2000"
+            )
+            fragment.exposeViewModelForTesting().setUiStateForTesting(fakeUiState)
+        }
+
+        Thread.sleep(500) // Esperar a que la UI refleje el cumpleaños
+
+        // 2. Act: Desplazarse al botón y hacer clic en él
+        onView(withId(R.id.btnRegister)).perform(scrollTo(), click())
+
+        // 3. Assert: Verificar que el ProgressBar se muestre, indicando que el evento de registro ha sido procesado
+        onView(withId(R.id.progressBar))
+            .check(matches(withEffectiveVisibility(Visibility.VISIBLE)))
+    }
 }
