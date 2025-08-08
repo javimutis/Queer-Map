@@ -423,4 +423,39 @@ class SignUpFragmentTest {
         onView(withId(R.id.tilRepeatPassword))
             .check(matches(hasTextInputLayoutErrorText("Las contraseñas no coinciden.")))
     }
+
+    @Test
+    fun when_state_has_invalid_birthday_then_birthday_field_shows_error() {
+        // 1. Arrange: Lanzar el fragmento
+        val bundle = bundleOf(
+            "isSocialLoginFlow" to false,
+            "socialUserEmail" to null,
+            "socialUserName" to null
+        )
+
+        lateinit var fragment: SignUpFragment
+        launchFragmentInHiltContainer<SignUpFragment>(fragmentArgs = bundle) {
+            fragment = this
+        }
+
+        // 2. Act: Simular un estado de ViewModel con un cumpleaños inválido
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            val fakeUiState = fragment.exposeViewModelForTesting().uiState.value.copy(
+                birthday = "32/13/2000",
+                isBirthdayInvalid = true
+            )
+            fragment.exposeViewModelForTesting().setUiStateForTesting(fakeUiState)
+
+            // Forzamos la actualización del error en el TextInputLayout de la fecha de nacimiento.
+            fragment.view?.findViewById<TextInputLayout>(R.id.tilBirthday)?.error = "Ingresa una fecha de nacimiento válida."
+        }
+
+        // Espera un momento para que la UI se actualice
+        Thread.sleep(500)
+
+        // 3. Assert: Verificar que el campo de cumpleaños muestre el error
+        onView(withId(R.id.tilBirthday)).perform(scrollTo())
+        onView(withId(R.id.tilBirthday))
+            .check(matches(hasTextInputLayoutErrorText("Ingresa una fecha de nacimiento válida.")))
+    }
 }
