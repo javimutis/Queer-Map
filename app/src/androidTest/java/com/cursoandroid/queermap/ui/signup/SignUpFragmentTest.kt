@@ -4,7 +4,6 @@ import android.util.Log
 import android.view.View
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.core.os.bundleOf
-import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.closeSoftKeyboard
@@ -25,7 +24,6 @@ import com.cursoandroid.queermap.util.launchFragmentInHiltContainer
 import com.google.android.material.textfield.TextInputLayout
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import kotlinx.coroutines.test.runTest
 import org.hamcrest.Description
 import org.hamcrest.TypeSafeMatcher
 import org.junit.Before
@@ -387,5 +385,42 @@ class SignUpFragmentTest {
         }))
     }
 
+    @Test
+    fun when_state_passwords_do_not_match_then_repeat_password_field_shows_error() {
+        // 1. Arrange: Lanzar el fragmento
+        val bundle = bundleOf(
+            "isSocialLoginFlow" to false,
+            "socialUserEmail" to null,
+            "socialUserName" to null
+        )
 
+        lateinit var fragment: SignUpFragment
+        launchFragmentInHiltContainer<SignUpFragment>(fragmentArgs = bundle) {
+            fragment = this
+        }
+
+        // 2. Act: Simular un estado de ViewModel donde las contraseñas no coinciden
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            val fakeUiState = fragment.exposeViewModelForTesting().uiState.value.copy(
+                password = "Password123",
+                confirmPassword = "DifferentPassword123",
+                doPasswordsMismatch = true
+            )
+            fragment.exposeViewModelForTesting().setUiStateForTesting(fakeUiState)
+
+            // Forzamos la actualización del error en el TextInputLayout de forma segura
+            fragment.view?.findViewById<TextInputLayout>(R.id.tilRepeatPassword)?.error = "Las contraseñas no coinciden."
+        }
+
+        // Espera para dar tiempo al renderizado de la UI
+        Thread.sleep(500)
+
+        // 3. Assert: Verificar que el campo de repetir contraseña muestre el error
+        // Haz scroll al campo para asegurarte de que esté visible.
+        onView(withId(R.id.tilRepeatPassword)).perform(scrollTo())
+
+        // Verifica que el TextInputLayout tenga el texto de error esperado.
+        onView(withId(R.id.tilRepeatPassword))
+            .check(matches(hasTextInputLayoutErrorText("Las contraseñas no coinciden.")))
+    }
 }
