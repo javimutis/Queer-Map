@@ -743,15 +743,13 @@ class SignUpFragmentTest {
 
     @Test
     fun when_clicking_google_button_then_onGoogleSignUpClicked_event_is_triggered() {
-        // Arrange: Configurar el comportamiento de los flows del ViewModel de prueba
-        // Esto evita el KotlinNothingValueException al observar los flows
         val uiStateFlow = MutableStateFlow(SignUpUiState())
         val eventFlow = MutableSharedFlow<SignUpEvent>()
-        val launchGoogleSignInFlow = MutableSharedFlow<Intent>() // Nueva línea para el flow de Google
+        val launchGoogleSignInFlow = MutableSharedFlow<Intent>()
 
         every { viewModel.uiState } returns uiStateFlow
         every { viewModel.event } returns eventFlow
-        every { viewModel.launchGoogleSignIn } returns launchGoogleSignInFlow // Nueva línea
+        every { viewModel.launchGoogleSignIn } returns launchGoogleSignInFlow
 
         val bundle = bundleOf(
             "isSocialLoginFlow" to false,
@@ -761,11 +759,36 @@ class SignUpFragmentTest {
 
         launchFragmentInHiltContainer<SignUpFragment>(fragmentArgs = bundle)
 
-        // Act: Desplazarse al botón de Google y hacer clic en él
         onView(withId(R.id.ivGoogleSignIn)).perform(scrollTo(), click())
 
-        // Assert: Verificar que el método onEvent del ViewModel fue llamado
-        // con el evento OnGoogleSignUpClicked
         verify(exactly = 1) { viewModel.onEvent(SignUpEvent.OnGoogleSignUpClicked) }
     }
+
+    @Test
+    fun when_clicking_facebook_button_then_onFacebookSignUpClicked_event_is_triggered() {
+        // Arrange: Configurar el comportamiento de los flows del ViewModel de prueba
+        val uiStateFlow = MutableStateFlow(SignUpUiState())
+        val eventFlow = MutableSharedFlow<SignUpEvent>()
+        val launchGoogleSignInFlow = MutableSharedFlow<Intent>()
+
+        every { viewModel.uiState } returns uiStateFlow
+        every { viewModel.event } returns eventFlow
+        every { viewModel.launchGoogleSignIn } returns launchGoogleSignInFlow
+
+        val bundle = bundleOf(
+            "isSocialLoginFlow" to false,
+            "socialUserEmail" to null,
+            "socialUserName" to null
+        )
+
+        launchFragmentInHiltContainer<SignUpFragment>(fragmentArgs = bundle)
+
+        // Act: Desplazarse al botón de Facebook y hacer clic en él
+        onView(withId(R.id.ivFacebookLSignIn)).perform(scrollTo(), click())
+
+        // Assert: Verificar que el método onEvent del ViewModel fue llamado
+        // con el evento OnFacebookSignUpClicked
+        verify(exactly = 1) { viewModel.onEvent(SignUpEvent.OnFacebookSignUpClicked) }
+    }
+
 }
