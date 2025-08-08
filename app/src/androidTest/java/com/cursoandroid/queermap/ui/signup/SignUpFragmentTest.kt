@@ -522,4 +522,35 @@ class SignUpFragmentTest {
         onView(withId(R.id.etPassword))
             .check(matches(withText(testPassword)))
     }
+
+    @Test
+    fun when_state_has_confirm_password_then_repeat_password_field_is_updated() {
+        // 1. Arrange: Configurar el fragmento
+        val testConfirmPassword = "myStrongPassword123"
+        val bundle = bundleOf(
+            "isSocialLoginFlow" to false,
+            "socialUserEmail" to null,
+            "socialUserName" to null
+        )
+
+        lateinit var fragment: SignUpFragment
+        launchFragmentInHiltContainer<SignUpFragment>(fragmentArgs = bundle) {
+            fragment = this
+        }
+
+        // 2. Act: Simular un cambio en el uiState del ViewModel
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            val fakeUiState = fragment.exposeViewModelForTesting().uiState.value.copy(
+                confirmPassword = testConfirmPassword
+            )
+            fragment.exposeViewModelForTesting().setUiStateForTesting(fakeUiState)
+        }
+
+        // Espera para dar tiempo a la UI de actualizarse.
+        Thread.sleep(500)
+
+        // 3. Assert: Verificar que el campo de texto muestre el nuevo valor
+        onView(withId(R.id.etRepeatPassword))
+            .check(matches(withText(testConfirmPassword)))
+    }
 }
