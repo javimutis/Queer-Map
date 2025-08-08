@@ -4,6 +4,9 @@ import android.util.Log
 import android.view.View
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.core.os.bundleOf
+import androidx.navigation.Navigation
+import androidx.navigation.testing.TestNavHostController
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.closeSoftKeyboard
@@ -26,6 +29,7 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import org.hamcrest.Description
 import org.hamcrest.TypeSafeMatcher
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -668,8 +672,14 @@ class SignUpFragmentTest {
         onView(withId(R.id.etUser)).perform(replaceText("testuser"), closeSoftKeyboard())
         onView(withId(R.id.etName)).perform(replaceText("Test User"), closeSoftKeyboard())
         onView(withId(R.id.etPassword)).perform(replaceText("Password123"), closeSoftKeyboard())
-        onView(withId(R.id.etRepeatPassword)).perform(replaceText("Password123"), closeSoftKeyboard())
-        onView(withId(R.id.etEmailRegister)).perform(replaceText("test@example.com"), closeSoftKeyboard())
+        onView(withId(R.id.etRepeatPassword)).perform(
+            replaceText("Password123"),
+            closeSoftKeyboard()
+        )
+        onView(withId(R.id.etEmailRegister)).perform(
+            replaceText("test@example.com"),
+            closeSoftKeyboard()
+        )
 
         // Simular que el cumpleaños es válido para pasar la validación
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
@@ -687,5 +697,36 @@ class SignUpFragmentTest {
         // 3. Assert: Verificar que el ProgressBar se muestre, indicando que el evento de registro ha sido procesado
         onView(withId(R.id.progressBar))
             .check(matches(withEffectiveVisibility(Visibility.VISIBLE)))
+    }
+
+    @Test
+    fun when_clicking_back_button_then_onBackPressed_event_is_triggered() {
+        // 1. Arrange: Lanzar el fragmento con un NavController de prueba
+        val bundle = bundleOf(
+            "isSocialLoginFlow" to false,
+            "socialUserEmail" to null,
+            "socialUserName" to null
+        )
+
+        // Crear un NavController de prueba y configurar el gráfico de navegación
+        val testNavController = TestNavHostController(ApplicationProvider.getApplicationContext())
+        testNavController.setGraph(R.navigation.nav_graph)
+
+        // Simular que venimos de otro fragmento (por ejemplo, el de login)
+        testNavController.setCurrentDestination(R.id.loginFragment)
+
+        launchFragmentInHiltContainer<SignUpFragment>(fragmentArgs = bundle) {
+            // Asignar el NavController de prueba al fragmento. Esto simula la navegación a SignupFragment.
+            testNavController.navigate(R.id.signupFragment)
+            Navigation.setViewNavController(this.requireView(), testNavController)
+        }
+
+        // 2. Act: Hacer clic en el botón de retroceso
+        onView(withId(R.id.ivBack)).perform(click())
+
+        Thread.sleep(500) // Esperar a que la navegación se complete
+
+        // 3. Assert: Verificar que el destino actual del NavController es el fragmento anterior (loginFragment)
+        assertEquals(R.id.loginFragment, testNavController.currentDestination?.id)
     }
 }
