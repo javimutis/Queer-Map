@@ -104,40 +104,6 @@ class SignUpFragmentTest {
         }
     }
 
-    @Test
-    fun when_event_navigate_back_is_emitted_then_navController_pops_backstack() {
-        // 1. Arrange: Configura el NavController
-        val testNavController = TestNavHostController(ApplicationProvider.getApplicationContext())
-        val bundle = bundleOf(
-            "isSocialLoginFlow" to false,
-            "socialUserEmail" to null,
-            "socialUserName" to null
-        )
-
-        // Lanza el fragmento y asigna el NavController
-        launchFragmentInHiltContainer<SignUpFragment>(fragmentArgs = bundle) {
-            testNavController.setGraph(R.navigation.nav_graph)
-            testNavController.navigate(R.id.loginFragment)
-            testNavController.navigate(R.id.signupFragment)
-            Navigation.setViewNavController(this.requireView(), testNavController)
-        }
-
-        // 2. Act: Emitir el evento de retroceso desde el ViewModel mockeado
-        // Usamos una corrutina para emitir el evento y nos aseguramos de que el `Job` termine
-        val emitJob = CoroutineScope(Dispatchers.Main).launch {
-            eventFlow.emit(SignUpEvent.NavigateBack)
-        }
-
-        // Esperamos a que la corrutina de emisión del evento termine
-        // y le damos tiempo al Fragment para procesar el evento.
-        // La mejor práctica es usar `runBlockingTest` o `TestCoroutineDispatcher` en un entorno real,
-        // pero para evitar más dependencias, una pausa es suficiente para este caso.
-        Thread.sleep(500)
-
-        // 3. Assert: Verificar que el NavController ha regresado al fragmento de login
-        assertEquals(R.id.loginFragment, testNavController.currentDestination?.id)
-    }
-
     /* Inicialización y UI estática */
     @Test
     fun when_signup_fragment_is_launched_then_all_required_views_are_displayed() {
@@ -834,5 +800,66 @@ class SignUpFragmentTest {
 
     /* Observación de eventos */
 
+    @Test
+    fun when_event_navigate_back_is_emitted_then_navController_pops_backstack() {
+        // 1. Arrange: Configura el NavController
+        val testNavController = TestNavHostController(ApplicationProvider.getApplicationContext())
+        val bundle = bundleOf(
+            "isSocialLoginFlow" to false,
+            "socialUserEmail" to null,
+            "socialUserName" to null
+        )
 
+        // Lanza el fragmento y asigna el NavController
+        launchFragmentInHiltContainer<SignUpFragment>(fragmentArgs = bundle) {
+            testNavController.setGraph(R.navigation.nav_graph)
+            testNavController.navigate(R.id.loginFragment)
+            testNavController.navigate(R.id.signupFragment)
+            Navigation.setViewNavController(this.requireView(), testNavController)
+        }
+
+        // 2. Act: Emitir el evento de retroceso desde el ViewModel mockeado
+        // Usamos una corrutina para emitir el evento y nos aseguramos de que el `Job` termine
+        val emitJob = CoroutineScope(Dispatchers.Main).launch {
+            eventFlow.emit(SignUpEvent.NavigateBack)
+        }
+
+        // Esperamos a que la corrutina de emisión del evento termine
+        // y le damos tiempo al Fragment para procesar el evento.
+        // La mejor práctica es usar `runBlockingTest` o `TestCoroutineDispatcher` en un entorno real,
+        // pero para evitar más dependencias, una pausa es suficiente para este caso.
+        Thread.sleep(500)
+
+        // 3. Assert: Verificar que el NavController ha regresado al fragmento de login
+        assertEquals(R.id.loginFragment, testNavController.currentDestination?.id)
+    }
+
+    @Test
+    fun when_event_navigate_to_home_is_emitted_then_navController_navigates_to_home() {
+        // 1. Arrange: Configura el NavController
+        val testNavController = TestNavHostController(ApplicationProvider.getApplicationContext())
+        val bundle = bundleOf(
+            "isSocialLoginFlow" to false,
+            "socialUserEmail" to null,
+            "socialUserName" to null
+        )
+
+        // Lanza el fragmento y asigna el NavController
+        launchFragmentInHiltContainer<SignUpFragment>(fragmentArgs = bundle) {
+            testNavController.setGraph(R.navigation.nav_graph)
+            testNavController.navigate(R.id.signupFragment)
+            Navigation.setViewNavController(this.requireView(), testNavController)
+        }
+
+        // 2. Act: Emitir el evento de navegación a Home desde el ViewModel mockeado
+        val emitJob = CoroutineScope(Dispatchers.Main).launch {
+            eventFlow.emit(SignUpEvent.NavigateToHome)
+        }
+
+        Thread.sleep(500)
+
+        // 3. Assert: Verificar que el NavController ha navegado al MapFragment
+        assertEquals(R.id.mapFragment, testNavController.currentDestination?.id)
+    }
 }
+
