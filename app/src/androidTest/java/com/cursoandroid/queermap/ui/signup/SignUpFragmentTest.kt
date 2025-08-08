@@ -861,5 +861,30 @@ class SignUpFragmentTest {
         // 3. Assert: Verificar que el NavController ha navegado al MapFragment
         assertEquals(R.id.mapFragment, testNavController.currentDestination?.id)
     }
+    @Test
+    fun when_event_show_message_is_emitted_then_snackbar_is_shown() {
+        // 1. Arrange: Configura el NavController y lanza el fragmento
+        val testNavController = TestNavHostController(ApplicationProvider.getApplicationContext())
+        val bundle = bundleOf(
+            "isSocialLoginFlow" to false,
+            "socialUserEmail" to null,
+            "socialUserName" to null
+        )
+
+        launchFragmentInHiltContainer<SignUpFragment>(fragmentArgs = bundle) {
+            testNavController.setGraph(R.navigation.nav_graph)
+            Navigation.setViewNavController(this.requireView(), testNavController)
+        }
+
+        // 2. Act: Emite el evento ShowMessage con un mensaje de prueba
+        val testMessage = "Mensaje de prueba"
+        val emitJob = CoroutineScope(Dispatchers.Main).launch {
+            eventFlow.emit(SignUpEvent.ShowMessage(testMessage))
+        }
+
+        // 3. Assert: Verifica que el Snackbar con el mensaje se muestra
+        // Espresso buscará el texto del Snackbar y verificará que está visible.
+        onView(withText(testMessage)).check(matches(isDisplayed()))
+    }
 }
 
