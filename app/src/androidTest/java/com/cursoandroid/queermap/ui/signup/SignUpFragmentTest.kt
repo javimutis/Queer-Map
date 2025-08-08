@@ -617,4 +617,35 @@ class SignUpFragmentTest {
         onView(withId(R.id.etName))
             .check(matches(withText(testFullName)))
     }
+
+    @Test
+    fun when_state_has_birthday_then_birthday_field_is_updated() {
+        // 1. Arrange: Configurar el fragmento
+        val testBirthday = "25/12/1990"
+        val bundle = bundleOf(
+            "isSocialLoginFlow" to false,
+            "socialUserEmail" to null,
+            "socialUserName" to null
+        )
+
+        lateinit var fragment: SignUpFragment
+        launchFragmentInHiltContainer<SignUpFragment>(fragmentArgs = bundle) {
+            fragment = this
+        }
+
+        // 2. Act: Simular un cambio en el uiState del ViewModel
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            val fakeUiState = fragment.exposeViewModelForTesting().uiState.value.copy(
+                birthday = testBirthday
+            )
+            fragment.exposeViewModelForTesting().setUiStateForTesting(fakeUiState)
+        }
+
+        // Espera para dar tiempo a la UI de actualizarse.
+        Thread.sleep(500)
+
+        // 3. Assert: Verificar que el campo de texto muestre el nuevo valor
+        onView(withId(R.id.tietBirthday))
+            .check(matches(withText(testBirthday)))
+    }
 }
