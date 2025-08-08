@@ -458,4 +458,37 @@ class SignUpFragmentTest {
         onView(withId(R.id.tilBirthday))
             .check(matches(hasTextInputLayoutErrorText("Ingresa una fecha de nacimiento válida.")))
     }
+
+    /* Sincronización de campos con estado */
+
+    @Test
+    fun when_state_has_email_then_email_field_is_updated() {
+        // 1. Arrange: Configurar el fragmento
+        val testEmail = "social@example.com"
+        val bundle = bundleOf(
+            "isSocialLoginFlow" to false,
+            "socialUserEmail" to null,
+            "socialUserName" to null
+        )
+
+        lateinit var fragment: SignUpFragment
+        launchFragmentInHiltContainer<SignUpFragment>(fragmentArgs = bundle) {
+            fragment = this
+        }
+
+        // 2. Act: Simular un cambio en el uiState del ViewModel
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            val fakeUiState = fragment.exposeViewModelForTesting().uiState.value.copy(
+                email = testEmail
+            )
+            fragment.exposeViewModelForTesting().setUiStateForTesting(fakeUiState)
+        }
+
+        // Espera para dar tiempo a la UI de actualizarse.
+        Thread.sleep(500)
+
+        // 3. Assert: Verificar que el campo de texto muestre el nuevo valor
+        onView(withId(R.id.etEmailRegister))
+            .check(matches(withText(testEmail)))
+    }
 }
