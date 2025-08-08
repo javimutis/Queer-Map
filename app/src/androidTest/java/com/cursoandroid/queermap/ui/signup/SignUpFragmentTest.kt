@@ -1,10 +1,12 @@
 package com.cursoandroid.queermap.ui.signup
 
+import android.content.Intent
 import android.util.Log
 import android.view.View
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.core.os.bundleOf
 import androidx.navigation.Navigation
+import com.cursoandroid.queermap.ui.signup.SignUpUiState
 import androidx.navigation.testing.TestNavHostController
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso.onView
@@ -25,8 +27,14 @@ import androidx.test.uiautomator.UiDevice
 import com.cursoandroid.queermap.R
 import com.cursoandroid.queermap.util.launchFragmentInHiltContainer
 import com.google.android.material.textfield.TextInputLayout
+import dagger.hilt.android.testing.BindValue
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.hamcrest.Description
 import org.hamcrest.TypeSafeMatcher
 import org.junit.Assert.assertEquals
@@ -40,13 +48,16 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class SignUpFragmentTest {
 
-    @get:Rule
+    @get:Rule(order = 0)
     val hiltRule = HiltAndroidRule(this)
 
     @get:Rule
     val instantTaskExecutorRule = InstantTaskExecutorRule()
 
     private lateinit var device: UiDevice
+
+    @BindValue
+    val viewModel: SignUpViewModel = mockk(relaxed = true)
 
     @Before
     fun setup() {
@@ -728,5 +739,33 @@ class SignUpFragmentTest {
 
         // 3. Assert: Verificar que el destino actual del NavController es el fragmento anterior (loginFragment)
         assertEquals(R.id.loginFragment, testNavController.currentDestination?.id)
+    }
+
+    @Test
+    fun when_clicking_google_button_then_onGoogleSignUpClicked_event_is_triggered() {
+        // Arrange: Configurar el comportamiento de los flows del ViewModel de prueba
+        // Esto evita el KotlinNothingValueException al observar los flows
+        val uiStateFlow = MutableStateFlow(SignUpUiState())
+        val eventFlow = MutableSharedFlow<SignUpEvent>()
+        val launchGoogleSignInFlow = MutableSharedFlow<Intent>() // Nueva línea para el flow de Google
+
+        every { viewModel.uiState } returns uiStateFlow
+        every { viewModel.event } returns eventFlow
+        every { viewModel.launchGoogleSignIn } returns launchGoogleSignInFlow // Nueva línea
+
+        val bundle = bundleOf(
+            "isSocialLoginFlow" to false,
+            "socialUserEmail" to null,
+            "socialUserName" to null
+        )
+
+        launchFragmentInHiltContainer<SignUpFragment>(fragmentArgs = bundle)
+
+        // Act: Desplazarse al botón de Google y hacer clic en él
+        onView(withId(R.id.ivGoogleSignIn)).perform(scrollTo(), click())
+
+        // Assert: Verificar que el método onEvent del ViewModel fue llamado
+        // con el evento OnGoogleSignUpClicked
+        verify(exactly = 1) { viewModel.onEvent(SignUpEvent.OnGoogleSignUpClicked) }
     }
 }
